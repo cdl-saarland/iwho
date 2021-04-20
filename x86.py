@@ -123,6 +123,7 @@ class X86_ImmConstraint(iwho.OperandConstraint):
         return (isinstance(operand, X86_ImmediateOperand) and
                 self.width == operand.width and
                 self.imm_kind == operand.imm_kind)
+        # TODO check if the value is in range
 
     def get_valid(self, not_in):
         # TODO

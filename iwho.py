@@ -17,6 +17,10 @@ class NoValidInstanceError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
 
+class InvalidOperandsError(IWHOError):
+    def __init__(self, message):
+        super().__init__(message)
+
 
 
 
@@ -44,21 +48,11 @@ class SetConstraint(OperandConstraint):
     def is_valid(self, operand):
         return operand in self.acceptable_operands
 
-    def get_valid(self, not_in):
+    def get_valid(self, not_in=[]):
         diff = self.acceptable_operands - set(not_in)
         if len(diff) == 0:
             return None
-        return next(iter(diff))
-
-class FixedConstraint(OperandConstraint):
-    def __init__(self, acceptable_operand):
-        self.acceptable_operand = set(acceptable_operand)
-
-    def is_valid(self, operand):
-        return operand == self.acceptable_operand
-
-    def get_valid(self, not_in):
-        return self.acceptable_operand
+        return sorted(diff, key=str)[0]
 
 class OperandScheme:
     def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[Operand]=None, read: bool=False, written: bool=False):
@@ -72,11 +66,10 @@ class OperandScheme:
         return self.fixed_operand is not None
 
     def is_operand_valid(self, operand):
-        return self.operand_constraint(operand)
+        return self.operand_constraint.is_valid(operand)
 
     def get_valid_operand(self, not_in=[]):
-        # TODO
-        pass
+        return self.operand_constraint.get_valid(not_in=not_in)
 
     def __str__(self):
         return repr(self)
@@ -94,17 +87,24 @@ class OperandScheme:
 class InsnScheme:
     def __init__(self, identifier: str, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme]):
         self.identifier = identifier
-        self.str_template = str_template
-        self.operand_schemes = operand_schemes
-        self.implicit_operands = implicit_operands
+        self._str_template = str_template
+        self._operand_schemes = operand_schemes
+        self._implicit_operands = implicit_operands
 
-    def instantiatate(self, args):
-        # TODO create an instance with the fitting arguments
-        pass
+    def instantiate(self, args):
+        return InsnInstance(scheme=self, operands=args)
 
-    # @property
-    # def operand_schemes(self):
-    #     pass
+    @property
+    def str_template(self):
+        return self._str_template
+
+    @property
+    def operand_schemes(self):
+        return self._operand_schemes
+
+    @property
+    def implicit_operands(self):
+        return self._implicit_operands
 
     def __str__(self):
         return repr(self) # TODO
@@ -117,6 +117,7 @@ class InsnScheme:
         res += ")"
         return res
 
+
 class Context(ABC):
 
     @abstractmethod
@@ -127,9 +128,23 @@ class Context(ABC):
 
 class InsnInstance:
     def __init__(self, scheme, operands):
-        # TODO check that operands fit
         self._scheme = scheme
         self._operands = operands
+        self.validate_operands()
+
+    def validate_operands(self):
+        for k, opscheme in self.scheme.operand_schemes.items():
+            if k not in self._operands:
+                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} does not specify operand {k}")
+
+            opinst = self._operands[k]
+            if not opscheme.is_operand_valid(opinst):
+                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} specifies invalid operand {k}: {opinst}")
+
+        for k in self._operands.keys():
+            if k not in self.scheme.operand_schemes:
+                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
+
 
     @property
     def scheme(self):
@@ -146,10 +161,11 @@ class InsnInstance:
         pass
 
     def __str__(self):
-        pass
+        op_strs = { k: str(v) for k, v in self._operands.items() }
+        return self.scheme.str_template.substitute(op_strs)
 
     def __repr__(self):
-        pass
+        return "InsnInstance(scheme={}, operands={})".format(self._scheme, self._operands)
 
 
 
