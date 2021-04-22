@@ -7,7 +7,9 @@ import string
 import os
 import sys
 
-# import_path = os.path.join(os.path.dirname(__file__), "..", "muanalyzer")
+import_path = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(import_path)
+
 import_path = os.path.dirname(__file__)
 sys.path.append(import_path)
 
@@ -81,6 +83,18 @@ def test_construct_invalid_insn_superfluous_op():
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)
 
+def test_uops_info_parsing():
+    ctx = x86.X86_Context()
+    xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
+    ctx.add_uops_info_xml(xml_path)
+
+    for scheme in ctx.insn_schemes:
+        print(scheme)
 
 if __name__ == "__main__":
-    test_construct_insn()
+    from utils import init_logging
+    init_logging('debug')
+
+    # test_construct_insn()
+    test_uops_info_parsing()
+

@@ -23,6 +23,9 @@ class InvalidOperandsError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
 
+class UnsupportedFeatureError(IWHOError):
+    def __init__(self, message):
+        super().__init__(message)
 
 
 
@@ -48,12 +51,15 @@ class OperandConstraint(ABC):
         pass
 
 class SetConstraint(OperandConstraint):
-    def __init__(self, name, acceptable_operands):
-        self.name = name
-        self.acceptable_operands = set(acceptable_operands)
+    def __init__(self, acceptable_operands):
+        self.name = None
+        self.acceptable_operands = frozenset(acceptable_operands)
 
     def __str__(self):
-        return self.name
+        if self.name is not None:
+            return self.name
+        else:
+            return ",".join(map(str, self.acceptable_operands))
 
     def is_valid(self, operand):
         return operand in self.acceptable_operands
@@ -63,6 +69,13 @@ class SetConstraint(OperandConstraint):
         if len(diff) == 0:
             return None
         return sorted(diff, key=str)[0]
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.acceptable_operands == other.acceptable_operands)
+
+    def __hash__(self):
+        return hash((self.acceptable_operands))
 
 class OperandScheme:
     def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[Operand]=None, read: bool=False, written: bool=False):
@@ -87,7 +100,10 @@ class OperandScheme:
             res += 'R'
         if self.is_written:
             res += 'W'
-        res += ":"
+
+        if self.is_read or self.is_written:
+            res += ":"
+
         if self.operand_constraint is not None:
             res += str(self.operand_constraint)
         else:
@@ -97,7 +113,7 @@ class OperandScheme:
     def __repr__(self):
         res = "OperandScheme("
         if self.operand_constraint is not None:
-            res += "constraint" # TODO
+            res += "constraint: " + str(self.operand_constraint)
         else:
             res += "fixed_operand={}".format(repr(self.fixed_operand))
         res += f", read={self.is_read}, written={self.is_written})"
@@ -109,6 +125,7 @@ class InsnScheme:
         self._str_template = str_template
         self._operand_schemes = operand_schemes
         self._implicit_operands = implicit_operands
+        # TODO check whether operand_schemes and str_template match
 
     def instantiate(self, args):
         return InsnInstance(scheme=self, operands=args)

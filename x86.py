@@ -1,6 +1,9 @@
 
 from typing import Sequence, Optional
 
+from collections import defaultdict
+import string
+
 import iwho as iwho
 
 from enum import Enum, auto
@@ -60,12 +63,15 @@ class X86_RegisterOperand(iwho.Operand):
 
 
 class X86_MemoryOperand(iwho.Operand):
-    def __init__(self, segment: Optional[X86_RegisterOperand]=None,
+    def __init__(self, width: int,
+                segment: Optional[X86_RegisterOperand]=None,
                 base: Optional[X86_RegisterOperand]=None,
                 index: Optional[X86_RegisterOperand]=None,
                 scale: int=1,
-                displacement: int=0):
+                displacement: int=0,
+                ):
         # address = base + index * scale + displacement
+        self.width = width
         self.segment = segment
         self.base = base
         self.index = index
@@ -87,17 +93,17 @@ class X86_MemoryOperand(iwho.Operand):
         return repr(self)
 
     def __repr__(self):
-        res = "X86_MemoryOperand("
+        res = "X86_MemoryOperand(width={}".format(self.width)
         if self.segment is not None:
-            res += "segment: {}, ".format(repr(self.segment))
+            res += "segment={}, ".format(repr(self.segment))
         if self.base is not None:
-            res += "base: {}, ".format(repr(self.base))
+            res += "base={}, ".format(repr(self.base))
         if self.index is not None:
-            res += "index: {}, ".format(repr(self.index))
+            res += "index={}, ".format(repr(self.index))
         if self.scale is not None:
-            res += "scale: {}, ".format(repr(self.scale))
+            res += "scale={}, ".format(repr(self.scale))
         if self.displacement is not None:
-            res += "displacement: {}, ".format(repr(self.displacement))
+            res += "displacement={}, ".format(repr(self.displacement))
         if res.endswith(', '):
             res = res[-2]
         res += ")"
@@ -105,6 +111,7 @@ class X86_MemoryOperand(iwho.Operand):
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
+                and self.width == other.width
                 and self.segment == other.segment
                 and self.base == other.base
                 and self.index == other.index
@@ -155,6 +162,54 @@ class X86_ImmConstraint(iwho.OperandConstraint):
         # TODO
         pass
 
+    def __str__(self):
+        return "IMM({},{})".format(self.imm_kind.name, self.width)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.imm_kind == other.imm_kind
+                and self.width == other.width)
+
+    def __hash__(self):
+        return hash((self.imm_kind, self.width))
+
+
+class X86_MemConstraint(iwho.OperandConstraint):
+    def __init__(self, width: int):
+        self.width = width
+
+    def is_valid(self, operand):
+        return (isinstance(operand, X86_MemoryOperand) and
+                self.width == operand.width)
+
+    def get_valid(self, not_in):
+        # TODO
+        pass
+
+    def __str__(self):
+        return "MEM({})".format(self.width)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.width == other.width)
+
+    def __hash__(self):
+        return hash((self.width))
+
+class DedupStore:
+    def __init__(self):
+        self.stores = defaultdict(dict)
+
+    def get(self, constructor, **kwargs):
+        store = self.stores[constructor]
+        key = tuple(sorted(kwargs.items(), key=lambda x: x[0]))
+        stored_res = store.get(key, None)
+        if stored_res is not None:
+            return stored_res
+        new_res = constructor(**kwargs)
+        store[key] = new_res
+        return new_res
+
 
 class X86_Context(iwho.Context):
 
@@ -162,6 +217,10 @@ class X86_Context(iwho.Context):
         self.all_registers = dict()
         self.gp_regs = []
         self.flag_regs = []
+
+        self.insn_schemes = []
+
+        self.dedup_store = DedupStore()
 
         self._add_registers()
 
@@ -210,34 +269,50 @@ class X86_Context(iwho.Context):
         add_flag_reg("flag_ZF", X86_RegAliasClass.FLAG_ZF)
 
 
-    # def add_uops_info_xml(xml_path):
-    #     import xml.etree.ElementTree as ET
-    #
-    #     logger.debug("start parsing uops.info xml")
-    #     with open(xml_path, 'r') as xml_file:
-    #         xml_root = ET.parse(xml_file)
-    #     logger.debug("done parsing uops.info xml")
-    #
-    #     for instrNode in xml_root.iter('instruction'):
-    #         # Future instruction set extensions
-    #         if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16', 'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET', 'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR', 'PCONFIG', 'RDPRU', 'SERIALIZE', 'SNP', 'TDX', 'TSX_LDTRK', 'UINTR', 'WAITPKG', 'WBNOINVD']:
-    #             continue
-    #         if any(x in instrNode.attrib['isa-set'] for x in ['BF16_', 'VP2INTERSECT']):
-    #             continue
-    #
-    #         str_template = instrNode.get('asm')
-    #         mnemonic = str_template
-    #
-    #         explicit_operands = dict()
-    #         implicit_operands = []
-    #
-    #         first = True
-    #         for operandNode in instrNode.iter('operand'):
-    #             operandIdx = int(operandNode.attrib['idx'])
-    #
-    #             if operandNode.attrib.get('suppressed', '0') == '1':
-    #                 # TODO implicit operand
-    #                 op_type = operandNode.attrib['type']
+    def add_uops_info_xml(self, xml_path):
+
+        # First, establish some names for common groups of allowed registers
+        # This makes the str representation of constraints and schemes more readable
+        groups = defaultdict(list)
+        for k, regop in self.all_registers.items():
+            if "IP" not in k:
+                groups[(regop.kind, regop.width)].append(regop)
+
+        for (kind, width), group in groups.items():
+            obj = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(group))
+            obj.name = "{}:{}".format(kind.name, width)
+
+        import xml.etree.ElementTree as ET
+
+        logger.debug("start parsing uops.info xml")
+        with open(xml_path, 'r') as xml_file:
+            xml_root = ET.parse(xml_file)
+        logger.debug("done parsing uops.info xml")
+
+        for instrNode in xml_root.iter('instruction'):
+            # Future instruction set extensions
+            if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16', 'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET', 'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR', 'PCONFIG', 'RDPRU', 'SERIALIZE', 'SNP', 'TDX', 'TSX_LDTRK', 'UINTR', 'WAITPKG', 'WBNOINVD']:
+                continue
+            if any(x in instrNode.attrib['isa-set'] for x in ['BF16_', 'VP2INTERSECT']):
+                continue
+
+            str_template = instrNode.get('asm')
+            mnemonic = str_template
+
+            # TODO remove, only for testing
+            if mnemonic != "ADC":
+                continue
+
+            explicit_operands = dict()
+            implicit_operands = []
+
+            first = True
+            for operandNode in instrNode.iter('operand'):
+                operandIdx = int(operandNode.attrib['idx'])
+
+                if operandNode.attrib.get('suppressed', '0') == '1':
+                    # TODO implicit operand
+                    op_type = operandNode.attrib['type']
     #                 if op_type == 'flags':
     #                     for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
     #                         fval = operandNode.attrib.get(f, '')
@@ -250,162 +325,114 @@ class X86_Context(iwho.Context):
     #                     pass
     #                 elif op_type == 'mem':
     #                     pass
-    #
-    #                 continue
-    #
-    #             if not first and not operandNode.attrib.get('opmask', '') == '1':
-    #                 str_template += ', '
-    #             else:
-    #                 str_template += ' '
-    #                 first = False
-    #
-    #             op_name = operandNode.attrib['name']
-    #             if operandNode.attrib['type'] == 'reg':
-    #
-    #                 registers = operandNode.text.split(',')
-    #
-    #                 if not operandNode.attrib.get('opmask', '') == '1':
-    #                     str_template += "|{}|".format(op_name)
-    #                 else:
-    #                     str_template += "{{|{}|}}".format(op_name)
-    #                     if instrNode.attrib.get('zeroing', '') == '1':
-    #                         str_template += '{z}'
-    #             elif operandNode.attrib['type'] == 'mem':
-    #                 memoryPrefix = operandNode.attrib.get('memory-prefix', '')
-    #                 if memoryPrefix:
-    #                     str_template += memoryPrefix + ' '
-    #
-    #                 if operandNode.attrib.get('VSIB', '0') != '0':
-    #                     # TODO
-    #                     str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
-    #                 else:
-    #                     str_template += '|{}|'.format(op_name)
-    #
-    #                 memorySuffix = operandNode.attrib.get('memory-suffix', '')
-    #                 if memorySuffix:
-    #                     str_template += ' ' + memorySuffix
-    #             elif operandNode.attrib['type'] == 'agen':
-    #                 agen = instrNode.attrib['agen']
-    #                 # address = []
-    #
-    #                 # if 'R' in agen: address.append('RIP')
-    #                 # if 'B' in agen: address.append('RAX')
-    #                 # if 'IS' in agen: address.append('2*RBX')
-    #                 # elif 'I' in agen: address.append('1*RBX')
-    #                 # if 'D8' in agen: address.append('8')
-    #                 # if 'D32' in agen: address.append('128')
-    #                 #
-    #                 # asm += ' [' + '+'.join(address) + ']'
-    #                 str_template += '|{}|'.format(op_name)
-    #              elif operandNode.attrib['type'] == 'imm':
-    #                 if instrNode.attrib.get('roundc', '') == '1':
-    #                     str_template += '{rn-sae}, '
-    #                 elif instrNode.attrib.get('sae', '') == '1':
-    #                     str_template += '{sae}, '
-    #                 str_template += '|{}|'.format(op_name)
-    #
-    #                 width = int(operandNode.attrib['width'])
-    #                 if operandNode.text is not None:
-    #                     imm = operandNode.text
-    #                 else:
-    #                     # TODO
-    #                     imm = (1 << (width-8)) + 1
-    #              elif operandNode.attrib['type'] == 'relbr':
-    #                 str_template = '1: ' + str_template + '1b'
-    #                 # TOSO
-    #
-    #         if not 'sae' in str_template:
-    #             if instrNode.attrib.get('roundc', '') == '1':
-    #                 str_template += ', {rn-sae}'
-    #             elif instrNode.attrib.get('sae', '') == '1':
-    #                 str_template += ', {sae}'
-    #
-    #         str_template
-    #
-    #
-    #
-    #
-    #         first = True
-    #         for operandNode in instrNode.iter('operand'):
-    #             if operandNode.get('suppressed', '0') == '1':
-    #                 continue
-    #             if operandNode.get('implicit', '0') == '1':
-    #                 if mnemonic in ['SAR', 'SAL', 'SHR', 'SHRD', 'SHL', 'SHLD', 'ROR', 'ROL', 'RCR', 'RCL']:
-    #                     if operandNode.get('type') == 'imm':
-    #                         assert operandNode.text == '1'
-    #                         insn_key += ", 1"
-    #                         continue
-    #                     elif operandNode.get('type') == 'reg':
-    #                         assert operandNode.text == 'CL'
-    #                         insn_key += ", REG:G8"
-    #                         continue
-    #                 continue
-    #             if first:
-    #                 first = False
-    #                 insn_key += " "
-    #             else:
-    #                 insn_key += ", "
-    #             if operandNode.get('type') == 'reg':
-    #                 insn_key += "REG:"
-    #                 allowed_registers = list(map(lambda x: x.lower(), operandNode.text.split(',')))
-    #                 if "al" in allowed_registers:
-    #                     insn_key += "G8"
-    #                 elif "ax" in allowed_registers:
-    #                     insn_key += "G16"
-    #                 elif "eax" in allowed_registers:
-    #                     insn_key += "G32"
-    #                 elif "rax" in allowed_registers:
-    #                     insn_key += "G64"
-    #                 elif "mm0" in allowed_registers:
-    #                     insn_key += "F64"
-    #                 elif "xmm0" in allowed_registers:
-    #                     insn_key += "F128"
-    #                 elif "ymm0" in allowed_registers:
-    #                     insn_key += "F256"
-    #                 elif "zmm0" in allowed_registers:
-    #                     insn_key += "F512"
-    #                 elif "k0" in allowed_registers: # AVX512 mask registers
-    #                     insn_key += "K"
-    #                 elif "k1" in allowed_registers: # AVX512 mask registers, k0 is not always allowed
-    #                     insn_key += "K"
-    #                 elif "es" in allowed_registers: # segment registers
-    #                     insn_key += "S"
-    #                 elif "cr0" in allowed_registers:
-    #                     insn_key += "CR"
-    #                 elif "dr0" in allowed_registers:
-    #                     insn_key += "DR"
-    #                 elif "bnd0" in allowed_registers: # MPX bounds
-    #                     insn_key += "BND"
-    #                 elif "st(0)" in allowed_registers: # X87 fp stack
-    #                     insn_key += "ST"
-    #                 else:
-    #                     logger.debug("unsupported register type: {}".format(operandNode.text))
-    #                     assert False, "unsupported register type"
-    #             elif operandNode.get('type') == 'mem':
-    #                 insn_key += "MEM" + operandNode.get('width')
-    #             elif operandNode.get('type') == 'agen':
-    #                 insn_key += "AGEN:" + instrNode.get('agen')
-    #                 # available: B, BD, BI, BID, D, I, ID, R, RD
-    #             elif operandNode.get('type') == 'imm':
-    #                 insn_key += "IMM" + operandNode.get('width')
-    #             elif operandNode.get('type') == 'relbr':
-    #                 insn_key += "RELBR" + operandNode.get('width')
-    #             else:
-    #                 logger.debug("operand node with unsupported type: {}".format(operandNode.get('type')))
-    #                 assert False, "operand node with unsupported type"
-    #
-    #         data = extract_data(instrNode, self.uarch)
-    #         if data is not None:
-    #             if insn_key in self.key_map:
-    #                 self.key_map[insn_key].append(data)
-    #             else:
-    #                 self.key_map[insn_key] = [data]
+
+                    continue
+
+                # implicit?
+
+                if not first and not operandNode.attrib.get('opmask', '') == '1':
+                    str_template += ', '
+                else:
+                    str_template += ' '
+                    first = False
+
+                op_name = operandNode.attrib['name']
+                read = operandNode.attrib.get('r', '0') == '1'
+                written = operandNode.attrib.get('w', '0') == '1'
+
+                if operandNode.attrib['type'] == 'reg':
+                    registers = operandNode.text.split(',')
+                    allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
+                    constraint = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+                    op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written)
+                    explicit_operands[op_name] = op_scheme
+
+                    if not operandNode.attrib.get('opmask', '') == '1':
+                        str_template += "${" + op_name + "}"
+                    else:
+                        str_template += "{${" + op_name + "}}"
+                        if instrNode.attrib.get('zeroing', '') == '1':
+                            str_template += '{z}'
+                elif operandNode.attrib['type'] == 'mem':
+                    memoryPrefix = operandNode.attrib.get('memory-prefix', '')
+                    if memoryPrefix:
+                        str_template += memoryPrefix + ' '
+
+                    if operandNode.attrib.get('VSIB', '0') != '0':
+                        raise iwho.UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
+                        # TODO
+                        str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
+                    else:
+                        str_template += "${" + op_name + "}"
+                        width = str(operandNode.attrib.get('width'))
+                        constraint = self.dedup_store.get(X86_MemConstraint, width=width)
+                        op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written)
+                        explicit_operands[op_name] = op_scheme
+
+                    memorySuffix = operandNode.attrib.get('memory-suffix', '')
+                    if memorySuffix:
+                        str_template += ' ' + memorySuffix
+                elif operandNode.attrib['type'] == 'agen':
+                    agen = instrNode.attrib['agen']
+                    # address = []
+
+                    # if 'R' in agen: address.append('RIP')
+                    # if 'B' in agen: address.append('RAX')
+                    # if 'IS' in agen: address.append('2*RBX')
+                    # elif 'I' in agen: address.append('1*RBX')
+                    # if 'D8' in agen: address.append('8')
+                    # if 'D32' in agen: address.append('128')
+                    #
+                    # asm += ' [' + '+'.join(address) + ']'
+                    str_template += "${" + op_name + "}"
+                    # agen memory operands are neither read nor written
+                    constraint = self.dedup_store.get(X86_MemConstraint, width=0)
+                    op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False)
+                    explicit_operands[op_name] = op_scheme
+                elif operandNode.attrib['type'] == 'imm':
+                    # TODO make immediate constraint, add operand
+                    if instrNode.attrib.get('roundc', '') == '1':
+                        str_template += '{rn-sae}, '
+                    elif instrNode.attrib.get('sae', '') == '1':
+                        str_template += '{sae}, '
+                    str_template += "${" + op_name + "}"
+
+                    width = int(operandNode.attrib['width'])
+                    imm_kind = X86_ImmKind.INT
+                    # TODO right kind?
+                    if operandNode.text is not None:
+                        imm = operandNode.text
+                        op = self.dedup_store.get(X86_ImmediateOperand, imm_kind=imm_kind, width=width, value=imm)
+                        op_scheme = self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False)
+                    else:
+                        constraint = self.dedup_store.get(X86_ImmConstraint, imm_kind=imm_kind, width=width)
+                        op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False)
+
+                    explicit_operands[op_name] = op_scheme
+
+                elif operandNode.attrib['type'] == 'relbr':
+                    # str_template = '1: ' + str_template + '1b'
+                    # TODO
+                    raise UnsupportedFeatureError("relbr instruction")
+
+            if not 'sae' in str_template:
+                if instrNode.attrib.get('roundc', '') == '1':
+                    str_template += ', {rn-sae}'
+                elif instrNode.attrib.get('sae', '') == '1':
+                    str_template += ', {sae}'
+
+            str_template = string.Template(str_template)
+            scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
+
+            self.insn_schemes.append(scheme)
 
 
     def disassemble(self, data):
+        # TODO
         pass
 
     def assemble(self, insn_instance):
+        # TODO
         pass
 
 
