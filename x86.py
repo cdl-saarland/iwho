@@ -80,20 +80,40 @@ class X86_MemoryOperand(iwho.Operand):
 
     def additionally_read(self) -> Sequence[iwho.Operand]:
         res = []
-        if segment is not None:
-            res.append(segment)
-        if base is not None:
-            res.append(base)
-        if index is not None:
-            res.append(index)
+        if self.segment is not None:
+            res.append(self.segment)
+        if self.base is not None:
+            res.append(self.base)
+        if self.index is not None:
+            res.append(self.index)
         return res
 
     def __str__(self):
-        # TODO
-        return repr(self)
+        res = ""
+
+        if self.segment is not None:
+            res += "{}:".format(str(self.segment))
+
+        parts = []
+
+        if self.base is not None:
+            parts.append(str(self.base))
+
+        if self.index is not None:
+            offset = ""
+            if self.scale is not None:
+                offset += "{}*".format(str(self.scale))
+            offset += str(self.index)
+            parts.append(offset)
+        if self.displacement is not None:
+            parts.append(str(self.displacement))
+
+        res += "+".join(parts)
+        res = "[" + res + "]"
+        return res
 
     def __repr__(self):
-        res = "X86_MemoryOperand(width={}".format(self.width)
+        res = "X86_MemoryOperand(width={}, ".format(self.width)
         if self.segment is not None:
             res += "segment={}, ".format(repr(self.segment))
         if self.base is not None:
@@ -105,7 +125,7 @@ class X86_MemoryOperand(iwho.Operand):
         if self.displacement is not None:
             res += "displacement={}, ".format(repr(self.displacement))
         if res.endswith(', '):
-            res = res[-2]
+            res = res[:-2]
         res += ")"
         return res
 
