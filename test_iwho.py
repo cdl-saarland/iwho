@@ -23,7 +23,7 @@ def get_adc_scheme():
             "r1": iwho.OperandScheme(constraint=isGPR64, read=True),
         }
     implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in ctx.flag_regs]
-    scheme = iwho.InsnScheme("adc_r64_r64", str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
+    scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
     return scheme
 
 def test_construct_insn():

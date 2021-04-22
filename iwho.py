@@ -105,8 +105,7 @@ class OperandScheme:
 
 
 class InsnScheme:
-    def __init__(self, identifier: str, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme]):
-        self.identifier = identifier
+    def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme]):
         self._str_template = str_template
         self._operand_schemes = operand_schemes
         self._implicit_operands = implicit_operands
@@ -131,8 +130,8 @@ class InsnScheme:
         return self.str_template.substitute(mapping)
 
     def __repr__(self):
-        res = "InsnScheme(identifier={},\n".format(repr(self.identifier))
-        res += "  str_template={},\n".format(repr(self.str_template))
+        res = "InsnScheme("
+        res += "str_template={},\n".format(repr(self.str_template))
         res += "  operand_schemes={},\n".format(repr(self.operand_schemes))
         res += "  implicit_operands={},\n".format(repr(self.implicit_operands))
         res += ")"
