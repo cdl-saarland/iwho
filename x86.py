@@ -52,6 +52,12 @@ class X86_RegisterOperand(iwho.Operand):
     def __repr__(self):
         return "X86_RegisterOperand(name: {}, alias_class: {}, kind: {}, width: {})".format(repr(self.name), self.alias_class, self.kind, self.width)
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name
+
+    def __hash__(self):
+        return hash((self.name))
+
 
 class X86_MemoryOperand(iwho.Operand):
     def __init__(self, segment: Optional[X86_RegisterOperand]=None,
@@ -97,6 +103,17 @@ class X86_MemoryOperand(iwho.Operand):
         res += ")"
         return res
 
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.segment == other.segment
+                and self.base == other.base
+                and self.index == other.index
+                and self.scale == other.scale
+                and self.displacement == other.displacement)
+
+    def __hash__(self):
+        return hash((self.segment, self.base, self.index, self.scale, self.displacement))
+
 class X86_ImmKind(Enum):
     INT = auto()
     FLOAT = auto()
@@ -112,6 +129,15 @@ class X86_ImmediateOperand(iwho.Operand):
 
     def __repr__(self):
         return "X86_ImmediateOperand(imm_kind={}, width={}, value={})".format(self.imm_kind, self.width, repr(self.value))
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.imm_kind == other.imm_kind
+                and self.width == other.width
+                and self.value == other.value)
+
+    def __hash__(self):
+        return hash((self.imm_kind, self.width, self.value))
 
 
 class X86_ImmConstraint(iwho.OperandConstraint):
