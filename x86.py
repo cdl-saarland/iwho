@@ -379,5 +379,9 @@ class X86_Context(iwho.Context):
     def disassemble(self, data):
         pass
 
+    def assemble(self, insn_instance):
+        pass
+
+
 
 

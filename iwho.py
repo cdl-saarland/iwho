@@ -6,6 +6,8 @@ from typing import Sequence, Optional, Dict
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from functools import cached_property
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -41,9 +43,17 @@ class OperandConstraint(ABC):
     def get_valid(self, not_in=[]):
         pass
 
+    @abstractmethod
+    def __str__(self):
+        pass
+
 class SetConstraint(OperandConstraint):
-    def __init__(self, acceptable_operands):
+    def __init__(self, name, acceptable_operands):
+        self.name = name
         self.acceptable_operands = set(acceptable_operands)
+
+    def __str__(self):
+        return self.name
 
     def is_valid(self, operand):
         return operand in self.acceptable_operands
@@ -59,8 +69,8 @@ class OperandScheme:
         assert (constraint is None) != (fixed_operand is None)
         self.operand_constraint = constraint
         self.fixed_operand = fixed_operand
-        self.read = read
-        self.written = written
+        self.is_read = read
+        self.is_written = written
 
     def is_fixed(self):
         return self.fixed_operand is not None
@@ -72,7 +82,17 @@ class OperandScheme:
         return self.operand_constraint.get_valid(not_in=not_in)
 
     def __str__(self):
-        return repr(self)
+        res = ""
+        if self.is_read:
+            res += 'R'
+        if self.is_written:
+            res += 'W'
+        res += ":"
+        if self.operand_constraint is not None:
+            res += str(self.operand_constraint)
+        else:
+            res += str(self.fixed_operand)
+        return res
 
     def __repr__(self):
         res = "OperandScheme("
@@ -80,7 +100,7 @@ class OperandScheme:
             res += "constraint" # TODO
         else:
             res += "fixed_operand={}".format(repr(self.fixed_operand))
-        res += f", read={self.read}, written={self.written})"
+        res += f", read={self.is_read}, written={self.is_written})"
         return res
 
 
@@ -107,7 +127,8 @@ class InsnScheme:
         return self._implicit_operands
 
     def __str__(self):
-        return repr(self) # TODO
+        mapping = { k: str(v) for k, v in self._operand_schemes.items()}
+        return self.str_template.substitute(mapping)
 
     def __repr__(self):
         res = "InsnScheme(identifier={},\n".format(repr(self.identifier))
@@ -124,6 +145,12 @@ class Context(ABC):
     def disassemble(self, data):
         # create an instruction instance
         pass
+
+    @abstractmethod
+    def assemble(self, insn_instance):
+        # generate code for the instruction instance
+        pass
+
 
 
 class InsnInstance:
@@ -145,20 +172,56 @@ class InsnInstance:
             if k not in self.scheme.operand_schemes:
                 raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
 
-
     @property
     def scheme(self):
         return self._scheme
 
-    def assemble(self):
-        # generate code for the instruction instance
-        pass
-
+    @cached_property
     def read_operands(self):
-        pass
+        res = []
+        # all explicit operands that are read
+        for k, v in self._scheme.operand_schemes.items():
+            if v.is_read:
+                res.append(self._operands[k])
 
+        # all implicit operands that are read
+        for opscheme in self._scheme.implicit_operands:
+            if opscheme.is_read:
+                res.append(opscheme.fixed_operand)
+
+        # all nested operands that are read to evaluate explicit operands
+        for k, operand in self._operands.items():
+            res += operand.additionally_read()
+
+        # all nested operands that are read to evaluate implicit operands
+        for opscheme in self._scheme.implicit_operands:
+            res += opscheme.fixed_operand.additionally_read()
+
+        return res
+
+
+    @cached_property
     def written_operands(self):
-        pass
+        res = []
+        # all explicit operands that are written
+        for k, v in self._scheme.operand_schemes.items():
+            if v.is_written:
+                res.append(self._operands[k])
+
+        # all implicit operands that are written
+        for opscheme in self._scheme.implicit_operands:
+            if opscheme.is_written:
+                res.append(opscheme.fixed_operand)
+
+        # all nested operands that are written to evaluate explicit operands
+        for k, operand in self._operands.items():
+            res += operand.additionally_written()
+
+        # all nested operands that are written to evaluate implicit operands
+        for opscheme in self._scheme.implicit_operands:
+            res += opscheme.fixed_operand.additionally_written()
+
+        return res
 
     def __str__(self):
         op_strs = { k: str(v) for k, v in self._operands.items() }
@@ -166,6 +229,5 @@ class InsnInstance:
 
     def __repr__(self):
         return "InsnInstance(scheme={}, operands={})".format(self._scheme, self._operands)
-
 
 
