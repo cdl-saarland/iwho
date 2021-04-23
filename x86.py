@@ -331,24 +331,13 @@ class X86_Context(iwho.Context):
                 operandIdx = int(operandNode.attrib['idx'])
 
                 if operandNode.attrib.get('suppressed', '0') == '1':
-                    # TODO implicit operand
+                    # implicit operands (here marked as suppressed)
                     op_type = operandNode.attrib['type']
-    #                 if op_type == 'flags':
-    #                     for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
-    #                         fval = operandNode.attrib.get(f, '')
-    #                         if fval == '':
-    #                             continue
-    #                         elif fval == 'r':
-    #                             pass
-    #                     pass
-    #                 elif op_type == 'reg':
-    #                     pass
-    #                 elif op_type == 'mem':
-    #                     pass
+
+                    op_schemes, t1, t2 = self.handle_uops_info_operand(operandNode, instrNode)
+                    implicit_operands += op_schemes
 
                     continue
-
-                # implicit?
 
                 if not first and not operandNode.attrib.get('opmask', '') == '1':
                     str_template += ', '
@@ -356,84 +345,9 @@ class X86_Context(iwho.Context):
                     str_template += ' '
                     first = False
 
-                op_name = operandNode.attrib['name']
-                read = operandNode.attrib.get('r', '0') == '1'
-                written = operandNode.attrib.get('w', '0') == '1'
-
-                if operandNode.attrib['type'] == 'reg':
-                    registers = operandNode.text.split(',')
-                    allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
-                    constraint = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
-                    op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written)
-                    explicit_operands[op_name] = op_scheme
-
-                    if not operandNode.attrib.get('opmask', '') == '1':
-                        str_template += "${" + op_name + "}"
-                    else:
-                        str_template += "{${" + op_name + "}}"
-                        if instrNode.attrib.get('zeroing', '') == '1':
-                            str_template += '{z}'
-                elif operandNode.attrib['type'] == 'mem':
-                    memoryPrefix = operandNode.attrib.get('memory-prefix', '')
-                    if memoryPrefix:
-                        str_template += memoryPrefix + ' '
-
-                    if operandNode.attrib.get('VSIB', '0') != '0':
-                        raise iwho.UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
-                        # TODO
-                        str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
-                    else:
-                        str_template += "${" + op_name + "}"
-                        width = str(operandNode.attrib.get('width'))
-                        constraint = self.dedup_store.get(X86_MemConstraint, width=width)
-                        op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written)
-                        explicit_operands[op_name] = op_scheme
-
-                    memorySuffix = operandNode.attrib.get('memory-suffix', '')
-                    if memorySuffix:
-                        str_template += ' ' + memorySuffix
-                elif operandNode.attrib['type'] == 'agen':
-                    agen = instrNode.attrib['agen']
-                    # address = []
-
-                    # if 'R' in agen: address.append('RIP')
-                    # if 'B' in agen: address.append('RAX')
-                    # if 'IS' in agen: address.append('2*RBX')
-                    # elif 'I' in agen: address.append('1*RBX')
-                    # if 'D8' in agen: address.append('8')
-                    # if 'D32' in agen: address.append('128')
-                    #
-                    # asm += ' [' + '+'.join(address) + ']'
-                    str_template += "${" + op_name + "}"
-                    # agen memory operands are neither read nor written
-                    constraint = self.dedup_store.get(X86_MemConstraint, width=0)
-                    op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False)
-                    explicit_operands[op_name] = op_scheme
-                elif operandNode.attrib['type'] == 'imm':
-                    # TODO make immediate constraint, add operand
-                    if instrNode.attrib.get('roundc', '') == '1':
-                        str_template += '{rn-sae}, '
-                    elif instrNode.attrib.get('sae', '') == '1':
-                        str_template += '{sae}, '
-                    str_template += "${" + op_name + "}"
-
-                    width = int(operandNode.attrib['width'])
-                    imm_kind = X86_ImmKind.INT
-                    # TODO right kind?
-                    if operandNode.text is not None:
-                        imm = operandNode.text
-                        op = self.dedup_store.get(X86_ImmediateOperand, imm_kind=imm_kind, width=width, value=imm)
-                        op_scheme = self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False)
-                    else:
-                        constraint = self.dedup_store.get(X86_ImmConstraint, imm_kind=imm_kind, width=width)
-                        op_scheme = self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False)
-
-                    explicit_operands[op_name] = op_scheme
-
-                elif operandNode.attrib['type'] == 'relbr':
-                    # str_template = '1: ' + str_template + '1b'
-                    # TODO
-                    raise UnsupportedFeatureError("relbr instruction")
+                op_schemes, op_name, str_template = self.handle_uops_info_operand(operandNode, instrNode, str_template)
+                assert len(op_schemes) == 1
+                explicit_operands[op_name] = op_schemes[0]
 
             if not 'sae' in str_template:
                 if instrNode.attrib.get('roundc', '') == '1':
@@ -445,6 +359,105 @@ class X86_Context(iwho.Context):
             scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
             self.insn_schemes.append(scheme)
+
+    def handle_uops_info_operand(self, operandNode, instrNode, str_template=""):
+        op_schemes = []
+        op_name = operandNode.attrib['name']
+
+        read = operandNode.attrib.get('r', '0') == '1'
+        written = operandNode.attrib.get('w', '0') == '1'
+
+        op_type = operandNode.attrib['type']
+        if op_type == 'reg':
+            registers = operandNode.text.split(',')
+            allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
+            constraint = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+            op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
+
+            if not operandNode.attrib.get('opmask', '') == '1':
+                str_template += "${" + op_name + "}"
+            else:
+                str_template += "{${" + op_name + "}}"
+                if instrNode.attrib.get('zeroing', '') == '1':
+                    str_template += '{z}'
+        elif op_type == 'mem':
+            memoryPrefix = operandNode.attrib.get('memory-prefix', '')
+            if memoryPrefix:
+                str_template += memoryPrefix + ' '
+
+            if operandNode.attrib.get('VSIB', '0') != '0':
+                raise iwho.UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
+                # TODO
+                str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
+            else:
+                str_template += "${" + op_name + "}"
+                width = str(operandNode.attrib.get('width'))
+                constraint = self.dedup_store.get(X86_MemConstraint, width=width)
+                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
+
+            memorySuffix = operandNode.attrib.get('memory-suffix', '')
+            if memorySuffix:
+                str_template += ' ' + memorySuffix
+
+        elif op_type == 'agen':
+            # agen = instrNode.attrib['agen']
+            # address = []
+
+            # if 'R' in agen: address.append('RIP')
+            # if 'B' in agen: address.append('RAX')
+            # if 'IS' in agen: address.append('2*RBX')
+            # elif 'I' in agen: address.append('1*RBX')
+            # if 'D8' in agen: address.append('8')
+            # if 'D32' in agen: address.append('128')
+            #
+            # asm += ' [' + '+'.join(address) + ']'
+            str_template += "${" + op_name + "}"
+            # agen memory operands are neither read nor written
+            constraint = self.dedup_store.get(X86_MemConstraint, width=0)
+            op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
+
+        elif op_type == 'imm':
+            if instrNode.attrib.get('roundc', '') == '1':
+                str_template += '{rn-sae}, '
+            elif instrNode.attrib.get('sae', '') == '1':
+                str_template += '{sae}, '
+            str_template += "${" + op_name + "}"
+
+            width = int(operandNode.attrib['width'])
+            imm_kind = X86_ImmKind.INT
+            # TODO right kind?
+            if operandNode.text is not None:
+                imm = operandNode.text
+                op = self.dedup_store.get(X86_ImmediateOperand, imm_kind=imm_kind, width=width, value=imm)
+                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
+            else:
+                constraint = self.dedup_store.get(X86_ImmConstraint, imm_kind=imm_kind, width=width)
+                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
+
+        # elif op_type == 'relbr':
+            # str_template = '1: ' + str_template + '1b'
+            # TODO
+        elif op_type == 'flags':
+            for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
+                fval = operandNode.attrib.get(f, '')
+                read = False
+                written = False
+                if fval == "w":
+                    written = True
+                elif fval == "r":
+                    read = True
+                elif fval == "r/w":
+                    read = True
+                    written = True
+                elif fval == "undef":
+                    written = True
+                reg = self.all_registers[f]
+                op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
+
+        else:
+            raise iwho.UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
+
+        return op_schemes, op_name, str_template
 
 
     def disassemble(self, data):

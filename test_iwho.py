@@ -123,6 +123,7 @@ def test_uops_info_parsing():
 
     for scheme in ctx.insn_schemes:
         print(scheme)
+        print(repr(scheme))
 
 if __name__ == "__main__":
     from utils import init_logging
@@ -131,4 +132,5 @@ if __name__ == "__main__":
     # test_construct_insn()
     test_uops_info_parsing()
 
-    test_construct_memory_op()
+    # test_construct_memory_op()
+
