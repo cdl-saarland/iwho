@@ -12,6 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class X86_RegAliasClass(Enum):
+    # general purpose registers
     GPR_A = auto()
     GPR_B = auto()
     GPR_C = auto()
@@ -30,6 +31,51 @@ class X86_RegAliasClass(Enum):
     GPR_R14 = auto()
     GPR_R15 = auto()
 
+    # SSE/AVX vector registers
+    vMM_0 = auto()
+    vMM_1 = auto()
+    vMM_2 = auto()
+    vMM_3 = auto()
+    vMM_4 = auto()
+    vMM_5 = auto()
+    vMM_6 = auto()
+    vMM_7 = auto()
+    vMM_8 = auto()
+    vMM_9 = auto()
+    vMM_10 = auto()
+    vMM_11 = auto()
+    vMM_12 = auto()
+    vMM_13 = auto()
+    vMM_14 = auto()
+    vMM_15 = auto()
+    vMM_16 = auto() # AVX512 added 16:31
+    vMM_17 = auto()
+    vMM_18 = auto()
+    vMM_19 = auto()
+    vMM_20 = auto()
+    vMM_21 = auto()
+    vMM_22 = auto()
+    vMM_23 = auto()
+    vMM_24 = auto()
+    vMM_25 = auto()
+    vMM_26 = auto()
+    vMM_27 = auto()
+    vMM_28 = auto()
+    vMM_29 = auto()
+    vMM_30 = auto()
+    vMM_31 = auto()
+
+    # AVX512 mask registers, these alias with the x87 and the MMX registers
+    K_0 = auto()
+    K_1 = auto()
+    K_2 = auto()
+    K_3 = auto()
+    K_4 = auto()
+    K_5 = auto()
+    K_6 = auto()
+    K_7 = auto()
+
+    # Flag registers
     FLAG_AF = auto()
     FLAG_CF = auto()
     FLAG_OF = auto()
@@ -41,6 +87,7 @@ class X86_RegKind(Enum):
     GPR = auto()
     FLAG = auto()
     vMM = auto()
+    MASK = auto()
 
 class X86_RegisterOperand(iwho.Operand):
     def __init__(self, name: str, alias_class: X86_RegAliasClass, kind: X86_RegKind, width: int):
@@ -236,7 +283,9 @@ class X86_Context(iwho.Context):
     def __init__(self):
         self.all_registers = dict()
         self.gp_regs = []
+        self.vmm_regs = []
         self.flag_regs = []
+        self.mask_regs = []
 
         self.insn_schemes = []
 
@@ -272,7 +321,53 @@ class X86_Context(iwho.Context):
         add_gpr_aliases((("R14B", 8), ("R14W", 16), ("R14D", 32), ("R14", 64)), X86_RegAliasClass.GPR_R14)
         add_gpr_aliases((("R15B", 8), ("R15W", 16), ("R15D", 32), ("R15", 64)), X86_RegAliasClass.GPR_R15)
 
-        # TODO vector registers, ...
+        # vector registers
+        def add_vmm_aliases(names_and_widths, alias_class):
+            for n, w in names_and_widths:
+                assert n not in self.all_registers.keys()
+                regop = X86_RegisterOperand(name=n, alias_class=alias_class, kind=X86_RegKind.vMM, width=w)
+                self.all_registers[n] = regop
+                self.vmm_regs.append(regop)
+
+        all_vmm_classes = [
+                X86_RegAliasClass.vMM_0, X86_RegAliasClass.vMM_1,
+                X86_RegAliasClass.vMM_2, X86_RegAliasClass.vMM_3,
+                X86_RegAliasClass.vMM_4, X86_RegAliasClass.vMM_5,
+                X86_RegAliasClass.vMM_6, X86_RegAliasClass.vMM_7,
+                X86_RegAliasClass.vMM_8, X86_RegAliasClass.vMM_9,
+                X86_RegAliasClass.vMM_10, X86_RegAliasClass.vMM_11,
+                X86_RegAliasClass.vMM_12, X86_RegAliasClass.vMM_13,
+                X86_RegAliasClass.vMM_14, X86_RegAliasClass.vMM_15,
+                X86_RegAliasClass.vMM_16, X86_RegAliasClass.vMM_17,
+                X86_RegAliasClass.vMM_18, X86_RegAliasClass.vMM_19,
+                X86_RegAliasClass.vMM_20, X86_RegAliasClass.vMM_21,
+                X86_RegAliasClass.vMM_22, X86_RegAliasClass.vMM_23,
+                X86_RegAliasClass.vMM_24, X86_RegAliasClass.vMM_25,
+                X86_RegAliasClass.vMM_26, X86_RegAliasClass.vMM_27,
+                X86_RegAliasClass.vMM_28, X86_RegAliasClass.vMM_29,
+                X86_RegAliasClass.vMM_30, X86_RegAliasClass.vMM_31,
+            ]
+
+        for n, cls in enumerate(all_vmm_classes):
+            add_vmm_aliases(((f"XMM{n}", 128), (f"YMM{n}", 256), (f"ZMM{n}", 512)), cls)
+
+        # TODO other registers
+
+        def add_mask_reg(name, alias_class):
+            assert name not in self.all_registers.keys()
+            regop = X86_RegisterOperand(name=name, alias_class=alias_class, kind=X86_RegKind.MASK, width=64)
+            self.all_registers[name] = regop
+            self.mask_regs.append(regop)
+
+        all_mask_classes = [
+                X86_RegAliasClass.K_0, X86_RegAliasClass.K_1,
+                X86_RegAliasClass.K_2, X86_RegAliasClass.K_3,
+                X86_RegAliasClass.K_4, X86_RegAliasClass.K_5,
+                X86_RegAliasClass.K_6, X86_RegAliasClass.K_7,
+            ]
+
+        for n, cls in enumerate(all_mask_classes):
+            add_mask_reg(f"K{n}", cls)
 
         # flag registers
         def add_flag_reg(name, alias_class):
@@ -293,14 +388,24 @@ class X86_Context(iwho.Context):
 
         # First, establish some names for common groups of allowed registers
         # This makes the str representation of constraints and schemes more readable
+        def intro_name_for_reg_group(name, group):
+            assert len(group) > 0
+            if isinstance(next(iter(group)), str):
+                group = map(lambda x: self.all_registers[x], group)
+            obj = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(group))
+            obj.name = name
+
         groups = defaultdict(list)
         for k, regop in self.all_registers.items():
             if "IP" not in k:
                 groups[(regop.kind, regop.width)].append(regop)
 
         for (kind, width), group in groups.items():
-            obj = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(group))
-            obj.name = "{}:{}".format(kind.name, width)
+            intro_name_for_reg_group(f"{kind.name}:{width}", group)
+
+        intro_name_for_reg_group("K1..7", {f"K{n}" for n in range(1, 8)})
+        intro_name_for_reg_group("XMM0..15", {f"XMM{n}" for n in range(0, 16)})
+        intro_name_for_reg_group("YMM0..15", {f"YMM{n}" for n in range(0, 16)})
 
         import xml.etree.ElementTree as ET
 
@@ -320,7 +425,8 @@ class X86_Context(iwho.Context):
             mnemonic = str_template
 
             # TODO remove, only for testing
-            if mnemonic != "ADC":
+            # if mnemonic != "ADC":
+            if mnemonic != "VADDPD":
                 continue
 
             explicit_operands = dict()
