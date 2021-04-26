@@ -121,9 +121,9 @@ def test_uops_info_parsing():
     xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
     ctx.add_uops_info_xml(xml_path)
 
-    for scheme in ctx.insn_schemes:
-        print(scheme)
-        print(repr(scheme))
+    # for scheme in ctx.insn_schemes:
+    #     print(scheme)
+    #     print(repr(scheme))
 
 if __name__ == "__main__":
     from utils import init_logging

@@ -83,11 +83,17 @@ class X86_RegAliasClass(Enum):
     FLAG_SF = auto()
     FLAG_ZF = auto()
 
+    # some Segment Registers
+    SEG_ES = auto()
+    SEG_FS = auto()
+    SEG_GS = auto()
+
 class X86_RegKind(Enum):
     GPR = auto()
     FLAG = auto()
     vMM = auto()
     MASK = auto()
+    SEG = auto()
 
 class X86_RegisterOperand(iwho.Operand):
     def __init__(self, name: str, alias_class: X86_RegAliasClass, kind: X86_RegKind, width: int):
@@ -414,57 +420,78 @@ class X86_Context(iwho.Context):
             xml_root = ET.parse(xml_file)
         logger.debug("done parsing uops.info xml")
 
+        num_errors = 0
+
         for instrNode in xml_root.iter('instruction'):
-            # Future instruction set extensions
-            if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16', 'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET', 'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR', 'PCONFIG', 'RDPRU', 'SERIALIZE', 'SNP', 'TDX', 'TSX_LDTRK', 'UINTR', 'WAITPKG', 'WBNOINVD']:
-                continue
-            if any(x in instrNode.attrib['isa-set'] for x in ['BF16_', 'VP2INTERSECT']):
-                continue
-
-            str_template = instrNode.get('asm')
-            mnemonic = str_template
-
-            # TODO remove, only for testing
-            # if mnemonic != "ADC":
-            if mnemonic != "VADDPD":
-                continue
-
-            explicit_operands = dict()
-            implicit_operands = []
-
-            first = True
-            for operandNode in instrNode.iter('operand'):
-                operandIdx = int(operandNode.attrib['idx'])
-
-                if operandNode.attrib.get('suppressed', '0') == '1':
-                    # implicit operands (here marked as suppressed)
-                    op_type = operandNode.attrib['type']
-
-                    op_schemes, t1, t2 = self.handle_uops_info_operand(operandNode, instrNode)
-                    implicit_operands += op_schemes
-
+            try:
+                if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'COND_BR', 'UNCOND_BR', 'CALL', 'CET', 'SYSTEM', 'SEGOP']:
+                    # Unsupported instructions
                     continue
 
-                if not first and not operandNode.attrib.get('opmask', '') == '1':
-                    str_template += ', '
-                else:
-                    str_template += ' '
-                    first = False
+                if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16',
+                        'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET',
+                        'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR',
+                        'PCONFIG', 'RDPRU', 'SERIALIZE', 'SNP', 'TDX',
+                        'TSX_LDTRK', 'UINTR', 'WAITPKG', 'WBNOINVD']:
+                    # Unsupported (future) instruction set extensions (taken
+                    # from the uops.info script)
+                    continue
 
-                op_schemes, op_name, str_template = self.handle_uops_info_operand(operandNode, instrNode, str_template)
-                assert len(op_schemes) == 1
-                explicit_operands[op_name] = op_schemes[0]
+                if any(x in instrNode.attrib['isa-set'] for x in ['BF16_', 'VP2INTERSECT']):
+                    continue
 
-            if not 'sae' in str_template:
-                if instrNode.attrib.get('roundc', '') == '1':
-                    str_template += ', {rn-sae}'
-                elif instrNode.attrib.get('sae', '') == '1':
-                    str_template += ', {sae}'
+                str_template = instrNode.get('asm')
+                mnemonic = str_template
 
-            str_template = string.Template(str_template)
-            scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
+                # TODO remove, only for testing
+                # if mnemonic != "ADC":
+                # if mnemonic != "VADDPD":
+                #     continue
 
-            self.insn_schemes.append(scheme)
+                explicit_operands = dict()
+                implicit_operands = []
+
+                first = True
+                for operandNode in instrNode.iter('operand'):
+                    operandIdx = int(operandNode.attrib['idx'])
+
+                    if operandNode.attrib.get('suppressed', '0') == '1':
+                        # implicit operands (here marked as suppressed)
+                        op_type = operandNode.attrib['type']
+
+                        op_schemes, t1, t2 = self.handle_uops_info_operand(operandNode, instrNode)
+                        implicit_operands += op_schemes
+
+                        continue
+
+                    if not first and not operandNode.attrib.get('opmask', '') == '1':
+                        str_template += ', '
+                    else:
+                        str_template += ' '
+                        first = False
+
+                    op_schemes, op_name, str_template = self.handle_uops_info_operand(operandNode, instrNode, str_template)
+                    assert len(op_schemes) == 1
+                    explicit_operands[op_name] = op_schemes[0]
+
+                if not 'sae' in str_template:
+                    if instrNode.attrib.get('roundc', '') == '1':
+                        str_template += ', {rn-sae}'
+                    elif instrNode.attrib.get('sae', '') == '1':
+                        str_template += ', {sae}'
+
+                str_template = string.Template(str_template)
+                scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
+
+                self.insn_schemes.append(scheme)
+            except Exception as e:
+                logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
+                num_errors += 1
+
+        if num_errors > 0:
+            logger.info(f"Encountered {num_errors} error(s) while processing uops.info xml.")
+
+        logger.info(f"{len(self.insn_schemes)} instruction schemes after processing uops.info xml.")
 
     def handle_uops_info_operand(self, operandNode, instrNode, str_template=""):
         op_schemes = []
@@ -476,7 +503,10 @@ class X86_Context(iwho.Context):
         op_type = operandNode.attrib['type']
         if op_type == 'reg':
             registers = operandNode.text.split(',')
-            allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
+            try:
+                allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
+            except KeyError as e:
+                raise iwho.UnsupportedFeatureError(f"Unsupported register: {e}")
             constraint = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
             op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
@@ -506,17 +536,6 @@ class X86_Context(iwho.Context):
                 str_template += ' ' + memorySuffix
 
         elif op_type == 'agen':
-            # agen = instrNode.attrib['agen']
-            # address = []
-
-            # if 'R' in agen: address.append('RIP')
-            # if 'B' in agen: address.append('RAX')
-            # if 'IS' in agen: address.append('2*RBX')
-            # elif 'I' in agen: address.append('1*RBX')
-            # if 'D8' in agen: address.append('8')
-            # if 'D32' in agen: address.append('128')
-            #
-            # asm += ' [' + '+'.join(address) + ']'
             str_template += "${" + op_name + "}"
             # agen memory operands are neither read nor written
             constraint = self.dedup_store.get(X86_MemConstraint, width=0)
