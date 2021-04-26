@@ -28,6 +28,18 @@ class UnsupportedFeatureError(IWHOError):
         super().__init__(message)
 
 
+class Context(ABC):
+
+    @abstractmethod
+    def disassemble(self, data):
+        # create an instruction instance
+        pass
+
+    @abstractmethod
+    def assemble(self, insn_instance):
+        # generate code for the instruction instance
+        pass
+
 
 class Operand(ABC):
     def additionally_read(self) -> Sequence["Operand"]:
@@ -40,10 +52,6 @@ class Operand(ABC):
 class OperandConstraint(ABC):
     @abstractmethod
     def is_valid(self, operand):
-        pass
-
-    @abstractmethod
-    def get_valid(self, not_in=[]):
         pass
 
     @abstractmethod
@@ -63,12 +71,6 @@ class SetConstraint(OperandConstraint):
 
     def is_valid(self, operand):
         return operand in self.acceptable_operands
-
-    def get_valid(self, not_in=[]):
-        diff = self.acceptable_operands - set(not_in)
-        if len(diff) == 0:
-            return None
-        return sorted(diff, key=str)[0]
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
@@ -90,9 +92,6 @@ class OperandScheme:
 
     def is_operand_valid(self, operand):
         return self.operand_constraint.is_valid(operand)
-
-    def get_valid_operand(self, not_in=[]):
-        return self.operand_constraint.get_valid(not_in=not_in)
 
     def __str__(self):
         res = ""
@@ -153,20 +152,6 @@ class InsnScheme:
         res += "  implicit_operands={},\n".format(repr(self.implicit_operands))
         res += ")"
         return res
-
-
-class Context(ABC):
-
-    @abstractmethod
-    def disassemble(self, data):
-        # create an instruction instance
-        pass
-
-    @abstractmethod
-    def assemble(self, insn_instance):
-        # generate code for the instruction instance
-        pass
-
 
 
 class InsnInstance:

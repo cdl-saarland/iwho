@@ -6,13 +6,13 @@ import string
 
 import iwho as iwho
 
-from enum import Enum, auto
+from enum import Enum
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class X86_RegisterOperand(iwho.Operand):
+class RegisterOperand(iwho.Operand):
     def __init__(self, name: str, alias_class: "X86_RegAliasClass", category: "X86_RegKind", width: int):
         self.name = name
         self.alias_class = alias_class
@@ -23,7 +23,7 @@ class X86_RegisterOperand(iwho.Operand):
         return str(self.name)
 
     def __repr__(self):
-        return "X86_RegisterOperand(name: {}, alias_class: {}, category: {}, width: {})".format(repr(self.name), self.alias_class, self.category, self.width)
+        return "RegisterOperand(name: {}, alias_class: {}, category: {}, width: {})".format(repr(self.name), self.alias_class, self.category, self.width)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name
@@ -32,11 +32,11 @@ class X86_RegisterOperand(iwho.Operand):
         return hash((self.name))
 
 
-class X86_MemoryOperand(iwho.Operand):
+class MemoryOperand(iwho.Operand):
     def __init__(self, width: int,
-                segment: Optional[X86_RegisterOperand]=None,
-                base: Optional[X86_RegisterOperand]=None,
-                index: Optional[X86_RegisterOperand]=None,
+                segment: Optional[RegisterOperand]=None,
+                base: Optional[RegisterOperand]=None,
+                index: Optional[RegisterOperand]=None,
                 scale: int=1,
                 displacement: int=0,
                 ):
@@ -83,7 +83,7 @@ class X86_MemoryOperand(iwho.Operand):
         return res
 
     def __repr__(self):
-        res = "X86_MemoryOperand(width={}, ".format(self.width)
+        res = "MemoryOperand(width={}, ".format(self.width)
         if self.segment is not None:
             res += "segment={}, ".format(repr(self.segment))
         if self.base is not None:
@@ -111,7 +111,7 @@ class X86_MemoryOperand(iwho.Operand):
     def __hash__(self):
         return hash((self.segment, self.base, self.index, self.scale, self.displacement))
 
-class X86_ImmediateOperand(iwho.Operand):
+class ImmediateOperand(iwho.Operand):
     def __init__(self, width, value):
         self.width = width
         self.value = value
@@ -120,7 +120,7 @@ class X86_ImmediateOperand(iwho.Operand):
         return str(self.value)
 
     def __repr__(self):
-        return "X86_ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
+        return "ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
@@ -131,19 +131,14 @@ class X86_ImmediateOperand(iwho.Operand):
         return hash((self.width, self.value))
 
 
-class X86_ImmConstraint(iwho.OperandConstraint):
+class ImmConstraint(iwho.OperandConstraint):
     def __init__(self, width: int):
         self.width = width
 
     def is_valid(self, operand):
-        return (isinstance(operand, X86_ImmediateOperand) and
+        return (isinstance(operand, ImmediateOperand) and
                 self.width == operand.width)
         # TODO check if the value is in range
-
-    def get_valid(self, not_in):
-
-        # TODO
-        pass
 
     def __str__(self):
         return "IMM({})".format(self.width)
@@ -156,17 +151,13 @@ class X86_ImmConstraint(iwho.OperandConstraint):
         return hash((self.width))
 
 
-class X86_MemConstraint(iwho.OperandConstraint):
+class MemConstraint(iwho.OperandConstraint):
     def __init__(self, width: int):
         self.width = width
 
     def is_valid(self, operand):
-        return (isinstance(operand, X86_MemoryOperand) and
+        return (isinstance(operand, MemoryOperand) and
                 self.width == operand.width)
-
-    def get_valid(self, not_in):
-        # TODO
-        pass
 
     def __str__(self):
         return "MEM({})".format(self.width)
@@ -193,7 +184,7 @@ class DedupStore:
         return new_res
 
 
-class X86_Context(iwho.Context):
+class Context(iwho.Context):
 
     def __init__(self):
         self.all_registers = dict()
@@ -230,7 +221,7 @@ class X86_Context(iwho.Context):
             width = int(row["width"])
 
             assert row["name"] not in self.all_registers.keys()
-            regop = X86_RegisterOperand(name=name, alias_class=alias_class, category=category, width=width)
+            regop = RegisterOperand(name=name, alias_class=alias_class, category=category, width=width)
             self.all_registers[name] = regop
 
 
@@ -268,7 +259,9 @@ class X86_Context(iwho.Context):
 
         for instrNode in xml_root.iter('instruction'):
             try:
-                if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'COND_BR', 'UNCOND_BR', 'CALL', 'CET', 'SYSTEM', 'SEGOP']:
+                if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT',
+                        'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'COND_BR',
+                        'UNCOND_BR', 'CALL', 'CET', 'SYSTEM', 'SEGOP']:
                     # Unsupported instructions
                     continue
 
@@ -286,11 +279,6 @@ class X86_Context(iwho.Context):
 
                 str_template = instrNode.get('asm')
                 mnemonic = str_template
-
-                # TODO remove, only for testing
-                # if mnemonic != "ADC":
-                # if mnemonic != "VADDPD":
-                #     continue
 
                 explicit_operands = dict()
                 implicit_operands = []
@@ -372,7 +360,7 @@ class X86_Context(iwho.Context):
             else:
                 str_template += "${" + op_name + "}"
                 width = str(operandNode.attrib.get('width'))
-                constraint = self.dedup_store.get(X86_MemConstraint, width=width)
+                constraint = self.dedup_store.get(MemConstraint, width=width)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
             memorySuffix = operandNode.attrib.get('memory-suffix', '')
@@ -382,7 +370,7 @@ class X86_Context(iwho.Context):
         elif op_type == 'agen':
             str_template += "${" + op_name + "}"
             # agen memory operands are neither read nor written
-            constraint = self.dedup_store.get(X86_MemConstraint, width=0)
+            constraint = self.dedup_store.get(MemConstraint, width=0)
             op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
         elif op_type == 'imm':
@@ -395,10 +383,10 @@ class X86_Context(iwho.Context):
             width = int(operandNode.attrib['width'])
             if operandNode.text is not None:
                 imm = operandNode.text
-                op = self.dedup_store.get(X86_ImmediateOperand, width=width, value=imm)
+                op = self.dedup_store.get(ImmediateOperand, width=width, value=imm)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
             else:
-                constraint = self.dedup_store.get(X86_ImmConstraint, width=width)
+                constraint = self.dedup_store.get(ImmConstraint, width=width)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
         # elif op_type == 'relbr':
@@ -436,5 +424,51 @@ class X86_Context(iwho.Context):
         pass
 
 
+class DefaultInstantiator:
+
+    def __init__(self, ctx: Context):
+        self.ctx = ctx
+
+    def for_insn(self, insn_scheme):
+        # create an instruction instance from a scheme
+        args = dict()
+        for name, operand_scheme in insn_scheme.operand_schemes().items():
+            args[name] = self.instantiate_operand_scheme(operand_scheme)
+        return insn_scheme.instantiate(args)
+
+    def for_operand_scheme(self, operand_scheme):
+        # create an Operand instance from a scheme
+        if operand_scheme.is_fixed():
+            return operand_scheme.fixed_operand
+
+        constraint = operand_scheme.operand_constraint
+
+        if isinstance(constraint, iwho.SetConstraint):
+            return next(iter(constraint.acceptable_operands))
+        elif isinstance(constraint, MemConstraint):
+            return get_valid_memory_operand(constraint)
+        elif isinstance(constraint, ImmConstraint):
+            return get_valid_imm_operand(constraint)
+
+    def get_valid_memory_operand(mem_constraint):
+        base_reg = ctx.all_registers["RBX"]
+        displacement = 44
+
+        return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
+
+    def get_valid_imm_operand(imm_constraint):
+        val = 42
+        # if len(not_in) > 0:
+        #     not_vals = [int(x.value) for x in not_in]
+        #     max_val = max(not_vals)
+        #     val = max_val + 8
+        #     # TODO check if in range
+        return ImmediateOperand(width=self.width, val=str(val))
+
+    # def get_valid(self, not_in=[]):
+    #     diff = self.acceptable_operands - set(not_in)
+    #     if len(diff) == 0:
+    #         return None
+    #     return sorted(diff, key=str)[0]
 
 
