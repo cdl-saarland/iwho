@@ -91,7 +91,10 @@ class OperandScheme:
         return self.fixed_operand is not None
 
     def is_operand_valid(self, operand):
-        return self.operand_constraint.is_valid(operand)
+        if self.is_fixed():
+            return self.fixed_operand == operand
+        else:
+            return self.operand_constraint.is_valid(operand)
 
     def __str__(self):
         res = ""

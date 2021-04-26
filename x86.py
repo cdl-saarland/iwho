@@ -3,10 +3,20 @@ from typing import Sequence, Optional
 
 from collections import defaultdict
 import string
+import os
 
 import iwho as iwho
 
 from enum import Enum
+
+try:
+    import keystone as keystone
+    keystone_found = True
+except ImportError:
+    keystone_found = False
+
+# import tempfile
+# import subprocess
 
 import logging
 logger = logging.getLogger(__name__)
@@ -194,7 +204,6 @@ class Context(iwho.Context):
         self._add_registers()
 
     def _add_registers(self):
-        import os
         from csv import DictReader
 
         alias_class_mapping = dict()
@@ -420,8 +429,33 @@ class Context(iwho.Context):
         pass
 
     def assemble(self, insn_instance):
-        # TODO
-        pass
+        insn_str = str(insn_instance)
+        assert keystone_found
+
+        assembler = keystone.Ks(keystone.KS_ARCH_X86, keystone.KS_MODE_64)
+        code, _ = assembler.asm(insn_str)
+        return bytes(code)
+
+        # with tempfile.NamedTemporaryFile("w") as tmp_file:
+        #     tmp_file.write(insn_str)
+        #     tmp_file.flush()
+        #     tmp_name = tmp_file.name
+        #     bin_name = tmp_name + ".bin"
+        #
+        #     cmd = ["as", "-msyntax=intel", "-mnaked-reg", "-o", bin_name, tmp_name]
+        #     res = subprocess.run(cmd)
+        #
+        #     if res.returncode != 0:
+        #         err_str = "as call failed!"
+        #         raise MuAnalyzerError(err_str)
+        #
+        #     with open(bin_name, 'rb') as infile:
+        #         code, addr = extract_code(infile)
+        #
+        #     if os.path.exists(bin_name):
+        #         os.remove(bin_name)
+        # return code
+
 
 
 class DefaultInstantiator:
@@ -429,14 +463,21 @@ class DefaultInstantiator:
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
+    def __call__(self, scheme):
+        if isinstance(scheme, iwho.InsnScheme):
+            return self.for_insn(scheme)
+        elif isinstance(scheme, iwho.OperandScheme):
+            return self.for_operand(scheme)
+        raise IWHOError("trying to instantiate incompatible object: {}".format(repr(scheme)))
+
     def for_insn(self, insn_scheme):
         # create an instruction instance from a scheme
         args = dict()
-        for name, operand_scheme in insn_scheme.operand_schemes().items():
-            args[name] = self.instantiate_operand_scheme(operand_scheme)
+        for name, operand_scheme in insn_scheme.operand_schemes.items():
+            args[name] = self.for_operand(operand_scheme)
         return insn_scheme.instantiate(args)
 
-    def for_operand_scheme(self, operand_scheme):
+    def for_operand(self, operand_scheme):
         # create an Operand instance from a scheme
         if operand_scheme.is_fixed():
             return operand_scheme.fixed_operand
@@ -446,24 +487,24 @@ class DefaultInstantiator:
         if isinstance(constraint, iwho.SetConstraint):
             return next(iter(constraint.acceptable_operands))
         elif isinstance(constraint, MemConstraint):
-            return get_valid_memory_operand(constraint)
+            return self.get_valid_memory_operand(constraint)
         elif isinstance(constraint, ImmConstraint):
-            return get_valid_imm_operand(constraint)
+            return self.get_valid_imm_operand(constraint)
 
-    def get_valid_memory_operand(mem_constraint):
-        base_reg = ctx.all_registers["RBX"]
+    def get_valid_memory_operand(self, mem_constraint):
+        base_reg = self.ctx.all_registers["RBX"]
         displacement = 44
 
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
 
-    def get_valid_imm_operand(imm_constraint):
+    def get_valid_imm_operand(self, imm_constraint):
         val = 42
         # if len(not_in) > 0:
         #     not_vals = [int(x.value) for x in not_in]
         #     max_val = max(not_vals)
         #     val = max_val + 8
         #     # TODO check if in range
-        return ImmediateOperand(width=self.width, val=str(val))
+        return ImmediateOperand(width=imm_constraint.width, value=str(val))
 
     # def get_valid(self, not_in=[]):
     #     diff = self.acceptable_operands - set(not_in)

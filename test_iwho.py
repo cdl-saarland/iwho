@@ -46,8 +46,8 @@ def test_construct_insn():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor.for_operand_scheme(scheme.operand_schemes["r0"])
-    operands["r1"] = instor.for_operand_scheme(scheme.operand_schemes["r1"])
+    operands["r0"] = instor(scheme.operand_schemes["r0"])
+    operands["r1"] = instor(scheme.operand_schemes["r1"])
 
     insn = scheme.instantiate(operands)
 
@@ -82,7 +82,7 @@ def test_construct_memory_op():
 
     operands = dict()
     operands["m0"] = x86.MemoryOperand(width=64, base=ctx.all_registers["RBX"], scale=2, index=ctx.all_registers["RDX"], displacement=42)
-    operands["r0"] = instor.for_operand_scheme(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.operand_schemes["r0"])
 
     insn = scheme.instantiate(operands)
 
@@ -103,7 +103,7 @@ def test_construct_invalid_insn_op_missing():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor.for_operand_scheme(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.operand_schemes["r0"])
 
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)
@@ -115,7 +115,7 @@ def test_construct_invalid_insn_wrong_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor.for_operand_scheme(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.operand_schemes["r0"])
     operands["r1"] = x86.ImmediateOperand(32, 42)
 
     with pytest.raises(iwho.InvalidOperandsError):
@@ -127,28 +127,46 @@ def test_construct_invalid_insn_superfluous_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor.for_operand_scheme(scheme.operand_schemes["r0"])
-    operands["r1"] = instor.for_operand_scheme(scheme.operand_schemes["r1"])
-    operands["r2"] = instor.for_operand_scheme(scheme.operand_schemes["r1"])
+    operands["r0"] = instor(scheme.operand_schemes["r0"])
+    operands["r1"] = instor(scheme.operand_schemes["r1"])
+    operands["r2"] = instor(scheme.operand_schemes["r1"])
 
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)
 
-def test_uops_info_parsing():
+def make_uops_info_ctx():
     ctx = x86.Context()
     xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
     ctx.add_uops_info_xml(xml_path)
+    return ctx
 
-    # for scheme in ctx.insn_schemes:
+@pytest.fixture(scope="module")
+def uops_info_ctx():
+    return make_uops_info_ctx()
+
+def test_uops_info_parsing(uops_info_ctx):
+    pass
+
+    # for scheme in uops_info_ctx.insn_schemes:
     #     print(scheme)
     #     print(repr(scheme))
+
+def test_uops_info_instantiate_all(uops_info_ctx):
+    instor = x86.DefaultInstantiator(uops_info_ctx)
+
+    for scheme in uops_info_ctx.insn_schemes:
+        instance = instor(scheme)
+        str(instance)
+        # print(instance)
+
+
 
 if __name__ == "__main__":
     from utils import init_logging
     init_logging('debug')
 
     # test_construct_insn()
-    test_uops_info_parsing()
+    test_uops_info_parsing(make_uops_info_ctx())
 
     # test_construct_memory_op()
 
