@@ -159,6 +159,12 @@ def test_uops_info_instantiate_all(uops_info_ctx):
         str(instance)
         # print(instance)
 
+def test_uops_info_assemble_all(uops_info_ctx):
+    instor = x86.DefaultInstantiator(uops_info_ctx)
+
+    for scheme in uops_info_ctx.insn_schemes:
+        instance = instor(scheme)
+        uops_info_ctx.assemble(instance)
 
 
 if __name__ == "__main__":

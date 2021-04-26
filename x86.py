@@ -274,6 +274,9 @@ class Context(iwho.Context):
                     # Unsupported instructions
                     continue
 
+                # if any(x in instrNode.attrib['extension'] for x in ['AVX512']):
+                #     continue
+
                 if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16',
                         'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET',
                         'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR',
@@ -358,7 +361,11 @@ class Context(iwho.Context):
                 if instrNode.attrib.get('zeroing', '') == '1':
                     str_template += '{z}'
         elif op_type == 'mem':
-            memoryPrefix = operandNode.attrib.get('memory-prefix', '')
+            if instrNode.attrib.get('asm') in ["PREFETCHW", "PREFETCH"]:
+                # this might be a bug in uops.info, TODO: remove when it's fixed
+                memoryPrefix = "BYTE PTR"
+            else:
+                memoryPrefix = operandNode.attrib.get('memory-prefix', '')
             if memoryPrefix:
                 str_template += memoryPrefix + ' '
 
@@ -493,7 +500,7 @@ class DefaultInstantiator:
 
     def get_valid_memory_operand(self, mem_constraint):
         base_reg = self.ctx.all_registers["RBX"]
-        displacement = 44
+        displacement = 64
 
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
 
