@@ -108,7 +108,7 @@ def test_construct_invalid_insn_wrong_op():
 
     operands = dict()
     operands["r0"] = scheme.operand_schemes["r0"].get_valid_operand()
-    operands["r1"] = x86.X86_ImmediateOperand(x86.X86_ImmKind.INT, 32, 42)
+    operands["r1"] = x86.X86_ImmediateOperand(32, 42)
 
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)

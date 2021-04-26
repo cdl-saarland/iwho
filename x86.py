@@ -111,13 +111,8 @@ class X86_MemoryOperand(iwho.Operand):
     def __hash__(self):
         return hash((self.segment, self.base, self.index, self.scale, self.displacement))
 
-class X86_ImmKind(Enum):
-    INT = auto()
-    FLOAT = auto()
-
 class X86_ImmediateOperand(iwho.Operand):
-    def __init__(self, imm_kind: X86_ImmKind, width, value):
-        self.imm_kind = imm_kind
+    def __init__(self, width, value):
         self.width = width
         self.value = value
 
@@ -125,43 +120,40 @@ class X86_ImmediateOperand(iwho.Operand):
         return str(self.value)
 
     def __repr__(self):
-        return "X86_ImmediateOperand(imm_kind={}, width={}, value={})".format(self.imm_kind, self.width, repr(self.value))
+        return "X86_ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
-                and self.imm_kind == other.imm_kind
                 and self.width == other.width
                 and self.value == other.value)
 
     def __hash__(self):
-        return hash((self.imm_kind, self.width, self.value))
+        return hash((self.width, self.value))
 
 
 class X86_ImmConstraint(iwho.OperandConstraint):
-    def __init__(self, imm_kind: X86_ImmKind, width: int):
-        self.imm_kind = imm_kind
+    def __init__(self, width: int):
         self.width = width
 
     def is_valid(self, operand):
         return (isinstance(operand, X86_ImmediateOperand) and
-                self.width == operand.width and
-                self.imm_kind == operand.imm_kind)
+                self.width == operand.width)
         # TODO check if the value is in range
 
     def get_valid(self, not_in):
+
         # TODO
         pass
 
     def __str__(self):
-        return "IMM({},{})".format(self.imm_kind.name, self.width)
+        return "IMM({})".format(self.width)
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
-                and self.imm_kind == other.imm_kind
                 and self.width == other.width)
 
     def __hash__(self):
-        return hash((self.imm_kind, self.width))
+        return hash((self.width))
 
 
 class X86_MemConstraint(iwho.OperandConstraint):
@@ -401,14 +393,12 @@ class X86_Context(iwho.Context):
             str_template += "${" + op_name + "}"
 
             width = int(operandNode.attrib['width'])
-            imm_kind = X86_ImmKind.INT
-            # TODO right kind?
             if operandNode.text is not None:
                 imm = operandNode.text
-                op = self.dedup_store.get(X86_ImmediateOperand, imm_kind=imm_kind, width=width, value=imm)
+                op = self.dedup_store.get(X86_ImmediateOperand, width=width, value=imm)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
             else:
-                constraint = self.dedup_store.get(X86_ImmConstraint, imm_kind=imm_kind, width=width)
+                constraint = self.dedup_store.get(X86_ImmConstraint, width=width)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
         # elif op_type == 'relbr':
