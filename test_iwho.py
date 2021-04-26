@@ -16,15 +16,23 @@ sys.path.append(import_path)
 import iwho
 import x86
 
+def get_regs(ctx, category, width=None):
+    res = []
+    for k, reg in ctx.all_registers.items():
+        if (width is None or reg.width == width) and reg.category == ctx._reg_category_enum[category]:
+            res.append(reg)
+
+    return res
+
 def get_adc_scheme():
     ctx = x86.X86_Context()
     str_template = string.Template("ADC ${r0}, ${r1}")
-    isGPR64 = iwho.SetConstraint(ctx.gp_regs)
+    isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     explicit = {
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True, written=True),
             "r1": iwho.OperandScheme(constraint=isGPR64, read=True),
         }
-    implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in ctx.flag_regs]
+    implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in get_regs(ctx, "FLAG")]
     scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
     return scheme
 
@@ -55,13 +63,13 @@ def test_construct_insn():
 def test_construct_memory_op():
     ctx = x86.X86_Context()
     str_template = string.Template("ADC qword ptr ${m0}, ${r0}")
-    isGPR64 = iwho.SetConstraint(ctx.gp_regs)
+    isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     isMem64 = x86.X86_MemConstraint(64)
     explicit = {
             "m0": iwho.OperandScheme(constraint=isMem64, read=True, written=True),
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True),
         }
-    implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in ctx.flag_regs]
+    implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in get_regs(ctx, "FLAG")]
     scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
 
     print("scheme:")
