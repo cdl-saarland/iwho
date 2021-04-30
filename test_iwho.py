@@ -162,9 +162,20 @@ def test_uops_info_instantiate_all(uops_info_ctx):
 def test_uops_info_assemble_all(uops_info_ctx):
     instor = x86.DefaultInstantiator(uops_info_ctx)
 
-    for scheme in uops_info_ctx.insn_schemes:
+    num_errors = 0
+
+    for x, scheme in enumerate(uops_info_ctx.insn_schemes):
         instance = instor(scheme)
-        uops_info_ctx.assemble(instance)
+        print(f"instruction number {x} : {instance}")
+        try:
+            hex_str = uops_info_ctx.assemble_single(instance)
+            assert len(hex_str) > 0
+        except iwho.IWHOError as e:
+            print(f"error: {e}")
+            num_errors += 1
+
+    assert num_errors == 0
+
 
 
 if __name__ == "__main__":

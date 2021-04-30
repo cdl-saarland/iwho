@@ -1,22 +1,14 @@
 
 from typing import Sequence, Optional
 
+from enum import Enum
 from collections import defaultdict
-import string
 import os
+import string
+import subprocess
 
 import iwho as iwho
 
-from enum import Enum
-
-try:
-    import keystone as keystone
-    keystone_found = True
-except ImportError:
-    keystone_found = False
-
-# import tempfile
-# import subprocess
 
 import logging
 logger = logging.getLogger(__name__)
@@ -292,6 +284,9 @@ class Context(iwho.Context):
                 str_template = instrNode.get('asm')
                 mnemonic = str_template
 
+                if mnemonic in ["PREFETCHW", "PREFETCH"]:
+                    continue
+
                 explicit_operands = dict()
                 implicit_operands = []
 
@@ -361,11 +356,7 @@ class Context(iwho.Context):
                 if instrNode.attrib.get('zeroing', '') == '1':
                     str_template += '{z}'
         elif op_type == 'mem':
-            if instrNode.attrib.get('asm') in ["PREFETCHW", "PREFETCH"]:
-                # this might be a bug in uops.info, TODO: remove when it's fixed
-                memoryPrefix = "BYTE PTR"
-            else:
-                memoryPrefix = operandNode.attrib.get('memory-prefix', '')
+            memoryPrefix = operandNode.attrib.get('memory-prefix', '')
             if memoryPrefix:
                 str_template += memoryPrefix + ' '
 
@@ -435,13 +426,51 @@ class Context(iwho.Context):
         # TODO
         pass
 
-    def assemble(self, insn_instance):
-        insn_str = str(insn_instance)
-        assert keystone_found
 
-        assembler = keystone.Ks(keystone.KS_ARCH_X86, keystone.KS_MODE_64)
-        code, _ = assembler.asm(insn_str)
-        return bytes(code)
+    def assemble(self, insn_instances):
+        if not isinstance(insn_instances, list):
+            insn_instances = [insn_instances]
+
+        res = []
+        for ii in insn_instances:
+            res.append(self.assemble_single(ii))
+
+        return res
+
+
+    def assemble_single(self, insn_instance):
+        insn_str = str(insn_instance)
+
+        # TODO make generic
+        cmd = ["/home/ritter/projects/portmapping/xedplayground/build_XEDWrappers/enc", "-64", insn_str]
+        res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
+
+        if res.returncode != 0:
+            err_str = "instruction encoder call failed:\n" + res.stderr
+            raise iwho.IWHOError(err_str)
+
+        output = res.stdout
+
+        hex_str = ""
+
+        lines = output.split('\n')
+        for l in lines:
+            l = l.strip()
+            if len(l) == 0 or l[0] == '#':
+                continue
+            prefix = ".byte "
+            if l.startswith(prefix):
+                ls = l[len(prefix):]
+                hex_line = "".join(map(lambda x: x[2:], ls.split(",")))
+                if not all(map(lambda c: c in "0123456789abcdef", hex_line)):
+                    err_str = "unexpected output line from encoder (not a hex string):\n" + l
+                    raise iwho.IWHOError(err_str)
+                hex_str += hex_line
+            else:
+                err_str = "unexpected output line from encoder:\n" + l
+                raise iwho.IWHOError(err_str)
+
+        return hex_str
 
         # with tempfile.NamedTemporaryFile("w") as tmp_file:
         #     tmp_file.write(insn_str)
@@ -462,6 +491,66 @@ class Context(iwho.Context):
         #     if os.path.exists(bin_name):
         #         os.remove(bin_name)
         # return code
+
+
+# def scheme_for_insnstr(ctx: Context, insnstr: str):
+#     insnstr = insnstr.toupper()
+#
+#     tokens = []
+#     i = 0
+#     L = len(insnstr)
+#     while i < L:
+#         c = insnstr[i]
+#         if c.isspace():
+#             i += 1
+#         elif c == '{':
+#             prefix = ""
+#             while insnstr[i] != '}': # TODO check for overflow
+#                 if not insnstr[i].isspace():
+#                     prefix += insnstr[i]
+#                 i += 1
+#             prefix += insnstr[i]
+#             i += 1
+#             tokens.append(prefix)
+#         elif c == '[':
+#             memop = ""
+#             while insnstr[i] != ']': # TODO check for overflow
+#                 if not insnstr[i].isspace():
+#                     memop += insnstr[i]
+#                 i += 1
+#             memop += insnstr[i]
+#             i += 1
+#             tokens.append(memop)
+#         else:
+#             for prefix in ["BYTE PTR", "WORD PTR", "DWORD PTR", "QWORD PTR", "XMMWORD PTR", "YMMWORD PTR", "ZMMWORD PTR"]:
+#                 if insnstr[i:].startswith(prefix):
+#                     i += len(prefix)
+#                     tokens += prefix
+#                     break
+#             else:
+#                 token = ""
+#                 while i < L and not insnstr[i].isspace():
+#                     token += insnstr[i]
+#                     i += 1
+#                 tokens.append(token)
+#
+#
+#
+#
+#
+#
+#     tokens = insnstr.split()))
+#     try:
+#         # the first token after the prefixes (which are wrapped in {...}) is
+#         # the mnemonic
+#         mnemonic = next(iter(filter(lambda x: x[0] != '{', tokens)))
+#     except Exception as e:
+#         # TODO raise some more informative exception instead?
+#         return None
+#
+#     candidates = context.schemes_for_mnemonics[mnemonic]
+
+
 
 
 
