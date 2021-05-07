@@ -73,11 +73,11 @@ class MemoryOperand(iwho.Operand):
 
         if self.index is not None:
             offset = ""
-            if self.scale is not None:
+            if self.scale != 1:
                 offset += "{}*".format(str(self.scale))
             offset += str(self.index)
             parts.append(offset)
-        if self.displacement is not None:
+        if self.displacement != 0:
             parts.append(str(self.displacement))
 
         res += "+".join(parts)
@@ -92,9 +92,9 @@ class MemoryOperand(iwho.Operand):
             res += "base={}, ".format(repr(self.base))
         if self.index is not None:
             res += "index={}, ".format(repr(self.index))
-        if self.scale is not None:
+        if self.scale != 1:
             res += "scale={}, ".format(repr(self.scale))
-        if self.displacement is not None:
+        if self.displacement != 0:
             res += "displacement={}, ".format(repr(self.displacement))
         if res.endswith(', '):
             res = res[:-2]
