@@ -7,6 +7,9 @@ import os
 import string
 import subprocess
 
+from functools import cached_property
+import pyparsing as pp
+
 import iwho as iwho
 
 
@@ -143,6 +146,19 @@ class ImmConstraint(iwho.OperandConstraint):
                 self.width == operand.width)
         # TODO check if the value is in range
 
+    def from_match(self, match):
+        # a match will be a parsing result object with a single token, which is
+        # the constant
+        # assert len(match) == 1
+        imm = str(match)
+        op = self.ctx.dedup_store.get(ImmediateOperand, width=self.width, value=imm)
+        return op
+
+    @cached_property
+    def parser_pattern(self):
+        # TODO hex and other constants might be needed as well
+        return pp.pyparsing_common.integer
+
     def __str__(self):
         return "IMM({})".format(self.width)
 
@@ -162,6 +178,38 @@ class MemConstraint(iwho.OperandConstraint):
     def is_valid(self, operand):
         return (isinstance(operand, MemoryOperand) and
                 self.width == operand.width)
+
+    def from_match(self, match):
+        kwargs = dict()
+        reg_fun = lambda r: self.ctx.all_registers[r]
+        for k, fun in (("segement", reg_fun), ("base", reg_fun), ("scale", int), ("index", reg_fun), ("displacement", int)):
+            if k in match:
+                kwargs[k] = fun(match[k])
+
+        op = self.ctx.dedup_store.get(MemoryOperand, width=self.width, **kwargs)
+        return op
+
+    @cached_property
+    def parser_pattern(self):
+        int_pattern = pp.pyparsing_common.integer
+        allowed_registers = self.ctx.get_registers_where(category=self.ctx._reg_category_enum["GPR"])
+        reg_pattern = pp.MatchFirst([pp.Literal(r.name) for r in allowed_registers]) # TODO this should probably be cached
+
+        segment_registers = self.ctx.get_registers_where(category=self.ctx._reg_category_enum["SEGMENT"])
+        seg_pattern = pp.MatchFirst([pp.Literal(r.name) for r in segment_registers]) # TODO this should probably be cached
+
+        plus_or_end = (pp.Suppress(pp.Literal("+") + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
+
+        mem_pattern = pp.Suppress(pp.Literal("["))
+        mem_pattern += pp.Optional(seg_pattern.setResultsName("segment") + pp.Suppress(pp.Literal(":")))
+        mem_pattern += pp.Optional(reg_pattern.setResultsName("base") + plus_or_end)
+        mem_pattern += pp.Optional(pp.Optional( int_pattern.setResultsName("scale") + pp.Suppress(pp.Literal("*"))) + reg_pattern.setResultsName("index") + plus_or_end)
+        mem_pattern += pp.Optional(int_pattern.setResultsName("displacement"))
+        mem_pattern += pp.Suppress(pp.Literal("]"))
+
+        mem_pattern = pp.Group(mem_pattern)
+
+        return mem_pattern
 
     def __str__(self):
         return "MEM({})".format(self.width)

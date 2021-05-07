@@ -159,22 +159,110 @@ def test_uops_info_instantiate_all(uops_info_ctx):
         str(instance)
         # print(instance)
 
-def test_uops_info_assemble_all(uops_info_ctx):
-    instor = x86.DefaultInstantiator(uops_info_ctx)
 
-    num_errors = 0
+import pyparsing as pp
 
-    for x, scheme in enumerate(uops_info_ctx.insn_schemes):
-        instance = instor(scheme)
-        print(f"instruction number {x} : {instance}")
+def test_parser_adcx(uops_info_ctx):
+    ctx = uops_info_ctx
+    res = []
+    for scheme in uops_info_ctx.insn_schemes:
+        if scheme.str_template.template == "ADC ${REG0}, ${IMM0}":
+            res.append(scheme)
+
+    assert len(res) > 0
+    print("candidate schemes:")
+    for scheme in res:
+        print("  {}".format(scheme))
+
+    insn_str = "ADC RAX, 42"
+
+    matches = []
+    for scheme in res:
+        pat = scheme.parser_pattern
+        print(pat)
         try:
-            hex_str = uops_info_ctx.assemble_single(instance)
-            assert len(hex_str) > 0
-        except iwho.IWHOError as e:
-            print(f"error: {e}")
-            num_errors += 1
+            match = pat.parseString(insn_str)
+            matches.append((scheme, match))
+        except pp.ParseException as e:
+            pass
 
-    assert num_errors == 0
+    assert len(matches) > 0
+
+    print("matching scheme:")
+    scheme, match = matches[0]
+    print("  {} ; match: {}".format(scheme, match))
+
+    insn_instance = scheme.instantiate(insn_str)
+    print(repr(insn_instance))
+
+    print(insn_instance)
+    assert str(insn_instance) == insn_str
+
+
+test_insns = [
+        ("ADCX RAX, R12", "ADCX ${REG0}, ${REG1}"),
+        ("ADCX RAX, qword ptr [R12+2*RBX+42]", "ADCX ${REG0}, qword ptr ${MEM0}"),
+        ("ADCX RAX, qword ptr [R12]", "ADCX ${REG0}, qword ptr ${MEM0}"),
+        ("ADCX RAX, qword ptr [R12+42]", "ADCX ${REG0}, qword ptr ${MEM0}"),
+        ("ADCX RAX, qword ptr [4*RBX+48]", "ADCX ${REG0}, qword ptr ${MEM0}"),
+        ("ADC EAX, 42", "ADC ${REG0}, ${IMM0}"),
+    ]
+
+
+@pytest.mark.parametrize("task", test_insns)
+def test_parser_bulk(uops_info_ctx, task):
+    insn_str, template = task
+
+    print("trying to match instruction: {}".format(insn_str))
+
+    ctx = uops_info_ctx
+    res = []
+    for scheme in uops_info_ctx.insn_schemes:
+        if scheme.str_template.template == template:
+            res.append(scheme)
+
+    assert len(res) > 0
+    print("candidate schemes:")
+    for scheme in res:
+        print("  {}".format(scheme))
+
+    matches = []
+    for scheme in res:
+        pat = scheme.parser_pattern
+        try:
+            match = pat.parseString(insn_str)
+            matches.append((scheme, match))
+        except pp.ParseException as e:
+            pass
+
+    assert len(matches) > 0
+    print("matching scheme:")
+    scheme, match = matches[0]
+    print("  {} ; match: {}".format(scheme, match))
+
+    insn_instance = scheme.instantiate(insn_str)
+    print(repr(insn_instance))
+
+    assert str(insn_instance) == insn_str
+
+
+
+# def test_uops_info_assemble_all(uops_info_ctx):
+#     instor = x86.DefaultInstantiator(uops_info_ctx)
+#
+#     num_errors = 0
+#
+#     for x, scheme in enumerate(uops_info_ctx.insn_schemes):
+#         instance = instor(scheme)
+#         print(f"instruction number {x} : {instance}")
+#         try:
+#             hex_str = uops_info_ctx.assemble_single(instance)
+#             assert len(hex_str) > 0
+#         except iwho.IWHOError as e:
+#             print(f"error: {e}")
+#             num_errors += 1
+#
+#     assert num_errors == 0
 
 
 
@@ -183,7 +271,8 @@ if __name__ == "__main__":
     init_logging('debug')
 
     # test_construct_insn()
-    test_uops_info_parsing(make_uops_info_ctx())
+    # test_uops_info_parsing(make_uops_info_ctx())
+    test_parser_adcx(make_uops_info_ctx())
 
     # test_construct_memory_op()
 

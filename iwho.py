@@ -52,6 +52,10 @@ class Operand(ABC):
     def additionally_written(self) -> Sequence["Operand"]:
         return []
 
+    @property
+    def parser_pattern(self):
+        return pp.Literal(str(self))
+
 
 class OperandConstraint(ABC):
     @abstractmethod
@@ -62,10 +66,19 @@ class OperandConstraint(ABC):
     def __str__(self):
         pass
 
+    @abstractmethod
+    def from_match(self, match):
+        pass
+
+    @property
+    @abstractmethod
+    def parser_pattern(self):
+        pass
+
 class SetConstraint(OperandConstraint):
     def __init__(self, acceptable_operands):
         self.name = None
-        self.acceptable_operands = frozenset(acceptable_operands)
+        self.acceptable_operands = tuple(set(acceptable_operands))
 
     def __str__(self):
         if self.name is not None:
@@ -75,6 +88,21 @@ class SetConstraint(OperandConstraint):
 
     def is_valid(self, operand):
         return operand in self.acceptable_operands
+
+    def from_match(self, match):
+        assert len(match) == 1
+
+        # unwrap the pp.Group
+        match = match[0]
+
+        keys = list(match.keys())
+        assert len(keys) == 1
+        key  = keys[0]
+        return self.acceptable_operands[int(key)]
+
+    @cached_property
+    def parser_pattern(self):
+        return pp.MatchFirst([pp.Group(o.parser_pattern.setResultsName(str(x))) for x, o in enumerate(self.acceptable_operands)])
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
@@ -99,6 +127,19 @@ class OperandScheme:
             return self.fixed_operand == operand
         else:
             return self.operand_constraint.is_valid(operand)
+
+    def from_match(self, match):
+        if self.is_fixed():
+            return self.fixed_operand.from_match(match)
+        else:
+            return self.operand_constraint.from_match(match)
+
+    @property
+    def parser_pattern(self):
+        if self.is_fixed():
+            return self.fixed_operand.parser_pattern
+        else:
+            return self.operand_constraint.parser_pattern
 
     def __str__(self):
         res = ""
@@ -134,7 +175,48 @@ class InsnScheme:
         # TODO check whether operand_schemes and str_template match
 
     def instantiate(self, args):
+        if isinstance(args, str):
+            match = self.parser_pattern.parseString(args) # TODO try except
+
+            args = dict()
+
+            for key, op_scheme in self._operand_schemes.items():
+                sub_match = match[key]
+                args[key] = op_scheme.from_match(sub_match)
+
+            # TODO an extra case for a pattern match could be helpful
+
+        assert isinstance(args, dict)
+
         return InsnInstance(scheme=self, operands=args)
+
+    @cached_property
+    def parser_pattern(self):
+        template_str = self._str_template.template
+
+        fragments = template_str.split("${")
+        # This separates an instruction template string with N operands into
+        # N + 1 strings. Every one except the first one starts with the key of
+        # an operand followed by a '}'.
+
+        assert len(fragments) > 0
+
+        pattern = pp.Suppress(pp.Empty())
+
+        first = True
+        for frag in fragments:
+            if not first:
+                key, frag = frag.split("}", maxsplit=1)
+                op_pattern = self._operand_schemes[key].parser_pattern
+                pattern += op_pattern.setResultsName(key)
+
+            first = False
+
+            for f in frag.split():
+                pattern += pp.Suppress(pp.Literal(f))
+
+        return pattern
+
 
     @property
     def str_template(self):
