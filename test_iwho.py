@@ -66,7 +66,7 @@ def test_construct_memory_op():
     ctx = x86.Context()
     str_template = "ADC qword ptr ${m0}, ${r0}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
-    isMem64 = x86.MemConstraint(64)
+    isMem64 = x86.MemConstraint(ctx, 64)
     explicit = {
             "m0": iwho.OperandScheme(constraint=isMem64, read=True, written=True),
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True),

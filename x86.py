@@ -134,7 +134,8 @@ class ImmediateOperand(iwho.Operand):
 
 
 class ImmConstraint(iwho.OperandConstraint):
-    def __init__(self, width: int):
+    def __init__(self, context: "Context", width: int):
+        self.ctx = context
         self.width = width
 
     def is_valid(self, operand):
@@ -154,7 +155,8 @@ class ImmConstraint(iwho.OperandConstraint):
 
 
 class MemConstraint(iwho.OperandConstraint):
-    def __init__(self, width: int):
+    def __init__(self, context: "Context", width: int):
+        self.ctx = context
         self.width = width
 
     def is_valid(self, operand):
@@ -175,13 +177,13 @@ class DedupStore:
     def __init__(self):
         self.stores = defaultdict(dict)
 
-    def get(self, constructor, **kwargs):
+    def get(self, constructor, unhashed_kwargs=dict(), **kwargs):
         store = self.stores[constructor]
         key = tuple(sorted(kwargs.items(), key=lambda x: x[0]))
         stored_res = store.get(key, None)
         if stored_res is not None:
             return stored_res
-        new_res = constructor(**kwargs)
+        new_res = constructor(**unhashed_kwargs, **kwargs)
         store[key] = new_res
         return new_res
 
@@ -366,7 +368,7 @@ class Context(iwho.Context):
             else:
                 str_template += "${" + op_name + "}"
                 width = str(operandNode.attrib.get('width'))
-                constraint = self.dedup_store.get(MemConstraint, width=width)
+                constraint = self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=width)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
             memorySuffix = operandNode.attrib.get('memory-suffix', '')
@@ -376,7 +378,7 @@ class Context(iwho.Context):
         elif op_type == 'agen':
             str_template += "${" + op_name + "}"
             # agen memory operands are neither read nor written
-            constraint = self.dedup_store.get(MemConstraint, width=0)
+            constraint = self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=0)
             op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
         elif op_type == 'imm':
@@ -392,7 +394,7 @@ class Context(iwho.Context):
                 op = self.dedup_store.get(ImmediateOperand, width=width, value=imm)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
             else:
-                constraint = self.dedup_store.get(ImmConstraint, width=width)
+                constraint = self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=width)
                 op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
         # elif op_type == 'relbr':
