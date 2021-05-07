@@ -197,6 +197,24 @@ class Context(iwho.Context):
 
         self._add_registers()
 
+    def get_registers_where(self, *, name=None, alias_class=None, category=None):
+        # TODO this could benefit from an index
+
+        it = tuple(( reg_op for k, reg_op in self.all_registers.items() ))
+
+        for key, cond in (("name", name), ("alias_class", alias_class), ("category", category)):
+            if cond is not None:
+                it = tuple(filter(lambda x: getattr(x, key) == cond, it))
+
+        return it
+
+
+    class CSVKeywords:
+        name = 'name'
+        alias_class = 'alias_class'
+        category = 'category'
+        width = 'width'
+
     def _add_registers(self):
         from csv import DictReader
 
@@ -211,17 +229,17 @@ class Context(iwho.Context):
 
         # create enums for the alias classes (aliasing registers have the same
         # alias class) and categories
-        alias_classes = { row['alias_class'] for row in data }
-        categories = { row['category'] for row in data }
+        alias_classes = { row[self.CSVKeywords.alias_class] for row in data }
+        categories = { row[self.CSVKeywords.category] for row in data }
 
         self._reg_alias_class_enum = Enum('X86_RegAliasClass', sorted(alias_classes), module="__name__")
         self._reg_category_enum = Enum('X86_RegKind', sorted(categories), module="__name__")
 
         for row in data:
-            name = row["name"]
-            alias_class = self._reg_alias_class_enum[row["alias_class"]]
-            category = self._reg_category_enum[row["category"]]
-            width = int(row["width"])
+            name = row[self.CSVKeywords.name]
+            alias_class = self._reg_alias_class_enum[row[self.CSVKeywords.alias_class]]
+            category = self._reg_category_enum[row[self.CSVKeywords.category]]
+            width = int(row[self.CSVKeywords.width])
 
             assert row["name"] not in self.all_registers.keys()
             regop = RegisterOperand(name=name, alias_class=alias_class, category=category, width=width)
