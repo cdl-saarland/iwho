@@ -319,7 +319,6 @@ class Context(iwho.Context):
                     elif instrNode.attrib.get('sae', '') == '1':
                         str_template += ', {sae}'
 
-                str_template = string.Template(str_template)
                 scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
                 self.insn_schemes.append(scheme)

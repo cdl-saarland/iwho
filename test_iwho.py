@@ -26,7 +26,7 @@ def get_regs(ctx, category, width=None):
 
 def get_adc_scheme():
     ctx = x86.Context()
-    str_template = string.Template("ADC ${r0}, ${r1}")
+    str_template = "ADC ${r0}, ${r1}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     explicit = {
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True, written=True),
@@ -64,7 +64,7 @@ def test_construct_insn():
 
 def test_construct_memory_op():
     ctx = x86.Context()
-    str_template = string.Template("ADC qword ptr ${m0}, ${r0}")
+    str_template = "ADC qword ptr ${m0}, ${r0}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     isMem64 = x86.MemConstraint(64)
     explicit = {

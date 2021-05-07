@@ -7,6 +7,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from functools import cached_property
+import string
+
+import pyparsing as pp
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -124,7 +128,7 @@ class OperandScheme:
 
 class InsnScheme:
     def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme]):
-        self._str_template = str_template
+        self._str_template = string.Template(str_template)
         self._operand_schemes = operand_schemes
         self._implicit_operands = implicit_operands
         # TODO check whether operand_schemes and str_template match
