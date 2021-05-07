@@ -286,6 +286,9 @@ class Context(iwho.Context):
                     # Unsupported instructions
                     continue
 
+                if any(x in instrNode.attrib['isa-set'] for x in ['XOP', 'AVX512', 'LWP']):
+                    continue
+
                 # if any(x in instrNode.attrib['extension'] for x in ['AVX512']):
                 #     continue
 
@@ -302,6 +305,8 @@ class Context(iwho.Context):
                     continue
 
                 str_template = instrNode.get('asm')
+                str_template = str_template.replace("{load} ", "")
+                str_template = str_template.replace("{store} ", "")
                 mnemonic = str_template
 
                 if mnemonic in ["PREFETCHW", "PREFETCH"]:
@@ -342,6 +347,7 @@ class Context(iwho.Context):
                 scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
                 self.insn_schemes.append(scheme)
+                # TODO use a dict
             except Exception as e:
                 logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
                 num_errors += 1
