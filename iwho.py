@@ -236,6 +236,7 @@ class InsnInstance:
         return self.scheme.str_template.substitute(op_strs)
 
     def __repr__(self):
-        return "InsnInstance(scheme={}, operands={})".format(self._scheme, self._operands)
+        pretty_operands = "{\n  " + ",\n  ".join(( f"'{k}' : {repr(v)}" for k, v in self._operands.items() )) + "\n}"
+        return "InsnInstance(scheme='{}',\n operands={})".format(self._scheme, pretty_operands)
 
 
