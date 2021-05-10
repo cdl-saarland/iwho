@@ -4,6 +4,7 @@ import pytest
 
 import string
 
+from collections import namedtuple
 import os
 import sys
 
@@ -198,20 +199,39 @@ def test_parser_adcx(uops_info_ctx):
     print(insn_instance)
     assert str(insn_instance) == insn_str
 
+Task = namedtuple('Task', ['text', 'hex_str', 'template'], defaults=(None, None))
 
-test_insns = [
-        ("ADCX RAX, R12", "ADCX ${REG0}, ${REG1}"),
-        ("ADCX RAX, qword ptr [R12+2*RBX+42]", "ADCX ${REG0}, qword ptr ${MEM0}"),
-        ("ADCX RAX, qword ptr [R12]", "ADCX ${REG0}, qword ptr ${MEM0}"),
-        ("ADCX RAX, qword ptr [R12+42]", "ADCX ${REG0}, qword ptr ${MEM0}"),
-        ("ADCX RAX, qword ptr [4*RBX+48]", "ADCX ${REG0}, qword ptr ${MEM0}"),
-        ("ADC EAX, 42", "ADC ${REG0}, ${IMM0}"),
+valid_insns = [
+        Task(text="ADCX RAX, R12", hex_str="66490f38f6c4", template="ADCX ${REG0}, ${REG1}"),
+        Task(text="ADCX RAX, qword ptr [R12+RBX*2+42]", hex_str="66490f38f6445c2a", template="ADCX ${REG0}, qword ptr ${MEM0}"),
+        Task(text="ADCX RAX, qword ptr [R12]", hex_str="66490f38f60424", template="ADCX ${REG0}, qword ptr ${MEM0}"),
+        Task(text="ADCX RAX, qword ptr [R12+42]", hex_str="66490f38f644242a", template="ADCX ${REG0}, qword ptr ${MEM0}"),
+        # Task(text="ADCX RAX, qword ptr [RBX*4+48]", hex_str="0x66480f38f64330", template="ADCX ${REG0}, qword ptr ${MEM0}"),
+        # XED apparently has weird constraints on the position of the scale component in memory operands:
+        #   if a base register is present, the scale has to come after the index, if no base register is present, it has to be in front of the index.
+        Task(text="ADC EAX, 42", hex_str="83d02a", template="ADC ${REG0}, ${IMM0}"),
+
+        # b"\x01\xc0",
+        # b"\x48\x81\xc4\xc8\x00\x00\x00", # add rsp, 0xc8
+        # b"\x81\xc4\xc8\x00\x00\x00", # add esp, 0xc8
+        # b"\x48\xd1\xfe", # sar rsi, 1
+        # b"\x48\xc1\xfe\x07", # sar rsi, 7
+        # b"\x48\xd3\xfe", # sar rsi, cl
+        # b"\xd1\xfa", # sar edx, 1
+        # b"\xf3\x0f\xc2\xc8\x06", # cmpnless xmm1, xmm0
+        # b"\x4f\x11\x44\x6e\x08", # adc qword ptr [r14+2*r13+8], r8
+    ]
+
+invalid_insns = [
+        Task(text="ADDIU $V1, $zero, 1"), # that's a MIPS instruction, not an x86 one
+        Task(text="ADC UAX, 42"), # that's not a valid register (yet?)
     ]
 
 
-@pytest.mark.parametrize("task", test_insns)
+@pytest.mark.parametrize("task", valid_insns)
 def test_parser_bulk(uops_info_ctx, task):
-    insn_str, template = task
+    insn_str = task.text
+    template = task.template
 
     print("trying to match instruction: {}".format(insn_str))
 
@@ -246,6 +266,31 @@ def test_parser_bulk(uops_info_ctx, task):
     assert str(insn_instance) == insn_str
 
 
+@pytest.mark.parametrize("task", valid_insns)
+def test_matcher_success(uops_info_ctx, task):
+    # in contrast to the test_parser_bulk test, this also tests the selection
+    # of candidate schemes
+    insn_str = task.text
+    template = task.template
+
+    print("trying to match instruction: {}".format(insn_str))
+
+    ctx = uops_info_ctx
+
+    insn_instance = ctx.match_insn_str(insn_str)
+
+    print(repr(insn_instance))
+    assert str(insn_instance) == insn_str
+
+@pytest.mark.parametrize("task", invalid_insns)
+def test_matcher_fail(uops_info_ctx, task):
+    insn_str = task.text
+
+    ctx = uops_info_ctx
+
+    with pytest.raises(iwho.UnknownInstructionError):
+        insn_instance = ctx.match_insn_str(insn_str)
+
 
 # def test_uops_info_assemble_all(uops_info_ctx):
 #     instor = x86.DefaultInstantiator(uops_info_ctx)
@@ -264,6 +309,34 @@ def test_parser_bulk(uops_info_ctx, task):
 #
 #     assert num_errors == 0
 
+# def test_assemble_then_disassemble_all(uops_info_ctx):
+#     instor = x86.DefaultInstantiator(uops_info_ctx)
+#
+#     num_assemble_errors = 0
+#
+#     instances = []
+#     for x, scheme in enumerate(uops_info_ctx.insn_schemes):
+#         instance = instor(scheme)
+#         print(f"instruction number {x} : {instance}")
+#         try:
+#             hex_str = uops_info_ctx.assemble_single(instance)
+#             assert len(hex_str) > 0
+#             instances.append((instance, hex_str))
+#         except iwho.IWHOError as e:
+#             print(f"error: {e}")
+#             num_assemble_errors += 1
+#
+#     num_disassemble_errors = 0
+#
+#     for original_instance, hex_str in instances:
+#         try:
+#             new_instance = uops_info_ctx.disassemble(hex_str)
+#             assert new_instance == original_instance
+#         except iwho.IWHOError as e:
+#             print(f"error: {e}")
+#             num_disassemble_errors += 1
+#
+#     assert num_assemble_errors == 0 and num_disassemble_errors == 0
 
 
 if __name__ == "__main__":
