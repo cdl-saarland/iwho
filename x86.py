@@ -13,10 +13,6 @@ import pyparsing as pp
 import iwho as iwho
 
 
-import logging
-logger = logging.getLogger(__name__)
-
-
 def extract_mnemonic(insn_str):
     # TODO also use this in parsing
     tokens = insn_str.split()
@@ -304,6 +300,7 @@ class Context(iwho.Context):
         category = 'category'
         width = 'width'
 
+
     def _add_registers(self):
         from csv import DictReader
 
@@ -335,9 +332,7 @@ class Context(iwho.Context):
             self.all_registers[name] = regop
 
 
-    def add_uops_info_xml(self, xml_path):
-
-        # First, establish some names for common groups of allowed registers
+        # establish some names for common groups of allowed registers
         # This makes the str representation of constraints and schemes more readable
         def intro_name_for_reg_group(name, group):
             assert len(group) > 0
@@ -358,188 +353,12 @@ class Context(iwho.Context):
         intro_name_for_reg_group("XMM0..15", {f"XMM{n}" for n in range(0, 16)})
         intro_name_for_reg_group("YMM0..15", {f"YMM{n}" for n in range(0, 16)})
 
-        import xml.etree.ElementTree as ET
 
-        logger.debug("start parsing uops.info xml")
-        with open(xml_path, 'r') as xml_file:
-            xml_root = ET.parse(xml_file)
-        logger.debug("done parsing uops.info xml")
-
-        num_errors = 0
-
-        for instrNode in xml_root.iter('instruction'):
-            try:
-                if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT',
-                        'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'COND_BR',
-                        'UNCOND_BR', 'CALL', 'CET', 'SYSTEM', 'SEGOP']:
-                    # Unsupported instructions
-                    continue
-
-                if any(x in instrNode.attrib['isa-set'] for x in ['XOP', 'AVX512', 'LWP']):
-                    continue
-
-                # if any(x in instrNode.attrib['extension'] for x in ['AVX512']):
-                #     continue
-
-                if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16',
-                        'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET',
-                        'KEYLOCKER', 'KEYLOCKER_WIDE', 'MCOMMIT', 'MOVDIR',
-                        'PCONFIG', 'RDPRU', 'SERIALIZE', 'SNP', 'TDX',
-                        'TSX_LDTRK', 'UINTR', 'WAITPKG', 'WBNOINVD']:
-                    # Unsupported (future) instruction set extensions (taken
-                    # from the uops.info script)
-                    continue
-
-                if any(x in instrNode.attrib['isa-set'] for x in ['BF16_', 'VP2INTERSECT']):
-                    continue
-
-                str_template = instrNode.get('asm')
-                str_template = str_template.replace("{load} ", "")
-                str_template = str_template.replace("{store} ", "")
-                mnemonic = str_template
-
-                if mnemonic in ["PREFETCHW", "PREFETCH"]:
-                    continue
-
-                explicit_operands = dict()
-                implicit_operands = []
-
-                first = True
-                for operandNode in instrNode.iter('operand'):
-                    operandIdx = int(operandNode.attrib['idx'])
-
-                    if operandNode.attrib.get('suppressed', '0') == '1':
-                        # implicit operands (here marked as suppressed)
-                        op_type = operandNode.attrib['type']
-
-                        op_schemes, t1, t2 = self.handle_uops_info_operand(operandNode, instrNode)
-                        implicit_operands += op_schemes
-
-                        continue
-
-                    if not first and not operandNode.attrib.get('opmask', '') == '1':
-                        str_template += ', '
-                    else:
-                        str_template += ' '
-                        first = False
-
-                    op_schemes, op_name, str_template = self.handle_uops_info_operand(operandNode, instrNode, str_template)
-                    assert len(op_schemes) == 1
-                    explicit_operands[op_name] = op_schemes[0]
-
-                if not 'sae' in str_template:
-                    if instrNode.attrib.get('roundc', '') == '1':
-                        str_template += ', {rn-sae}'
-                    elif instrNode.attrib.get('sae', '') == '1':
-                        str_template += ', {sae}'
-
-                scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
-
-                self.insn_schemes.append(scheme)
-                self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
-
-            except Exception as e:
-                logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
-                num_errors += 1
-
-        if num_errors > 0:
-            logger.info(f"Encountered {num_errors} error(s) while processing uops.info xml.")
-
-        logger.info(f"{len(self.insn_schemes)} instruction schemes after processing uops.info xml.")
 
     def add_insn_scheme(self, scheme):
         self.insn_schemes.append(scheme)
         mnemonic = extract_mnemonic(scheme.str_template.template)
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
-
-    def handle_uops_info_operand(self, operandNode, instrNode, str_template=""):
-        op_schemes = []
-        op_name = operandNode.attrib['name']
-
-        read = operandNode.attrib.get('r', '0') == '1'
-        written = operandNode.attrib.get('w', '0') == '1'
-
-        op_type = operandNode.attrib['type']
-        if op_type == 'reg':
-            registers = operandNode.text.split(',')
-            try:
-                allowed_registers = frozenset(( self.all_registers[reg] for reg in registers ))
-            except KeyError as e:
-                raise iwho.UnsupportedFeatureError(f"Unsupported register: {e}")
-            constraint = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
-            op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
-
-            if not operandNode.attrib.get('opmask', '') == '1':
-                str_template += "${" + op_name + "}"
-            else:
-                str_template += "{${" + op_name + "}}"
-                if instrNode.attrib.get('zeroing', '') == '1':
-                    str_template += '{z}'
-        elif op_type == 'mem':
-            memoryPrefix = operandNode.attrib.get('memory-prefix', '')
-            if memoryPrefix:
-                str_template += memoryPrefix + ' '
-
-            if operandNode.attrib.get('VSIB', '0') != '0':
-                raise iwho.UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
-                # TODO
-                str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
-            else:
-                str_template += "${" + op_name + "}"
-                width = str(operandNode.attrib.get('width'))
-                constraint = self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=width)
-                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
-
-            memorySuffix = operandNode.attrib.get('memory-suffix', '')
-            if memorySuffix:
-                str_template += ' ' + memorySuffix
-
-        elif op_type == 'agen':
-            str_template += "${" + op_name + "}"
-            # agen memory operands are neither read nor written
-            constraint = self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=0)
-            op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
-
-        elif op_type == 'imm':
-            if instrNode.attrib.get('roundc', '') == '1':
-                str_template += '{rn-sae}, '
-            elif instrNode.attrib.get('sae', '') == '1':
-                str_template += '{sae}, '
-            str_template += "${" + op_name + "}"
-
-            width = int(operandNode.attrib['width'])
-            if operandNode.text is not None:
-                imm = operandNode.text
-                op = self.dedup_store.get(ImmediateOperand, width=width, value=imm)
-                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
-            else:
-                constraint = self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=width)
-                op_schemes.append(self.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
-
-        # elif op_type == 'relbr':
-            # str_template = '1: ' + str_template + '1b'
-            # TODO
-        elif op_type == 'flags':
-            for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
-                fval = operandNode.attrib.get(f, '')
-                read = False
-                written = False
-                if fval == "w":
-                    written = True
-                elif fval == "r":
-                    read = True
-                elif fval == "r/w":
-                    read = True
-                    written = True
-                elif fval == "undef":
-                    written = True
-                reg = self.all_registers[f]
-                op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
-
-        else:
-            raise iwho.UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
-
-        return op_schemes, op_name, str_template
 
 
     def disassemble(self, hex_str):

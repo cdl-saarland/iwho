@@ -135,25 +135,12 @@ def test_construct_invalid_insn_superfluous_op():
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)
 
-# def make_uops_info_ctx():
-#     ctx = x86.Context()
-#     xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
-#     ctx.add_uops_info_xml(xml_path)
-#     return ctx
-
 @pytest.fixture(scope="module")
 def x86_ctx():
     from test_input import make_test_x86ctx
     return make_test_x86ctx()
 
-# def test_uops_info_parsing(uops_info_ctx):
-#     pass
-
-    # for scheme in uops_info_ctx.insn_schemes:
-    #     print(scheme)
-    #     print(repr(scheme))
-
-def test_uops_info_instantiate_all(x86_ctx):
+def test_instantiate_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)
 
     for scheme in x86_ctx.insn_schemes:
@@ -293,7 +280,7 @@ def test_matcher_fail(x86_ctx, task):
         insn_instance = ctx.match_insn_str(insn_str)
 
 
-# def test_uops_info_assemble_all(x86_ctx):
+# def test_assemble_all(x86_ctx):
 #     instor = x86.DefaultInstantiator(x86_ctx)
 #
 #     num_errors = 0

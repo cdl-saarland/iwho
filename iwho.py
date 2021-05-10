@@ -57,6 +57,13 @@ class Context(ABC):
         for insn_scheme_dict in jsondict:
             self.add_insn_scheme(InsnScheme.from_json_dict(self, insn_scheme_dict))
 
+    def to_json_dict(self):
+        # currently, that's actually a list. TODO: add a version check
+        res = []
+        for insn_scheme in self.insn_schemes:
+            res.append(insn_scheme.to_json_dict())
+        return res
+
 
 class Operand(ABC):
     def additionally_read(self) -> Sequence["Operand"]:
