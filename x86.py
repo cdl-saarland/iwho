@@ -17,6 +17,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def extract_mnemonic(insn_str):
+    # TODO also use this in parsing
+    tokens = insn_str.split()
+    for t in tokens:
+        if t.startswith("{"):
+            continue
+        return t
+    return None
+
 class RegisterOperand(iwho.Operand):
     def __init__(self, name: str, alias_class: "X86_RegAliasClass", category: "X86_RegKind", width: int):
         self.name = name
@@ -248,6 +257,10 @@ class Context(iwho.Context):
         self.insn_schemes = []
         self.dedup_store = DedupStore()
 
+        # this is an index to speed up parsing by only trying to match
+        # instruction schemes with a fitting mnemonic
+        self.mnemonic_to_insn_schemes = defaultdict(list)
+
         self._add_registers()
 
     def get_registers_where(self, *, name=None, alias_class=None, category=None):
@@ -400,7 +413,8 @@ class Context(iwho.Context):
                 scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
                 self.insn_schemes.append(scheme)
-                # TODO use a dict
+                self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
+
             except Exception as e:
                 logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
                 num_errors += 1
@@ -500,9 +514,52 @@ class Context(iwho.Context):
         return op_schemes, op_name, str_template
 
 
-    def disassemble(self, data):
-        # TODO
-        pass
+    def disassemble(self, hex_str):
+        # TODO make generic
+        cmd = ["/home/ritter/projects/portmapping/xedplayground/build_XEDWrappers/dec", hex_str]
+        res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
+
+        if res.returncode != 0:
+            err_str = "instruction decoder call failed:\n" + res.stderr
+            raise iwho.IWHOError(err_str)
+
+        output = res.stdout
+
+        insns = []
+
+        lines = output.split('\n')
+        for l in lines:
+            insn_instance = self.match_insn_str
+            insns.append(insn_instance)
+
+        return insns
+
+
+    def match_insn_str(self, insn_str):
+        insn_str = insn_str.strip()
+        mnemonic = extract_mnemonic(insn_str)
+
+        candidate_schemes = self.mnemonic_to_insn_schemes[mnemonic]
+        if len(candidate_schemes) == 0:
+            raise iwho.UnknownInstructionError(
+                    f"instruction: {insn_str}, no schemes with matching mnemonic '{mnemonic}' found")
+
+        # TODO cache that instead?
+        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
+        try:
+            match = pat.parseString(insn_str)
+        except pp.ParseException as e:
+            raise iwho.UnknownInstructionError(f"instruction: {insn_str}, ParsingError: {e.msg}")
+
+        assert len(match) == 1, "an internal pyparsing assumption is violated"
+
+        keys = list(match.keys())
+        assert len(keys) == 1, "an internal pyparsing assumption is violated"
+        key  = keys[0]
+        matching_scheme = candidate_schemes[int(key)]
+
+        # TODO deduplicate parsing
+        return matching_scheme.instantiate(insn_str)
 
 
     def assemble(self, insn_instances):
