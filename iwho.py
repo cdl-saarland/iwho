@@ -23,6 +23,10 @@ class NoValidInstanceError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
 
+class UnknownInstructionError(IWHOError):
+    def __init__(self, message):
+        super().__init__(message)
+
 class InvalidOperandsError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
@@ -92,9 +96,6 @@ class SetConstraint(OperandConstraint):
     def from_match(self, match):
         assert len(match) == 1
 
-        # unwrap the pp.Group
-        match = match[0]
-
         keys = list(match.keys())
         assert len(keys) == 1
         key  = keys[0]
@@ -102,7 +103,7 @@ class SetConstraint(OperandConstraint):
 
     @cached_property
     def parser_pattern(self):
-        return pp.MatchFirst([pp.Group(o.parser_pattern.setResultsName(str(x))) for x, o in enumerate(self.acceptable_operands)])
+        return pp.Group(pp.MatchFirst([pp.Group(o.parser_pattern).setResultsName(str(x)) for x, o in enumerate(self.acceptable_operands)]))
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
