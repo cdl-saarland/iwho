@@ -508,67 +508,6 @@ class Context(iwho.Context):
         # return code
 
 
-# def scheme_for_insnstr(ctx: Context, insnstr: str):
-#     insnstr = insnstr.toupper()
-#
-#     tokens = []
-#     i = 0
-#     L = len(insnstr)
-#     while i < L:
-#         c = insnstr[i]
-#         if c.isspace():
-#             i += 1
-#         elif c == '{':
-#             prefix = ""
-#             while insnstr[i] != '}': # TODO check for overflow
-#                 if not insnstr[i].isspace():
-#                     prefix += insnstr[i]
-#                 i += 1
-#             prefix += insnstr[i]
-#             i += 1
-#             tokens.append(prefix)
-#         elif c == '[':
-#             memop = ""
-#             while insnstr[i] != ']': # TODO check for overflow
-#                 if not insnstr[i].isspace():
-#                     memop += insnstr[i]
-#                 i += 1
-#             memop += insnstr[i]
-#             i += 1
-#             tokens.append(memop)
-#         else:
-#             for prefix in ["BYTE PTR", "WORD PTR", "DWORD PTR", "QWORD PTR", "XMMWORD PTR", "YMMWORD PTR", "ZMMWORD PTR"]:
-#                 if insnstr[i:].startswith(prefix):
-#                     i += len(prefix)
-#                     tokens += prefix
-#                     break
-#             else:
-#                 token = ""
-#                 while i < L and not insnstr[i].isspace():
-#                     token += insnstr[i]
-#                     i += 1
-#                 tokens.append(token)
-#
-#
-#
-#
-#
-#
-#     tokens = insnstr.split()))
-#     try:
-#         # the first token after the prefixes (which are wrapped in {...}) is
-#         # the mnemonic
-#         mnemonic = next(iter(filter(lambda x: x[0] != '{', tokens)))
-#     except Exception as e:
-#         # TODO raise some more informative exception instead?
-#         return None
-#
-#     candidates = context.schemes_for_mnemonics[mnemonic]
-
-
-
-
-
 class DefaultInstantiator:
 
     def __init__(self, ctx: Context):
