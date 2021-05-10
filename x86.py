@@ -76,9 +76,9 @@ class MemoryOperand(iwho.Operand):
 
         if self.index is not None:
             offset = ""
-            if self.scale != 1:
-                offset += "{}*".format(str(self.scale))
             offset += str(self.index)
+            if self.scale != 1:
+                offset += "*{}".format(str(self.scale))
             parts.append(offset)
         if self.displacement != 0:
             parts.append(str(self.displacement))
@@ -182,7 +182,7 @@ class MemConstraint(iwho.OperandConstraint):
     def from_match(self, match):
         kwargs = dict()
         reg_fun = lambda r: self.ctx.all_registers[r]
-        for k, fun in (("segement", reg_fun), ("base", reg_fun), ("scale", int), ("index", reg_fun), ("displacement", int)):
+        for k, fun in (("segement", reg_fun), ("base", reg_fun), ("index", reg_fun), ("scale", int), ("displacement", int)):
             if k in match:
                 kwargs[k] = fun(match[k])
 
@@ -200,10 +200,15 @@ class MemConstraint(iwho.OperandConstraint):
 
         plus_or_end = (pp.Suppress(pp.Literal("+") + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
 
+        # order seems to be more or less irrelevant
+        scale_and_index = (
+                (reg_pattern("index") + pp.Suppress(pp.Literal("*")) + int_pattern("scale")) |
+                (int_pattern("scale") + pp.Suppress(pp.Literal("*")) + reg_pattern("index")))
+
         mem_pattern = pp.Suppress(pp.Literal("["))
         mem_pattern += pp.Optional(seg_pattern.setResultsName("segment") + pp.Suppress(pp.Literal(":")))
         mem_pattern += pp.Optional(reg_pattern.setResultsName("base") + plus_or_end)
-        mem_pattern += pp.Optional(pp.Optional( int_pattern.setResultsName("scale") + pp.Suppress(pp.Literal("*"))) + reg_pattern.setResultsName("index") + plus_or_end)
+        mem_pattern += pp.Optional(scale_and_index + plus_or_end)
         mem_pattern += pp.Optional(int_pattern.setResultsName("displacement"))
         mem_pattern += pp.Suppress(pp.Literal("]"))
 
