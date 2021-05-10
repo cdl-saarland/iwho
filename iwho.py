@@ -48,6 +48,15 @@ class Context(ABC):
         # generate code for the instruction instance
         pass
 
+    @abstractmethod
+    def add_insn_scheme(self, scheme):
+        pass
+
+    def fill_from_json_dict(self, jsondict):
+        # currently, that's actually a list. TODO: add a version check
+        for insn_scheme_dict in jsondict:
+            self.add_insn_scheme(InsnScheme.from_json_dict(self, insn_scheme_dict))
+
 
 class Operand(ABC):
     def additionally_read(self) -> Sequence["Operand"]:
@@ -59,6 +68,10 @@ class Operand(ABC):
     @property
     def parser_pattern(self):
         return pp.Literal(str(self))
+
+    @abstractmethod
+    def to_json_dict(self):
+        pass
 
 
 class OperandConstraint(ABC):
@@ -78,6 +91,11 @@ class OperandConstraint(ABC):
     @abstractmethod
     def parser_pattern(self):
         pass
+
+    @abstractmethod
+    def to_json_dict(self):
+        pass
+
 
 class SetConstraint(OperandConstraint):
     def __init__(self, acceptable_operands):
@@ -111,6 +129,11 @@ class SetConstraint(OperandConstraint):
 
     def __hash__(self):
         return hash((self.acceptable_operands))
+
+    def to_json_dict(self):
+        return {"kind": self.__class__.__name__,
+                "acceptable_operands": [ op.to_json_dict() for op in self.acceptable_operands ],
+            }
 
 class OperandScheme:
     def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[Operand]=None, read: bool=False, written: bool=False):
@@ -159,20 +182,46 @@ class OperandScheme:
         return res
 
     def __repr__(self):
-        res = "OperandScheme("
+        return str(self.to_json_dict())
+
+    def to_json_dict(self):
+        res = {"kind": self.__class__.__name__,}
         if self.operand_constraint is not None:
-            res += "constraint: " + str(self.operand_constraint)
+            res["operand_constraint"] = self.operand_constraint.to_json_dict()
         else:
-            res += "fixed_operand={}".format(repr(self.fixed_operand))
-        res += f", read={self.is_read}, written={self.is_written})"
+            res["fixed_operand"] = self.fixed_operand.to_json_dict()
+        res["read"] = self.is_read
+        res["written"] = self.is_written
+
         return res
+
+    def from_json_dict(ctx, jsondict):
+        assert "kind" in jsondict and jsondict["kind"] == "OperandScheme"
+
+        if "operand_constraint" in jsondict:
+            operand_constraint = ctx.operand_constraint_from_json_dict(jsondict["operand_constraint"])
+            fixed_operand = None
+        else:
+            operand_constraint = None
+            fixed_operand = ctx.operand_from_json_dict(jsondict["fixed_operand"])
+
+        read = jsondict["read"]
+        written = jsondict["written"]
+
+        return ctx.dedup_store.get(OperandScheme,
+                constraint=operand_constraint,
+                fixed_operand=fixed_operand,
+                read = read,
+                written = written,
+            )
 
 
 class InsnScheme:
-    def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme]):
+    def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
         self._str_template = string.Template(str_template)
         self._operand_schemes = operand_schemes
         self._implicit_operands = implicit_operands
+        self.affects_control_flow = affects_control_flow
         # TODO check whether operand_schemes and str_template match
 
     def instantiate(self, args):
@@ -236,12 +285,29 @@ class InsnScheme:
         return self.str_template.substitute(mapping)
 
     def __repr__(self):
-        res = "InsnScheme("
-        res += "str_template={},\n".format(repr(self.str_template))
-        res += "  operand_schemes={},\n".format(repr(self.operand_schemes))
-        res += "  implicit_operands={},\n".format(repr(self.implicit_operands))
-        res += ")"
-        return res
+        return str(self.to_json_dict())
+
+    def to_json_dict(self):
+        return { "kind": self.__class__.__name__,
+                "str_template": self._str_template.template,
+                "operand_schemes": { key: op_scheme.to_json_dict() for key, op_scheme in self._operand_schemes.items()},
+                "implicit_operands": [ op_scheme.to_json_dict() for op_scheme in self._implicit_operands],
+                "affects_control_flow": self.affects_control_flow,
+            }
+
+    def from_json_dict(ctx, jsondict):
+        assert "kind" in jsondict and jsondict["kind"] == "InsnScheme"
+
+        str_template = jsondict["str_template"]
+        operand_schemes = {
+                key: OperandScheme.from_json_dict(ctx, opdict) for key, opdict in jsondict["operand_schemes"].items()}
+        implicit_operands = [OperandScheme.from_json_dict(ctx, opdict) for opdict in jsondict["implicit_operands"]]
+        affects_control_flow = jsondict["affects_control_flow"]
+
+        return InsnScheme(str_template=str_template,
+                operand_schemes=operand_schemes,
+                implicit_operands=implicit_operands,
+                affects_control_flow=affects_control_flow)
 
 
 class InsnInstance:

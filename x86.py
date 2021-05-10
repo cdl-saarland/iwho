@@ -45,6 +45,10 @@ class RegisterOperand(iwho.Operand):
     def __hash__(self):
         return hash((self.name))
 
+    def to_json_dict(self):
+        # all the other information is in the register description
+        return { "kind": "x86RegisterOperand", "name": self.name }
+
 
 class MemoryOperand(iwho.Operand):
     def __init__(self, width: int,
@@ -125,6 +129,16 @@ class MemoryOperand(iwho.Operand):
     def __hash__(self):
         return hash((self.segment, self.base, self.index, self.scale, self.displacement))
 
+    def to_json_dict(self):
+        return { "kind": "x86MemoryOperand", "width": self.width,
+                "segment": None if self.segment is None else self.segment.to_json_dict(),
+                "base": None if self.base is None else self.base.to_json_dict(),
+                "index": None if self.index is None else self.index.to_json_dict(),
+                "scale": self.scale,
+                "displacement": self.displacement,
+                }
+
+
 class ImmediateOperand(iwho.Operand):
     def __init__(self, width, value):
         self.width = width
@@ -143,6 +157,9 @@ class ImmediateOperand(iwho.Operand):
 
     def __hash__(self):
         return hash((self.width, self.value))
+
+    def to_json_dict(self):
+        return { "kind": "x86ImmediateOperand", "width": self.width, "value": self.value }
 
 
 class ImmConstraint(iwho.OperandConstraint):
@@ -177,6 +194,9 @@ class ImmConstraint(iwho.OperandConstraint):
 
     def __hash__(self):
         return hash((self.width))
+
+    def to_json_dict(self):
+        return { "kind": "x86ImmConstraint", "width": self.width }
 
 
 class MemConstraint(iwho.OperandConstraint):
@@ -234,6 +254,9 @@ class MemConstraint(iwho.OperandConstraint):
 
     def __hash__(self):
         return hash((self.width))
+
+    def to_json_dict(self):
+        return { "kind": "x86MemConstraint", "width": self.width }
 
 class DedupStore:
     def __init__(self):
@@ -424,6 +447,11 @@ class Context(iwho.Context):
 
         logger.info(f"{len(self.insn_schemes)} instruction schemes after processing uops.info xml.")
 
+    def add_insn_scheme(self, scheme):
+        self.insn_schemes.append(scheme)
+        mnemonic = extract_mnemonic(scheme.str_template.template)
+        self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
+
     def handle_uops_info_operand(self, operandNode, instrNode, str_template=""):
         op_schemes = []
         op_name = operandNode.attrib['name']
@@ -606,6 +634,39 @@ class Context(iwho.Context):
                 raise iwho.IWHOError(err_str)
 
         return hex_str
+
+    def operand_constraint_from_json_dict(self, jsondict):
+        kind = jsondict["kind"]
+        if kind == "SetConstraint":
+            acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
+            return self.dedup_store.get(iwho.SetConstraint, acceptable_operands=acceptable_operands)
+        elif kind == "x86ImmConstraint":
+            return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
+        elif kind == "x86MemConstraint":
+            return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
+        raise IWHOError("unknown operand constraint kind: '{}'".format(kind))
+
+    def operand_from_json_dict(self, jsondict):
+        kind = jsondict["kind"]
+        if kind == "x86RegisterOperand":
+            register_op = self.all_registers.get(jsondict["name"], None)
+            if register_op is None:
+                raise IWHOError("unknown register: '{}'".format(jsondict["name"]))
+            return register_op
+        elif kind == "x86ImmediateOperand":
+            return self.dedup_store.get(ImmediateOperand, width=jsondict["width"], value=jsondict["value"])
+        elif kind == "x86MemoryOperand":
+            width = jsondict["width"]
+            segment = self.operand_from_json_dict(jsondict["segment"])
+            base = self.operand_from_json_dict(jsondict["base"])
+            index = self.operand_from_json_dict(jsondict["index"])
+            scale = jsondict["scale"]
+            displacement = jsondict["displacement"]
+
+            return self.dedup_store.get(MemoryOperand, width=width, segment=segment, base=base, index=index, scale=scale, displacement=displacement)
+
+        raise IWHOError("unknown operand kind: '{}'".format(kind))
+
 
         # with tempfile.NamedTemporaryFile("w") as tmp_file:
         #     tmp_file.write(insn_str)

@@ -135,27 +135,28 @@ def test_construct_invalid_insn_superfluous_op():
     with pytest.raises(iwho.InvalidOperandsError):
         insn = scheme.instantiate(operands)
 
-def make_uops_info_ctx():
-    ctx = x86.Context()
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
-    ctx.add_uops_info_xml(xml_path)
-    return ctx
+# def make_uops_info_ctx():
+#     ctx = x86.Context()
+#     xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
+#     ctx.add_uops_info_xml(xml_path)
+#     return ctx
 
 @pytest.fixture(scope="module")
-def uops_info_ctx():
-    return make_uops_info_ctx()
+def x86_ctx():
+    from test_input import make_test_x86ctx
+    return make_test_x86ctx()
 
-def test_uops_info_parsing(uops_info_ctx):
-    pass
+# def test_uops_info_parsing(uops_info_ctx):
+#     pass
 
     # for scheme in uops_info_ctx.insn_schemes:
     #     print(scheme)
     #     print(repr(scheme))
 
-def test_uops_info_instantiate_all(uops_info_ctx):
-    instor = x86.DefaultInstantiator(uops_info_ctx)
+def test_uops_info_instantiate_all(x86_ctx):
+    instor = x86.DefaultInstantiator(x86_ctx)
 
-    for scheme in uops_info_ctx.insn_schemes:
+    for scheme in x86_ctx.insn_schemes:
         instance = instor(scheme)
         str(instance)
         # print(instance)
@@ -163,10 +164,10 @@ def test_uops_info_instantiate_all(uops_info_ctx):
 
 import pyparsing as pp
 
-def test_parser_adcx(uops_info_ctx):
-    ctx = uops_info_ctx
+def test_parser_adcx(x86_ctx):
+    ctx = x86_ctx
     res = []
-    for scheme in uops_info_ctx.insn_schemes:
+    for scheme in x86_ctx.insn_schemes:
         if scheme.str_template.template == "ADC ${REG0}, ${IMM0}":
             res.append(scheme)
 
@@ -229,15 +230,15 @@ invalid_insns = [
 
 
 @pytest.mark.parametrize("task", valid_insns)
-def test_parser_bulk(uops_info_ctx, task):
+def test_parser_bulk(x86_ctx, task):
     insn_str = task.text
     template = task.template
 
     print("trying to match instruction: {}".format(insn_str))
 
-    ctx = uops_info_ctx
+    ctx = x86_ctx
     res = []
-    for scheme in uops_info_ctx.insn_schemes:
+    for scheme in x86_ctx.insn_schemes:
         if scheme.str_template.template == template:
             res.append(scheme)
 
@@ -267,7 +268,7 @@ def test_parser_bulk(uops_info_ctx, task):
 
 
 @pytest.mark.parametrize("task", valid_insns)
-def test_matcher_success(uops_info_ctx, task):
+def test_matcher_success(x86_ctx, task):
     # in contrast to the test_parser_bulk test, this also tests the selection
     # of candidate schemes
     insn_str = task.text
@@ -275,7 +276,7 @@ def test_matcher_success(uops_info_ctx, task):
 
     print("trying to match instruction: {}".format(insn_str))
 
-    ctx = uops_info_ctx
+    ctx = x86_ctx
 
     insn_instance = ctx.match_insn_str(insn_str)
 
@@ -283,25 +284,25 @@ def test_matcher_success(uops_info_ctx, task):
     assert str(insn_instance) == insn_str
 
 @pytest.mark.parametrize("task", invalid_insns)
-def test_matcher_fail(uops_info_ctx, task):
+def test_matcher_fail(x86_ctx, task):
     insn_str = task.text
 
-    ctx = uops_info_ctx
+    ctx = x86_ctx
 
     with pytest.raises(iwho.UnknownInstructionError):
         insn_instance = ctx.match_insn_str(insn_str)
 
 
-# def test_uops_info_assemble_all(uops_info_ctx):
-#     instor = x86.DefaultInstantiator(uops_info_ctx)
+# def test_uops_info_assemble_all(x86_ctx):
+#     instor = x86.DefaultInstantiator(x86_ctx)
 #
 #     num_errors = 0
 #
-#     for x, scheme in enumerate(uops_info_ctx.insn_schemes):
+#     for x, scheme in enumerate(x86_ctx.insn_schemes):
 #         instance = instor(scheme)
 #         print(f"instruction number {x} : {instance}")
 #         try:
-#             hex_str = uops_info_ctx.assemble_single(instance)
+#             hex_str = x86_ctx.assemble_single(instance)
 #             assert len(hex_str) > 0
 #         except iwho.IWHOError as e:
 #             print(f"error: {e}")
@@ -309,17 +310,17 @@ def test_matcher_fail(uops_info_ctx, task):
 #
 #     assert num_errors == 0
 
-# def test_assemble_then_disassemble_all(uops_info_ctx):
-#     instor = x86.DefaultInstantiator(uops_info_ctx)
+# def test_assemble_then_disassemble_all(x86_ctx):
+#     instor = x86.DefaultInstantiator(x86_ctx)
 #
 #     num_assemble_errors = 0
 #
 #     instances = []
-#     for x, scheme in enumerate(uops_info_ctx.insn_schemes):
+#     for x, scheme in enumerate(x86_ctx.insn_schemes):
 #         instance = instor(scheme)
 #         print(f"instruction number {x} : {instance}")
 #         try:
-#             hex_str = uops_info_ctx.assemble_single(instance)
+#             hex_str = x86_ctx.assemble_single(instance)
 #             assert len(hex_str) > 0
 #             instances.append((instance, hex_str))
 #         except iwho.IWHOError as e:
@@ -330,7 +331,7 @@ def test_matcher_fail(uops_info_ctx, task):
 #
 #     for original_instance, hex_str in instances:
 #         try:
-#             new_instance = uops_info_ctx.disassemble(hex_str)
+#             new_instance = x86_ctx.disassemble(hex_str)
 #             assert new_instance == original_instance
 #         except iwho.IWHOError as e:
 #             print(f"error: {e}")
@@ -342,10 +343,4 @@ def test_matcher_fail(uops_info_ctx, task):
 if __name__ == "__main__":
     from utils import init_logging
     init_logging('debug')
-
-    # test_construct_insn()
-    # test_uops_info_parsing(make_uops_info_ctx())
-    test_parser_adcx(make_uops_info_ctx())
-
-    # test_construct_memory_op()
 
