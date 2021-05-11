@@ -112,6 +112,15 @@ class OperandInstance(ABC):
         """
         pass
 
+    @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def __hash__(self):
+        pass
+
+
 
 class OperandConstraint(ABC):
     """ TODO document
@@ -144,6 +153,14 @@ class OperandConstraint(ABC):
     def to_json_dict(self):
         """ TODO document
         """
+        pass
+
+    @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def __hash__(self):
         pass
 
 
@@ -290,6 +307,12 @@ class OperandScheme:
                 read = read,
                 written = written)
 
+    def __hash__(self):
+        raise NotImplementedError("No hash implemented on OperandSchemes")
+
+    def __eq__(self, other):
+        raise NotImplementedError("No equality implemented on OperandSchemes")
+
 
 class InsnScheme:
     """ TODO document
@@ -419,6 +442,11 @@ class InsnScheme:
                 implicit_operands=implicit_operands,
                 affects_control_flow=affects_control_flow)
 
+    def __hash__(self):
+        return hash((self.str_template.template,))
+
+    def __eq__(self, other):
+        raise NotImplementedError("No equality implemented on InsnSchemes")
 
 class InsnInstance:
     """ TODO document
@@ -516,4 +544,11 @@ class InsnInstance:
         pretty_operands = "{\n  " + ",\n  ".join(( f"'{k}' : {repr(v)}" for k, v in self._operands.items() )) + "\n}"
         return "InsnInstance(scheme='{}',\n operands={})".format(self._scheme, pretty_operands)
 
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self._scheme is other._scheme # schemes should be unique anyway, so we can compare references
+                and self._operands == other._operands)
+
+    def __hash__(self):
+        return hash((self._scheme, self._operands))
 
