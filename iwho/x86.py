@@ -540,14 +540,6 @@ class Context(iwho.Context):
 
         raise iwho.SchemeError("unknown operand kind: '{}'".format(kind))
 
-    @abstractmethod
-    def asm2hex(self, asm_str: str) -> str:
-        """ Turn a readable assembly string into a sequence of bytes.
-
-        Bytes are represented as a string of an even number of [0-9a-f]
-        characters, each two successive ones representing one byte.
-        """
-        pass
 
 class LLVMMCCoder(iwho.ASMCoder):
     """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
