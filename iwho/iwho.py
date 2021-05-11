@@ -132,9 +132,9 @@ class Context(ABC):
         assert len(keys) == 1, "an internal pyparsing assumption is violated"
         key  = keys[0]
         matching_scheme = candidate_schemes[int(key)]
+        submatch = match[key]
 
-        # TODO deduplicate parsing
-        return matching_scheme.instantiate(insn_str)
+        return matching_scheme.instantiate(submatch)
 
 
     def encode_insns(self, insn_instances: Sequence["InsnInstance"]) -> str:
@@ -460,7 +460,10 @@ class InsnScheme:
         """ TODO document
         """
         if isinstance(args, str):
-            match = self.parser_pattern.parseString(args) # TODO try except
+            try:
+                match = self.parser_pattern.parseString(args)
+            except pp.ParseException as e:
+                raise InstantiationError("Invalid instruction for scheme: {}".format(args))
 
             args = dict()
 
@@ -468,7 +471,13 @@ class InsnScheme:
                 sub_match = match[key]
                 args[key] = op_scheme.from_match(sub_match)
 
-            # TODO an extra case for a pattern match could be helpful
+        elif isinstance(args, pp.ParseResults):
+            match = args
+            args = dict()
+
+            for key, op_scheme in self._operand_schemes.items():
+                sub_match = match[key]
+                args[key] = op_scheme.from_match(sub_match)
 
         assert isinstance(args, dict)
 
