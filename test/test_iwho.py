@@ -194,9 +194,7 @@ valid_insns = [
         Task(text="ADCX RAX, QWORD PTR [R12 + 2*RBX + 42]", hex_str="66490f38f6445c2a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
         Task(text="ADCX RAX, QWORD PTR [R12]", hex_str="66490f38f60424", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
         Task(text="ADCX RAX, QWORD PTR [R12 + 42]", hex_str="66490f38f644242a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
-        # Task(text="ADCX RAX, qword ptr [RBX*4+48]", hex_str="0x66480f38f64330", template="ADCX ${REG0}, qword ptr ${MEM0}"),
-        # XED apparently has weird constraints on the position of the scale component in memory operands:
-        #   if a base register is present, the scale has to come after the index, if no base register is present, it has to be in front of the index.
+        # Task(text="ADCX RAX, qword ptr [4 * RBX + 48]", hex_str="66480f38f64330", template="ADCX ${REG0}, qword ptr ${MEM0}"), # TODO
         Task(text="ADC EAX, 42", hex_str="83d02a", template="ADC ${REG0}, ${IMM0}"),
 
         # b"\x01\xc0",
@@ -259,7 +257,6 @@ def test_matcher_success(x86_ctx, task):
     # in contrast to the test_parser_bulk test, this also tests the selection
     # of candidate schemes
     insn_str = task.text
-    template = task.template
 
     print("trying to match instruction: {}".format(insn_str))
 
@@ -269,6 +266,14 @@ def test_matcher_success(x86_ctx, task):
 
     print(repr(insn_instance))
     assert str(insn_instance) == insn_str
+
+def test_matcher_inclusion_order(x86_ctx):
+    # This test checks that among multiple matching schemes, the most specific
+    # is chosen.
+    insn_str = "ADC DWORD PTR [RBX + 64], 0"
+    ctx = x86_ctx
+    insn_instance = ctx.match_insn_str(insn_str)
+    assert insn_instance.scheme.operand_schemes["IMM0"].is_fixed()
 
 @pytest.mark.parametrize("task", invalid_insns)
 def test_matcher_fail(x86_ctx, task):
