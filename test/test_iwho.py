@@ -316,17 +316,18 @@ def test_llvmmc_decoder_single(task):
 
     assert asm == ref_asm
 
-# def test_llvmmc_decoder_cat():
-#     asm = ""
-#     ref_hex_str = ""
-#     for task in valid_insns:
-#         asm += task.text + "\n"
-#         ref_hex_str += task.hex_str
-#
-#     coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
-#     hex_str = coder.asm2hex(asm)
-#
-#     assert hex_str == ref_hex_str
+def test_llvmmc_decoder_cat():
+    ref_asm = ""
+    hex_str = ""
+    for task in valid_insns:
+        ref_asm += task.text + "\n"
+        hex_str += task.hex_str
+
+    coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+    asm_lines = coder.hex2asm(hex_str)
+    asm_str = "\n".join(asm_lines) + "\n"
+
+    assert asm_str == ref_asm
 
 
 # def test_assemble_all(x86_ctx):
