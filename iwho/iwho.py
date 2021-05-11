@@ -16,48 +16,61 @@ import logging
 logger = logging.getLogger(__name__)
 
 class IWHOError(Exception):
+    """ Superclass for exceptions in the package
+    """
+
     def __init__(self, message):
         self.message = message
 
-class NoValidInstanceError(IWHOError):
+class SchemeError(IWHOError):
+    """ An instruction scheme itself or a component of it is broken
+    """
+
     def __init__(self, message):
         super().__init__(message)
 
-class UnknownInstructionError(IWHOError):
-    def __init__(self, message):
-        super().__init__(message)
+class InstantiationError(IWHOError):
+    """ An error occured while instantiating a scheme
+    """
 
-class InvalidOperandsError(IWHOError):
-    def __init__(self, message):
-        super().__init__(message)
-
-class UnsupportedFeatureError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
 
 
 class Context(ABC):
+    """ TODO document
+    """
 
     @abstractmethod
-    def disassemble(self, data):
-        # create an instruction instance
+    def disassemble(self, data: str):
+        """ TODO document
+        """
         pass
 
     @abstractmethod
-    def assemble(self, insn_instance):
-        # generate code for the instruction instance
+    def assemble(self, insn_instances: Sequence["InsnInstance"]):
+        """ TODO document
+        """
         pass
 
     @abstractmethod
     def add_insn_scheme(self, scheme):
+        """ TODO document
+        """
         pass
 
     def fill_from_json_dict(self, jsondict):
+        """ TODO document
+        """
+
         # currently, that's actually a list. TODO: add a version check
         for insn_scheme_dict in jsondict:
             self.add_insn_scheme(InsnScheme.from_json_dict(self, insn_scheme_dict))
 
     def to_json_dict(self):
+        """ TODO document
+        """
+
         # currently, that's actually a list. TODO: add a version check
         res = []
         for insn_scheme in self.insn_schemes:
@@ -65,25 +78,41 @@ class Context(ABC):
         return res
 
 
-class Operand(ABC):
-    def additionally_read(self) -> Sequence["Operand"]:
+class OperandInstance(ABC):
+    """ TODO document
+    """
+
+    def additionally_read(self) -> Sequence["OperandInstance"]:
+        """ TODO document
+        """
         return []
 
-    def additionally_written(self) -> Sequence["Operand"]:
+    def additionally_written(self) -> Sequence["OperandInstance"]:
+        """ TODO document
+        """
         return []
 
     @property
     def parser_pattern(self):
+        """ TODO document
+        """
         return pp.Literal(str(self))
 
     @abstractmethod
     def to_json_dict(self):
+        """ TODO document
+        """
         pass
 
 
 class OperandConstraint(ABC):
+    """ TODO document
+    """
+
     @abstractmethod
     def is_valid(self, operand):
+        """ TODO document
+        """
         pass
 
     @abstractmethod
@@ -92,20 +121,32 @@ class OperandConstraint(ABC):
 
     @abstractmethod
     def from_match(self, match):
+        """ TODO document
+        """
         pass
 
     @property
     @abstractmethod
     def parser_pattern(self):
+        """ TODO document
+        """
         pass
 
     @abstractmethod
     def to_json_dict(self):
+        """ TODO document
+        """
         pass
 
 
 class SetConstraint(OperandConstraint):
+    """ TODO document
+    """
+
     def __init__(self, acceptable_operands):
+        """ TODO document
+        """
+
         self.name = None
         self.acceptable_operands = tuple(set(acceptable_operands))
 
@@ -142,8 +183,14 @@ class SetConstraint(OperandConstraint):
                 "acceptable_operands": [ op.to_json_dict() for op in self.acceptable_operands ],
             }
 
+
 class OperandScheme:
-    def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[Operand]=None, read: bool=False, written: bool=False):
+    """ TODO document
+    """
+
+    def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[OperandInstance]=None, read: bool=False, written: bool=False):
+        """ TODO document
+        """
         assert (constraint is None) != (fixed_operand is None)
         self.operand_constraint = constraint
         self.fixed_operand = fixed_operand
@@ -151,15 +198,21 @@ class OperandScheme:
         self.is_written = written
 
     def is_fixed(self):
+        """ TODO document
+        """
         return self.fixed_operand is not None
 
     def is_operand_valid(self, operand):
+        """ TODO document
+        """
         if self.is_fixed():
             return self.fixed_operand == operand
         else:
             return self.operand_constraint.is_valid(operand)
 
     def from_match(self, match):
+        """ TODO document
+        """
         if self.is_fixed():
             return self.fixed_operand.from_match(match)
         else:
@@ -167,6 +220,8 @@ class OperandScheme:
 
     @property
     def parser_pattern(self):
+        """ TODO document
+        """
         if self.is_fixed():
             return self.fixed_operand.parser_pattern
         else:
@@ -192,6 +247,9 @@ class OperandScheme:
         return str(self.to_json_dict())
 
     def to_json_dict(self):
+        """ TODO document
+        """
+
         res = {"kind": self.__class__.__name__,}
         if self.operand_constraint is not None:
             res["operand_constraint"] = self.operand_constraint.to_json_dict()
@@ -203,6 +261,9 @@ class OperandScheme:
         return res
 
     def from_json_dict(ctx, jsondict):
+        """ TODO document
+        """
+
         assert "kind" in jsondict and jsondict["kind"] == "OperandScheme"
 
         if "operand_constraint" in jsondict:
@@ -219,19 +280,35 @@ class OperandScheme:
                 constraint=operand_constraint,
                 fixed_operand=fixed_operand,
                 read = read,
-                written = written,
-            )
+                written = written)
 
 
 class InsnScheme:
+    """ TODO document
+    """
+
     def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
+        """ TODO document
+        """
+
         self._str_template = string.Template(str_template)
         self._operand_schemes = operand_schemes
         self._implicit_operands = implicit_operands
         self.affects_control_flow = affects_control_flow
-        # TODO check whether operand_schemes and str_template match
+
+        # check whether operand_schemes and str_template match
+        try:
+            mapping = { k: "<hole>" for k in self._operand_schemes.keys() }
+            self._str_template.substitute(mapping)
+        except (ValueError, KeyError) as e:
+            raise SchemeError("The operand schemes {} do not fit to the string template '{}'\n".format(
+                    list(self._operand_schemes.keys()), self._str_template.template) +
+                "  substitution error: {}".format(repr(e)))
+
 
     def instantiate(self, args):
+        """ TODO document
+        """
         if isinstance(args, str):
             match = self.parser_pattern.parseString(args) # TODO try except
 
@@ -249,6 +326,9 @@ class InsnScheme:
 
     @cached_property
     def parser_pattern(self):
+        """ TODO document
+        """
+
         template_str = self._str_template.template
 
         fragments = template_str.split("${")
@@ -277,14 +357,23 @@ class InsnScheme:
 
     @property
     def str_template(self):
+        """ TODO document
+        """
+
         return self._str_template
 
     @property
     def operand_schemes(self):
+        """ TODO document
+        """
+
         return self._operand_schemes
 
     @property
     def implicit_operands(self):
+        """ TODO document
+        """
+
         return self._implicit_operands
 
     def __str__(self):
@@ -295,6 +384,9 @@ class InsnScheme:
         return str(self.to_json_dict())
 
     def to_json_dict(self):
+        """ TODO document
+        """
+
         return { "kind": self.__class__.__name__,
                 "str_template": self._str_template.template,
                 "operand_schemes": { key: op_scheme.to_json_dict() for key, op_scheme in self._operand_schemes.items()},
@@ -303,6 +395,9 @@ class InsnScheme:
             }
 
     def from_json_dict(ctx, jsondict):
+        """ TODO document
+        """
+
         assert "kind" in jsondict and jsondict["kind"] == "InsnScheme"
 
         str_template = jsondict["str_template"]
@@ -318,30 +413,45 @@ class InsnScheme:
 
 
 class InsnInstance:
-    def __init__(self, scheme, operands):
+    """ TODO document
+    """
+
+    def __init__(self, scheme: InsnScheme, operands: Dict[str, OperandInstance]):
+        """ TODO document
+        """
+
         self._scheme = scheme
         self._operands = operands
         self.validate_operands()
 
     def validate_operands(self):
+        """ TODO document
+        """
+
         for k, opscheme in self.scheme.operand_schemes.items():
             if k not in self._operands:
-                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} does not specify operand {k}")
+                raise InstantiationError(f"instruction instance for scheme {self.scheme} does not specify operand {k}")
 
             opinst = self._operands[k]
             if not opscheme.is_operand_valid(opinst):
-                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} specifies invalid operand {k}: {opinst}")
+                raise InstantiationError(f"instruction instance for scheme {self.scheme} specifies invalid operand {k}: {opinst}")
 
         for k in self._operands.keys():
             if k not in self.scheme.operand_schemes:
-                raise InvalidOperandsError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
+                raise InstantiationError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
 
     @property
     def scheme(self):
+        """ TODO document
+        """
+
         return self._scheme
 
     @cached_property
     def read_operands(self):
+        """ TODO document
+        """
+
         res = []
         # all explicit operands that are read
         for k, v in self._scheme.operand_schemes.items():
@@ -366,6 +476,9 @@ class InsnInstance:
 
     @cached_property
     def written_operands(self):
+        """ TODO document
+        """
+
         res = []
         # all explicit operands that are written
         for k, v in self._scheme.operand_schemes.items():

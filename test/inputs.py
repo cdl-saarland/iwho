@@ -1,7 +1,7 @@
 
 
 import iwho
-import x86
+import iwho.x86 as x86
 
 
 def make_test_x86ctx():

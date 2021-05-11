@@ -10,10 +10,16 @@ import subprocess
 from functools import cached_property
 import pyparsing as pp
 
-import iwho as iwho
+import iwho.iwho as iwho
+from .iwho_utils import DedupStore
 
 
-def extract_mnemonic(insn_str):
+def extract_mnemonic(insn_str: str) -> str:
+    """ Extract the mnemonic from the assembly of a single instruction
+
+    Here, this is the first whitespace-separated token that does not
+    start with a brace.
+    """
     tokens = insn_str.split()
     for t in tokens:
         if t.startswith("{"):
@@ -21,8 +27,15 @@ def extract_mnemonic(insn_str):
         return t
     return None
 
-class RegisterOperand(iwho.Operand):
+
+class RegisterOperand(iwho.OperandInstance):
+    """ TODO document
+    """
+
     def __init__(self, name: str, alias_class: "X86_RegAliasClass", category: "X86_RegKind", width: int):
+        """ TODO document
+        """
+
         self.name = name
         self.alias_class = alias_class
         self.category = category
@@ -45,7 +58,10 @@ class RegisterOperand(iwho.Operand):
         return { "kind": "x86RegisterOperand", "name": self.name }
 
 
-class MemoryOperand(iwho.Operand):
+class MemoryOperand(iwho.OperandInstance):
+    """ TODO document
+    """
+
     def __init__(self, width: int,
                 segment: Optional[RegisterOperand]=None,
                 base: Optional[RegisterOperand]=None,
@@ -53,6 +69,9 @@ class MemoryOperand(iwho.Operand):
                 scale: int=1,
                 displacement: int=0,
                 ):
+        """ TODO document
+        """
+
         # address = base + index * scale + displacement
         self.width = width
         self.segment = segment
@@ -61,7 +80,10 @@ class MemoryOperand(iwho.Operand):
         self.scale = scale
         self.displacement = displacement
 
-    def additionally_read(self) -> Sequence[iwho.Operand]:
+    def additionally_read(self) -> Sequence[iwho.OperandInstance]:
+        # to evaluate a memory operand, independently of whether it is written
+        # or read (or only used for the agen in a LEA instruction), the
+        # involved address registers are read.
         res = []
         if self.segment is not None:
             res.append(self.segment)
@@ -134,68 +156,13 @@ class MemoryOperand(iwho.Operand):
                 }
 
 
-class ImmediateOperand(iwho.Operand):
-    def __init__(self, width, value):
-        self.width = width
-        self.value = value
-
-    def __str__(self):
-        return str(self.value)
-
-    def __repr__(self):
-        return "ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
-
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.width == other.width
-                and self.value == other.value)
-
-    def __hash__(self):
-        return hash((self.width, self.value))
-
-    def to_json_dict(self):
-        return { "kind": "x86ImmediateOperand", "width": self.width, "value": self.value }
-
-
-class ImmConstraint(iwho.OperandConstraint):
-    def __init__(self, context: "Context", width: int):
-        self.ctx = context
-        self.width = width
-
-    def is_valid(self, operand):
-        return (isinstance(operand, ImmediateOperand) and
-                self.width == operand.width)
-        # TODO check if the value is in range
-
-    def from_match(self, match):
-        # a match will be a parsing result object with a single token, which is
-        # the constant
-        # assert len(match) == 1
-        imm = str(match)
-        op = self.ctx.dedup_store.get(ImmediateOperand, width=self.width, value=imm)
-        return op
-
-    @cached_property
-    def parser_pattern(self):
-        # TODO hex and other constants might be needed as well
-        return pp.pyparsing_common.integer
-
-    def __str__(self):
-        return "IMM({})".format(self.width)
-
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.width == other.width)
-
-    def __hash__(self):
-        return hash((self.width))
-
-    def to_json_dict(self):
-        return { "kind": "x86ImmConstraint", "width": self.width }
-
-
 class MemConstraint(iwho.OperandConstraint):
+    """ TODO document
+    """
+
     def __init__(self, context: "Context", width: int):
+        """ TODO document
+        """
         self.ctx = context
         self.width = width
 
@@ -253,22 +220,82 @@ class MemConstraint(iwho.OperandConstraint):
     def to_json_dict(self):
         return { "kind": "x86MemConstraint", "width": self.width }
 
-class DedupStore:
-    def __init__(self):
-        self.stores = defaultdict(dict)
 
-    def get(self, constructor, unhashed_kwargs=dict(), **kwargs):
-        store = self.stores[constructor]
-        key = tuple(sorted(kwargs.items(), key=lambda x: x[0]))
-        stored_res = store.get(key, None)
-        if stored_res is not None:
-            return stored_res
-        new_res = constructor(**unhashed_kwargs, **kwargs)
-        store[key] = new_res
-        return new_res
+class ImmediateOperand(iwho.OperandInstance):
+    """ TODO document
+    """
+
+    def __init__(self, width, value):
+        """ TODO document
+        """
+        self.width = width
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return "ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.width == other.width
+                and self.value == other.value)
+
+    def __hash__(self):
+        return hash((self.width, self.value))
+
+    def to_json_dict(self):
+        return { "kind": "x86ImmediateOperand", "width": self.width, "value": self.value }
+
+
+class ImmConstraint(iwho.OperandConstraint):
+    """ TODO document
+    """
+
+    def __init__(self, context: "Context", width: int):
+        """ TODO document
+        """
+
+        self.ctx = context
+        self.width = width
+
+    def is_valid(self, operand):
+        val = int(operand.value)
+        # the union of the possible ranges if interpreted signed or unsigned
+        inbounds = -(2 ** (self.width - 1)) <= val < (2 ** (self.width))
+
+        return (isinstance(operand, ImmediateOperand) and
+                self.width == operand.width) and inbounds
+
+    def from_match(self, match):
+        # a match will be a single token, which is the constant
+        imm = str(match)
+        op = self.ctx.dedup_store.get(ImmediateOperand, width=self.width, value=imm)
+        return op
+
+    @cached_property
+    def parser_pattern(self):
+        # TODO hex and other constants might be needed as well
+        return pp.pyparsing_common.integer
+
+    def __str__(self):
+        return "IMM({})".format(self.width)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.width == other.width)
+
+    def __hash__(self):
+        return hash((self.width))
+
+    def to_json_dict(self):
+        return { "kind": "x86ImmConstraint", "width": self.width }
 
 
 class Context(iwho.Context):
+    """ TODO document
+    """
 
     def __init__(self):
         self.all_registers = dict()
@@ -282,6 +309,8 @@ class Context(iwho.Context):
         self._add_registers()
 
     def get_registers_where(self, *, name=None, alias_class=None, category=None):
+        """ TODO document
+        """
         # TODO this could benefit from an index
 
         it = tuple(( reg_op for k, reg_op in self.all_registers.items() ))
@@ -294,6 +323,9 @@ class Context(iwho.Context):
 
 
     class CSVKeywords:
+        """ TODO document
+        """
+
         name = 'name'
         alias_class = 'alias_class'
         category = 'category'
@@ -301,6 +333,9 @@ class Context(iwho.Context):
 
 
     def _add_registers(self):
+        """ TODO document
+        """
+
         from csv import DictReader
 
         alias_class_mapping = dict()
@@ -353,14 +388,19 @@ class Context(iwho.Context):
         intro_name_for_reg_group("YMM0..15", {f"YMM{n}" for n in range(0, 16)})
 
 
+    def add_insn_scheme(self, scheme: iwho.InsnScheme):
+        """ TODO document
+        """
 
-    def add_insn_scheme(self, scheme):
         self.insn_schemes.append(scheme)
         mnemonic = extract_mnemonic(scheme.str_template.template)
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
 
 
-    def disassemble(self, hex_str):
+    def disassemble(self, hex_str: str):
+        """ TODO document
+        """
+
         # TODO make generic
         cmd = ["/home/ritter/projects/portmapping/xedplayground/build_XEDWrappers/dec", hex_str]
         res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
@@ -381,13 +421,16 @@ class Context(iwho.Context):
         return insns
 
 
-    def match_insn_str(self, insn_str):
+    def match_insn_str(self, insn_str: str):
+        """ TODO document
+        """
+
         insn_str = insn_str.strip()
         mnemonic = extract_mnemonic(insn_str)
 
         candidate_schemes = self.mnemonic_to_insn_schemes[mnemonic]
         if len(candidate_schemes) == 0:
-            raise iwho.UnknownInstructionError(
+            raise iwho.InstantiationError(
                     f"instruction: {insn_str}, no schemes with matching mnemonic '{mnemonic}' found")
 
         # TODO cache that instead?
@@ -395,7 +438,7 @@ class Context(iwho.Context):
         try:
             match = pat.parseString(insn_str)
         except pp.ParseException as e:
-            raise iwho.UnknownInstructionError(f"instruction: {insn_str}, ParsingError: {e.msg}")
+            raise iwho.InstantiationError(f"instruction: {insn_str}, ParsingError: {e.msg}")
 
         assert len(match) == 1, "an internal pyparsing assumption is violated"
 
@@ -408,7 +451,10 @@ class Context(iwho.Context):
         return matching_scheme.instantiate(insn_str)
 
 
-    def assemble(self, insn_instances):
+    def assemble(self, insn_instances: Sequence[iwho.InsnInstance]) -> Sequence[str]:
+        """ TODO document
+        """
+
         if not isinstance(insn_instances, list):
             insn_instances = [insn_instances]
 
@@ -419,7 +465,10 @@ class Context(iwho.Context):
         return res
 
 
-    def assemble_single(self, insn_instance):
+    def assemble_single(self, insn_instance: iwho.InsnInstance) -> str:
+        """ TODO document
+        """
+
         insn_str = str(insn_instance)
 
         # TODO make generic
@@ -454,6 +503,9 @@ class Context(iwho.Context):
         return hex_str
 
     def operand_constraint_from_json_dict(self, jsondict):
+        """ TODO document
+        """
+
         kind = jsondict["kind"]
         if kind == "SetConstraint":
             acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
@@ -465,6 +517,9 @@ class Context(iwho.Context):
         raise IWHOError("unknown operand constraint kind: '{}'".format(kind))
 
     def operand_from_json_dict(self, jsondict):
+        """ TODO document
+        """
+
         kind = jsondict["kind"]
         if kind == "x86RegisterOperand":
             register_op = self.all_registers.get(jsondict["name"], None)
@@ -508,26 +563,35 @@ class Context(iwho.Context):
 
 
 class DefaultInstantiator:
+    """ TODO document
+    """
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
     def __call__(self, scheme):
+        """ TODO document
+        """
+
         if isinstance(scheme, iwho.InsnScheme):
             return self.for_insn(scheme)
         elif isinstance(scheme, iwho.OperandScheme):
             return self.for_operand(scheme)
         raise IWHOError("trying to instantiate incompatible object: {}".format(repr(scheme)))
 
-    def for_insn(self, insn_scheme):
-        # create an instruction instance from a scheme
+    def for_insn(self, insn_scheme: iwho.InsnScheme) -> iwho.InsnInstance:
+        """ Create an instruction instance from a scheme
+        """
+
         args = dict()
         for name, operand_scheme in insn_scheme.operand_schemes.items():
             args[name] = self.for_operand(operand_scheme)
         return insn_scheme.instantiate(args)
 
-    def for_operand(self, operand_scheme):
-        # create an Operand instance from a scheme
+    def for_operand(self, operand_scheme: iwho.OperandScheme) -> iwho.OperandInstance:
+        """ Create an OperandInstance instance from a scheme
+        """
+
         if operand_scheme.is_fixed():
             return operand_scheme.fixed_operand
 
@@ -541,12 +605,18 @@ class DefaultInstantiator:
             return self.get_valid_imm_operand(constraint)
 
     def get_valid_memory_operand(self, mem_constraint):
+        """ Create an OperandInstance instance from a scheme
+        """
+
         base_reg = self.ctx.all_registers["RBX"]
         displacement = 64
 
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
 
     def get_valid_imm_operand(self, imm_constraint):
+        """ Create an OperandInstance instance from a scheme
+        """
+
         val = 42
         # if len(not_in) > 0:
         #     not_vals = [int(x.value) for x in not_in]
@@ -554,11 +624,4 @@ class DefaultInstantiator:
         #     val = max_val + 8
         #     # TODO check if in range
         return ImmediateOperand(width=imm_constraint.width, value=str(val))
-
-    # def get_valid(self, not_in=[]):
-    #     diff = self.acceptable_operands - set(not_in)
-    #     if len(diff) == 0:
-    #         return None
-    #     return sorted(diff, key=str)[0]
-
 

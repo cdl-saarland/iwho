@@ -11,11 +11,12 @@ import sys
 import_path = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(import_path)
 
-import_path = os.path.dirname(__file__)
-sys.path.append(import_path)
+import iwho.iwho as iwho
+import iwho.x86 as x86
 
-import iwho
-import x86
+
+from inputs import make_test_x86ctx
+
 
 def get_regs(ctx, category, width=None):
     res = []
@@ -106,7 +107,7 @@ def test_construct_invalid_insn_op_missing():
     operands = dict()
     operands["r0"] = instor(scheme.operand_schemes["r0"])
 
-    with pytest.raises(iwho.InvalidOperandsError):
+    with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
 
 
@@ -119,7 +120,7 @@ def test_construct_invalid_insn_wrong_op():
     operands["r0"] = instor(scheme.operand_schemes["r0"])
     operands["r1"] = x86.ImmediateOperand(32, 42)
 
-    with pytest.raises(iwho.InvalidOperandsError):
+    with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
 
 def test_construct_invalid_insn_superfluous_op():
@@ -132,12 +133,11 @@ def test_construct_invalid_insn_superfluous_op():
     operands["r1"] = instor(scheme.operand_schemes["r1"])
     operands["r2"] = instor(scheme.operand_schemes["r1"])
 
-    with pytest.raises(iwho.InvalidOperandsError):
+    with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
 
 @pytest.fixture(scope="module")
 def x86_ctx():
-    from test_input import make_test_x86ctx
     return make_test_x86ctx()
 
 def test_instantiate_all(x86_ctx):
@@ -276,7 +276,7 @@ def test_matcher_fail(x86_ctx, task):
 
     ctx = x86_ctx
 
-    with pytest.raises(iwho.UnknownInstructionError):
+    with pytest.raises(iwho.InstantiationError):
         insn_instance = ctx.match_insn_str(insn_str)
 
 

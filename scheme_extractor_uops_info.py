@@ -3,17 +3,21 @@
 import json
 import os
 
-import iwho
-import x86
+import iwho.iwho as iwho
+import iwho.x86 as x86
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+class UnsupportedFeatureError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+
 def main():
-    import sys
-    import_path = os.path.join(os.path.dirname(__file__), "..")
-    sys.path.append(import_path)
-    from utils import parse_args_with_logging
+    from iwho.iwho_utils import parse_args_with_logging
 
     xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
 
@@ -148,7 +152,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
         try:
             allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
         except KeyError as e:
-            raise iwho.UnsupportedFeatureError(f"Unsupported register: {e}")
+            raise UnsupportedFeatureError(f"Unsupported register: {e}")
         constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
         op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
@@ -164,7 +168,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             str_template += memoryPrefix + ' '
 
         if operandNode.attrib.get('VSIB', '0') != '0':
-            raise iwho.UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
+            raise UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
             # TODO
             str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
         else:
@@ -220,7 +224,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
 
     else:
-        raise iwho.UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
+        raise UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
 
     return op_schemes, op_name, str_template
 
