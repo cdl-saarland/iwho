@@ -330,51 +330,56 @@ def test_llvmmc_decoder_cat():
     assert asm_str == ref_asm
 
 
-# def test_assemble_all(x86_ctx):
-#     instor = x86.DefaultInstantiator(x86_ctx)
-#
-#     num_errors = 0
-#
-#     for x, scheme in enumerate(x86_ctx.insn_schemes):
-#         instance = instor(scheme)
-#         print(f"instruction number {x} : {instance}")
-#         try:
-#             hex_str = x86_ctx.assemble_single(instance)
-#             assert len(hex_str) > 0
-#         except iwho.IWHOError as e:
-#             print(f"error: {e}")
-#             num_errors += 1
-#
-#     assert num_errors == 0
+def test_assemble_all(x86_ctx):
+    instor = x86.DefaultInstantiator(x86_ctx)
 
-# def test_assemble_then_disassemble_all(x86_ctx):
-#     instor = x86.DefaultInstantiator(x86_ctx)
-#
-#     num_assemble_errors = 0
-#
-#     instances = []
-#     for x, scheme in enumerate(x86_ctx.insn_schemes):
-#         instance = instor(scheme)
-#         print(f"instruction number {x} : {instance}")
-#         try:
-#             hex_str = x86_ctx.assemble_single(instance)
-#             assert len(hex_str) > 0
-#             instances.append((instance, hex_str))
-#         except iwho.IWHOError as e:
-#             print(f"error: {e}")
-#             num_assemble_errors += 1
-#
-#     num_disassemble_errors = 0
-#
-#     for original_instance, hex_str in instances:
-#         try:
-#             new_instance = x86_ctx.disassemble(hex_str)
-#             assert new_instance == original_instance
-#         except iwho.IWHOError as e:
-#             print(f"error: {e}")
-#             num_disassemble_errors += 1
-#
-#     assert num_assemble_errors == 0 and num_disassemble_errors == 0
+    num_errors = 0
+
+    for x, scheme in enumerate(x86_ctx.insn_schemes):
+        instance = instor(scheme)
+        print(f"instruction number {x} : {instance}")
+        try:
+            hex_str = x86_ctx.encode_insns([instance])
+            assert len(hex_str) > 0
+        except iwho.IWHOError as e:
+            print(f"error: {e}")
+            num_errors += 1
+
+    assert num_errors == 0
+
+def test_assemble_then_disassemble_all(x86_ctx):
+    instor = x86.DefaultInstantiator(x86_ctx)
+
+    num_assemble_errors = 0
+
+    instances = []
+    for x, scheme in enumerate(x86_ctx.insn_schemes):
+        instance = instor(scheme)
+        print(f"instruction number {x} : {instance}")
+        try:
+            hex_str = x86_ctx.encode_insns([instance])
+            assert len(hex_str) > 0
+            instances.append((instance, hex_str))
+        except iwho.IWHOError as e:
+            print(f"error: {e}")
+            num_assemble_errors += 1
+
+    num_disassemble_errors = 0
+
+    for original_instance, hex_str in instances:
+        try:
+            new_instances = x86_ctx.decode_insns(hex_str)
+            assert len(new_instances) == 1
+            new_instance = new_instances[0]
+            if new_instance != original_instance:
+                print(repr(new_instance))
+                print(repr(original_instance))
+            assert new_instance == original_instance
+        except iwho.IWHOError as e:
+            print(f"error: {e}")
+            num_disassemble_errors += 1
+
+    assert num_assemble_errors == 0 and num_disassemble_errors == 0
 
 
 if __name__ == "__main__":

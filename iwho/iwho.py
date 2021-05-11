@@ -50,13 +50,14 @@ class Context(ABC):
     """
 
     @abstractmethod
-    def disassemble(self, data: str):
-        """ TODO document
+    def decode_insns(self, data: str):
+        """ Decode a byte stream represented as string of hex characters into a
+        sequence of instruction instances.
         """
         pass
 
     @abstractmethod
-    def assemble(self, insn_instances: Sequence["InsnInstance"]):
+    def encode_insns(self, insn_instances: Sequence["InsnInstance"]) -> str:
         """ TODO document
         """
         pass

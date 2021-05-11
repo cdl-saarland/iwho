@@ -297,10 +297,14 @@ class Context(iwho.Context):
     """ TODO document
     """
 
-    def __init__(self):
+    def __init__(self, coder: Optional[iwho.ASMCoder]=None):
         self.all_registers = dict()
         self.insn_schemes = []
         self.dedup_store = DedupStore()
+
+        if coder is None:
+            coder = LLVMMCCoder("llvm-mc")
+        self.coder = coder
 
         # this is an index to speed up parsing by only trying to match
         # instruction schemes with a fitting mnemonic
@@ -397,25 +401,16 @@ class Context(iwho.Context):
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
 
 
-    def disassemble(self, hex_str: str):
-        """ TODO document
+    def decode_insns(self, hex_str: str) -> Sequence[iwho.InsnInstance]:
+        """ Decode a byte stream represented as string of hex characters into a
+        sequence of instruction instances.
         """
 
-        # TODO make generic
-        cmd = ["/home/ritter/projects/portmapping/xedplayground/build_XEDWrappers/dec", hex_str]
-        res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
-
-        if res.returncode != 0:
-            err_str = "instruction decoder call failed:\n" + res.stderr
-            raise iwho.IWHOError(err_str)
-
-        output = res.stdout
+        asm_lines = self.coder.hex2asm(hex_str)
 
         insns = []
-
-        lines = output.split('\n')
-        for l in lines:
-            insn_instance = self.match_insn_str
+        for l in asm_lines:
+            insn_instance = self.match_insn_str(l)
             insns.append(insn_instance)
 
         return insns
@@ -451,56 +446,19 @@ class Context(iwho.Context):
         return matching_scheme.instantiate(insn_str)
 
 
-    def assemble(self, insn_instances: Sequence[iwho.InsnInstance]) -> Sequence[str]:
-        """ TODO document
+    def encode_insns(self, insn_instances: Sequence[iwho.InsnInstance]) -> str:
+        """ Encode a sequence of instruction instances into a byte stream
+        represented as string of hex characters.
         """
 
-        if not isinstance(insn_instances, list):
-            insn_instances = [insn_instances]
-
-        res = []
+        asm_str = ""
         for ii in insn_instances:
-            res.append(self.assemble_single(ii))
+            asm_str += str(ii)
+
+        res = self.coder.asm2hex(asm_str)
 
         return res
 
-
-    def assemble_single(self, insn_instance: iwho.InsnInstance) -> str:
-        """ TODO document
-        """
-
-        insn_str = str(insn_instance)
-
-        # TODO make generic
-        cmd = ["/home/ritter/projects/portmapping/xedplayground/build_XEDWrappers/enc", "-64", insn_str]
-        res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
-
-        if res.returncode != 0:
-            err_str = "instruction encoder call failed:\n" + res.stderr
-            raise iwho.IWHOError(err_str)
-
-        output = res.stdout
-
-        hex_str = ""
-
-        lines = output.split('\n')
-        for l in lines:
-            l = l.strip()
-            if len(l) == 0 or l[0] == '#':
-                continue
-            prefix = ".byte "
-            if l.startswith(prefix):
-                ls = l[len(prefix):]
-                hex_line = "".join(map(lambda x: x[2:], ls.split(",")))
-                if not all(map(lambda c: c in "0123456789abcdef", hex_line)):
-                    err_str = "unexpected output line from encoder (not a hex string):\n" + l
-                    raise iwho.IWHOError(err_str)
-                hex_str += hex_line
-            else:
-                err_str = "unexpected output line from encoder:\n" + l
-                raise iwho.IWHOError(err_str)
-
-        return hex_str
 
     def operand_constraint_from_json_dict(self, jsondict):
         """ TODO document
