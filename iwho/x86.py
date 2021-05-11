@@ -646,11 +646,10 @@ class DefaultInstantiator:
         """ Create an OperandInstance instance from a scheme
         """
 
-        val = 42
-        # if len(not_in) > 0:
-        #     not_vals = [int(x.value) for x in not_in]
-        #     max_val = max(not_vals)
-        #     val = max_val + 8
-        #     # TODO check if in range
-        return ImmediateOperand(width=imm_constraint.width, value=str(val))
+        # choose a value that is not representable with width - 8 bits
+        width = imm_constraint.width
+        assert width >= 8
+        val = 2 ** (width-8) + 42
+
+        return ImmediateOperand(width=width, value=str(val))
 
