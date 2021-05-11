@@ -37,6 +37,14 @@ class InstantiationError(IWHOError):
         super().__init__(message)
 
 
+class ASMCoderError(IWHOError):
+    """ An error occured in the asm <-> hex transformation
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class Context(ABC):
     """ TODO document
     """

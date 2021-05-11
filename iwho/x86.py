@@ -1,6 +1,8 @@
 
 from typing import Sequence, Optional
 
+from abc import ABC, abstractmethod
+
 from enum import Enum
 from collections import defaultdict
 import os
@@ -11,7 +13,7 @@ from functools import cached_property
 import pyparsing as pp
 
 import iwho.iwho as iwho
-from .iwho_utils import DedupStore
+from .iwho_utils import DedupStore, is_hex_str
 
 
 def extract_mnemonic(insn_str: str) -> str:
@@ -106,14 +108,14 @@ class MemoryOperand(iwho.OperandInstance):
 
         if self.index is not None:
             offset = ""
-            offset += str(self.index)
             if self.scale != 1:
-                offset += "*{}".format(str(self.scale))
+                offset += "{}*".format(str(self.scale))
+            offset += str(self.index)
             parts.append(offset)
         if self.displacement != 0:
             parts.append(str(self.displacement))
 
-        res += "+".join(parts)
+        res += " + ".join(parts)
         res = "[" + res + "]"
         return res
 
@@ -541,25 +543,119 @@ class Context(iwho.Context):
         raise IWHOError("unknown operand kind: '{}'".format(kind))
 
 
-        # with tempfile.NamedTemporaryFile("w") as tmp_file:
-        #     tmp_file.write(insn_str)
-        #     tmp_file.flush()
-        #     tmp_name = tmp_file.name
-        #     bin_name = tmp_name + ".bin"
-        #
-        #     cmd = ["as", "-msyntax=intel", "-mnaked-reg", "-o", bin_name, tmp_name]
-        #     res = subprocess.run(cmd)
-        #
-        #     if res.returncode != 0:
-        #         err_str = "as call failed!"
-        #         raise MuAnalyzerError(err_str)
-        #
-        #     with open(bin_name, 'rb') as infile:
-        #         code, addr = extract_code(infile)
-        #
-        #     if os.path.exists(bin_name):
-        #         os.remove(bin_name)
-        # return code
+class ASMCoder(ABC):
+    """ Interface for transforming readable assembly strings into hex strings
+    and vice versa.
+    """
+
+    @abstractmethod
+    def asm2hex(self, asm_str: str) -> str:
+        """ Turn a readable assembly string into a sequence of bytes.
+
+        Bytes are represented as a string of an even number of [0-9a-f]
+        characters, each two successive ones representing one byte.
+        """
+        pass
+
+    @abstractmethod
+    def hex2asm(self, hex_str: str) -> str:
+        """ Turn a sequence of bytes into a readable assembly string.
+
+        Bytes are represented as a string of an even number of [0-9a-f]
+        characters, each two successive ones representing one byte.
+        """
+        pass
+
+class LLVMMCCoder(ASMCoder):
+    """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
+    playground) for assembly encoding/decoding.
+    """
+
+    def __init__(self, llvm_mc_path):
+        self.llvm_mc_path = llvm_mc_path
+
+    def asm2hex(self, asm_str) -> str:
+        if not isinstance(asm_str, str):
+            asm_str = "\n".join(asm_str)
+        cmd = [self.llvm_mc_path]
+        cmd.append("--arch=x86-64")
+        cmd.append("--assemble")
+        cmd.append("--show-encoding")
+        cmd.append("--filetype=asm")
+
+        input_str = ".intel_syntax noprefix\n" + asm_str
+
+        subprocess_args = dict(
+                input = input_str,
+                capture_output = True,
+                encoding = "latin1",
+            )
+
+        res = subprocess.run(cmd, **subprocess_args)
+        if res.returncode != 0:
+            raise iwho.ASMCoderError(
+                    "Non-zero return code from llvm-mc when encoding: {}\nstderr:\n".format(res.returncode) + res.stderr)
+
+        asm_output = res.stdout
+        lines = asm_output.split("\n")
+
+        hex_lines = []
+        for l in lines:
+            split_str = "# encoding: "
+            if split_str not in l:
+                continue
+            # expected format: <instruction assembly> # encoding: [0x**,0x**,...]
+            tokens = l.split(split_str)
+            if len(tokens) != 2:
+                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+            hexlist = tokens[1]
+            hexlist = hexlist.strip()
+            hexlist = hexlist.replace("[", "")
+            hexlist = hexlist.replace("]", "")
+            hexlist = hexlist.replace(",", "")
+            hexlist = hexlist.replace("0x", "")
+            if len(hexlist) == 0 or not is_hex_str(hexlist):
+                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+            hex_lines.append(hexlist)
+
+        return "".join(hex_lines)
+
+
+    def hex2asm(self, hex_str: str) -> Sequence[str]:
+        cmd = [self.llvm_mc_path]
+        cmd.append("--arch=x86-64")
+        cmd.append("--disassemble")
+        cmd.append("--filetype=asm")
+        cmd.append("--output-asm-variant=1") # use intel syntax
+
+        # "ABCDEF" -> "[0xAB,0xCD,0xEF]"
+        input_str = ",".join(map(lambda x: "0x"+x[0]+x[1], zip(hex_str[0::2], hex_str[1::2])))
+        input_str = "[" + input_str + "]"
+
+        subprocess_args = dict(
+                input = input_str,
+                capture_output = True,
+                encoding = "latin1",
+            )
+
+        res = subprocess.run(cmd, **subprocess_args)
+        if res.returncode != 0:
+            raise iwho.ASMCoderError(
+                    "Non-zero return code from llvm-mc when decoding: {}\nstderr:\n".format(res.returncode) + res.stderr)
+
+        asm_output = res.stdout
+        lines = asm_output.split("\n")
+
+        asm_lines = []
+        for l in lines:
+            tokens = l.split()
+            asm_str = " ".join(tokens)
+            if len(asm_str) == 0 or asm_str[0] == '.':
+                continue
+            asm_str = asm_str.upper()
+            asm_lines.append(asm_str)
+
+        return asm_lines
 
 
 class DefaultInstantiator:

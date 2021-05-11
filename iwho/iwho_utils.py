@@ -23,6 +23,13 @@ class DedupStore:
         store[key] = new_res
         return new_res
 
+def is_hex_str(hex_str: str) -> bool:
+    try:
+        int(hex_str, 16)
+    except ValueError as e:
+        return False
+    return True
+
 
 def init_logging(loglevel, logfile=None):
     import logging

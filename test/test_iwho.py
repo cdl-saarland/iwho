@@ -66,7 +66,7 @@ def test_construct_insn():
 
 def test_construct_memory_op():
     ctx = x86.Context()
-    str_template = "ADC qword ptr ${m0}, ${r0}"
+    str_template = "ADC QWORD PTR ${m0}, ${r0}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     isMem64 = x86.MemConstraint(ctx, 64)
     explicit = {
@@ -191,9 +191,9 @@ Task = namedtuple('Task', ['text', 'hex_str', 'template'], defaults=(None, None)
 
 valid_insns = [
         Task(text="ADCX RAX, R12", hex_str="66490f38f6c4", template="ADCX ${REG0}, ${REG1}"),
-        Task(text="ADCX RAX, qword ptr [R12+RBX*2+42]", hex_str="66490f38f6445c2a", template="ADCX ${REG0}, qword ptr ${MEM0}"),
-        Task(text="ADCX RAX, qword ptr [R12]", hex_str="66490f38f60424", template="ADCX ${REG0}, qword ptr ${MEM0}"),
-        Task(text="ADCX RAX, qword ptr [R12+42]", hex_str="66490f38f644242a", template="ADCX ${REG0}, qword ptr ${MEM0}"),
+        Task(text="ADCX RAX, QWORD PTR [R12 + 2*RBX + 42]", hex_str="66490f38f6445c2a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
+        Task(text="ADCX RAX, QWORD PTR [R12]", hex_str="66490f38f60424", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
+        Task(text="ADCX RAX, QWORD PTR [R12 + 42]", hex_str="66490f38f644242a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
         # Task(text="ADCX RAX, qword ptr [RBX*4+48]", hex_str="0x66480f38f64330", template="ADCX ${REG0}, qword ptr ${MEM0}"),
         # XED apparently has weird constraints on the position of the scale component in memory operands:
         #   if a base register is present, the scale has to come after the index, if no base register is present, it has to be in front of the index.
@@ -278,6 +278,55 @@ def test_matcher_fail(x86_ctx, task):
 
     with pytest.raises(iwho.InstantiationError):
         insn_instance = ctx.match_insn_str(insn_str)
+
+
+@pytest.mark.parametrize("task", valid_insns)
+def test_llvmmc_encoder_single(task):
+    asm = task.text
+    ref_hex_str = task.hex_str
+
+    coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+    hex_str = coder.asm2hex(asm)
+
+    assert hex_str == ref_hex_str
+
+def test_llvmmc_encoder_cat():
+    asm = ""
+    ref_hex_str = ""
+    for task in valid_insns:
+        asm += task.text + "\n"
+        ref_hex_str += task.hex_str
+
+    coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+    hex_str = coder.asm2hex(asm)
+
+    assert hex_str == ref_hex_str
+
+@pytest.mark.parametrize("task", valid_insns)
+def test_llvmmc_decoder_single(task):
+    ref_asm = task.text
+    hex_str = task.hex_str
+
+    coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+    asm_lines = coder.hex2asm(hex_str)
+
+    assert len(asm_lines) == 1
+
+    asm = asm_lines[0]
+
+    assert asm == ref_asm
+
+# def test_llvmmc_decoder_cat():
+#     asm = ""
+#     ref_hex_str = ""
+#     for task in valid_insns:
+#         asm += task.text + "\n"
+#         ref_hex_str += task.hex_str
+#
+#     coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+#     hex_str = coder.asm2hex(asm)
+#
+#     assert hex_str == ref_hex_str
 
 
 # def test_assemble_all(x86_ctx):

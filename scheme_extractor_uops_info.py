@@ -123,6 +123,7 @@ def add_uops_info_xml(ctx, xml_path):
                 elif instrNode.attrib.get('sae', '') == '1':
                     str_template += ', {sae}'
 
+            str_template = str_template.upper()
             # TODO set affects_control_flow
             scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
