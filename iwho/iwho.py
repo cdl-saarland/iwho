@@ -86,6 +86,30 @@ class Context(ABC):
         return res
 
 
+class ASMCoder(ABC):
+    """ Interface for transforming readable assembly strings into hex strings
+    and vice versa.
+    """
+
+    @abstractmethod
+    def asm2hex(self, asm_str: str) -> str:
+        """ Turn a readable assembly string into a sequence of bytes.
+
+        Bytes are represented as a string of an even number of [0-9a-f]
+        characters, each two successive ones representing one byte.
+        """
+        pass
+
+    @abstractmethod
+    def hex2asm(self, hex_str: str) -> Sequence[str]:
+        """ Turn a sequence of bytes into a readable assembly string.
+
+        Bytes are represented as a string of an even number of [0-9a-f]
+        characters, each two successive ones representing one byte.
+        """
+        pass
+
+
 class OperandInstance(ABC):
     """ TODO document
     """

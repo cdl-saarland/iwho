@@ -1,8 +1,6 @@
 
 from typing import Sequence, Optional
 
-from abc import ABC, abstractmethod
-
 from enum import Enum
 from collections import defaultdict
 import os
@@ -557,16 +555,7 @@ class ASMCoder(ABC):
         """
         pass
 
-    @abstractmethod
-    def hex2asm(self, hex_str: str) -> str:
-        """ Turn a sequence of bytes into a readable assembly string.
-
-        Bytes are represented as a string of an even number of [0-9a-f]
-        characters, each two successive ones representing one byte.
-        """
-        pass
-
-class LLVMMCCoder(ASMCoder):
+class LLVMMCCoder(iwho.ASMCoder):
     """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
     playground) for assembly encoding/decoding.
     """
