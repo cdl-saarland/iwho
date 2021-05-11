@@ -28,7 +28,7 @@ def get_regs(ctx, category, width=None):
 
 def get_adc_scheme():
     ctx = x86.Context()
-    str_template = "ADC ${r0}, ${r1}"
+    str_template = "adc ${r0}, ${r1}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     explicit = {
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True, written=True),
@@ -66,7 +66,7 @@ def test_construct_insn():
 
 def test_construct_memory_op():
     ctx = x86.Context()
-    str_template = "ADC QWORD PTR ${m0}, ${r0}"
+    str_template = "adc qword ptr ${m0}, ${r0}"
     isGPR64 = iwho.SetConstraint(get_regs(ctx, "GPR", 64))
     isMem64 = x86.MemConstraint(ctx, 64)
     explicit = {
@@ -83,7 +83,7 @@ def test_construct_memory_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["m0"] = x86.MemoryOperand(width=64, base=ctx.all_registers["RBX"], scale=2, index=ctx.all_registers["RDX"], displacement=42)
+    operands["m0"] = x86.MemoryOperand(width=64, base=ctx.all_registers["rbx"], scale=2, index=ctx.all_registers["rdx"], displacement=42)
     operands["r0"] = instor(scheme.operand_schemes["r0"])
 
     insn = scheme.instantiate(operands)
@@ -155,7 +155,7 @@ def test_parser_adcx(x86_ctx):
     ctx = x86_ctx
     res = []
     for scheme in x86_ctx.insn_schemes:
-        if scheme.str_template.template == "ADC ${REG0}, ${IMM0}":
+        if scheme.str_template.template == "adc ${reg0}, ${imm0}":
             res.append(scheme)
 
     assert len(res) > 0
@@ -163,7 +163,7 @@ def test_parser_adcx(x86_ctx):
     for scheme in res:
         print("  {}".format(scheme))
 
-    insn_str = "ADC RAX, 42"
+    insn_str = "adc rax, 0x2a"
 
     matches = []
     for scheme in res:
@@ -190,16 +190,16 @@ def test_parser_adcx(x86_ctx):
 Task = namedtuple('Task', ['text', 'hex_str', 'template'], defaults=(None, None))
 
 valid_insns = [
-        Task(text="ADCX RAX, R12", hex_str="66490f38f6c4", template="ADCX ${REG0}, ${REG1}"),
-        Task(text="ADCX RAX, QWORD PTR [R12 + 2*RBX + 42]", hex_str="66490f38f6445c2a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
-        Task(text="ADCX RAX, QWORD PTR [R12]", hex_str="66490f38f60424", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
-        Task(text="ADCX RAX, QWORD PTR [R12 + 42]", hex_str="66490f38f644242a", template="ADCX ${REG0}, QWORD PTR ${MEM0}"),
-        # Task(text="ADCX RAX, qword ptr [4 * RBX + 48]", hex_str="66480f38f64330", template="ADCX ${REG0}, qword ptr ${MEM0}"), # TODO
-        Task(text="ADC EAX, 42", hex_str="83d02a", template="ADC ${REG0}, ${IMM0}"),
+        Task(text="adcx rax, r12", hex_str="66490f38f6c4", template="adcx ${reg0}, ${reg1}"),
+        Task(text="adcx rax, qword ptr [r12 + 2*rbx + 0x2a]", hex_str="66490f38f6445c2a", template="adcx ${reg0}, qword ptr ${mem0}"),
+        Task(text="adcx rax, qword ptr [r12]", hex_str="66490f38f60424", template="adcx ${reg0}, qword ptr ${mem0}"),
+        Task(text="adcx rax, qword ptr [r12 + 0x2a]", hex_str="66490f38f644242a", template="adcx ${reg0}, qword ptr ${mem0}"),
+        # Task(text="adcx rax, qword ptr [4 * rbx + 0x30]", hex_str="66480f38f64330", template="adcx ${reg0}, qword ptr ${mem0}"), # todo
+        Task(text="adc eax, 0x2a", hex_str="83d02a", template="adc ${reg0}, ${imm0}"),
 
         # b"\x01\xc0",
-        # b"\x48\x81\xc4\xc8\x00\x00\x00", # add rsp, 0xc8
-        # b"\x81\xc4\xc8\x00\x00\x00", # add esp, 0xc8
+        # b"\x48\x81\xc4\xc8\x00\x00\x00", # add rsp, 0Xc8
+        # b"\x81\xc4\xc8\x00\x00\x00", # add esp, 0Xc8
         # b"\x48\xd1\xfe", # sar rsi, 1
         # b"\x48\xc1\xfe\x07", # sar rsi, 7
         # b"\x48\xd3\xfe", # sar rsi, cl
@@ -209,8 +209,8 @@ valid_insns = [
     ]
 
 invalid_insns = [
-        Task(text="ADDIU $V1, $zero, 1"), # that's a MIPS instruction, not an x86 one
-        Task(text="ADC UAX, 42"), # that's not a valid register (yet?)
+        Task(text="addiu $v1, $zero, 0x1"), # that's a mips instruction, not an x86 one
+        Task(text="adc uax, 0x42"), # that's not a valid register (yet?)
     ]
 
 
@@ -270,10 +270,10 @@ def test_matcher_success(x86_ctx, task):
 def test_matcher_inclusion_order(x86_ctx):
     # This test checks that among multiple matching schemes, the most specific
     # is chosen.
-    insn_str = "ADC DWORD PTR [RBX + 64], 0"
+    insn_str = "adc dword ptr [rbx + 0x64], 0x0"
     ctx = x86_ctx
     insn_instance = ctx.match_insn_str(insn_str)
-    assert insn_instance.scheme.operand_schemes["IMM0"].is_fixed()
+    assert insn_instance.scheme.operand_schemes["imm0"].is_fixed()
 
 @pytest.mark.parametrize("task", invalid_insns)
 def test_matcher_fail(x86_ctx, task):
@@ -372,6 +372,7 @@ def test_assemble_then_disassemble_all(x86_ctx):
     num_disassemble_errors = 0
 
     for original_instance, hex_str in instances:
+        print(f"trying to decode {original_instance}")
         try:
             new_instances = x86_ctx.decode_insns(hex_str)
             assert len(new_instances) == 1
@@ -388,6 +389,9 @@ def test_assemble_then_disassemble_all(x86_ctx):
 
 
 if __name__ == "__main__":
-    from utils import init_logging
+    from iwho.iwho_utils import init_logging
     init_logging('debug')
+
+    x86_ctx = make_test_x86ctx()
+    test_assemble_then_disassemble_all(x86_ctx)
 

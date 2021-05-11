@@ -124,7 +124,7 @@ class Context(ABC):
         try:
             match = pat.parseString(insn_str)
         except pp.ParseException as e:
-            raise InstantiationError(f"instruction: {insn_str}, ParsingError: {e.msg}")
+            raise InstantiationError(f"instruction: {insn_str}")
 
         assert len(match) == 1, "an internal pyparsing assumption is violated"
 
@@ -358,7 +358,7 @@ class OperandScheme:
         """ TODO document
         """
         if self.is_fixed():
-            return self.fixed_operand.from_match(match)
+            return self.fixed_operand
         else:
             return self.operand_constraint.from_match(match)
 
@@ -461,7 +461,7 @@ class InsnScheme:
         """
         if isinstance(args, str):
             try:
-                match = self.parser_pattern.parseString(args)
+                match = self.parser_pattern.parseString(args, parseAll=True)
             except pp.ParseException as e:
                 raise InstantiationError("Invalid instruction for scheme: {}".format(args))
 

@@ -44,6 +44,11 @@ def main():
 
     with open(outpath, "w") as outfile:
         json.dump(jsondict, outfile, indent="  ")
+        # for x in jsondict:
+        #     if not ( x['str_template'].startswith("adc") or x['str_template'].startswith("add") or x['str_template'].startswith("sar") ):
+        #         continue
+        #     json.dump(x, outfile)
+        #     outfile.write(",\n")
 
 
 def add_uops_info_xml(ctx, xml_path):
@@ -123,14 +128,14 @@ def add_uops_info_xml(ctx, xml_path):
                 elif instrNode.attrib.get('sae', '') == '1':
                     str_template += ', {sae}'
 
-            str_template = str_template.upper()
+            str_template = str_template.lower()
             # TODO set affects_control_flow
             scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
             ctx.insn_schemes.append(scheme)
             ctx.mnemonic_to_insn_schemes[mnemonic].append(scheme)
 
-        except Exception as e:
+        except UnsupportedFeatureError as e:
             logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
             num_errors += 1
 
@@ -149,7 +154,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
 
     op_type = operandNode.attrib['type']
     if op_type == 'reg':
-        registers = operandNode.text.split(',')
+        registers = operandNode.text.lower().split(',')
         try:
             allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
         except KeyError as e:
@@ -197,7 +202,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
 
         width = int(operandNode.attrib['width'])
         if operandNode.text is not None:
-            imm = operandNode.text
+            imm = int(operandNode.text)
             op = ctx.dedup_store.get(x86.ImmediateOperand, width=width, value=imm)
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=False, written=False))
         else:
@@ -221,13 +226,13 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
                 written = True
             elif fval == "undef":
                 written = True
-            reg = ctx.all_registers[f]
+            reg = ctx.all_registers[f.lower()]
             op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
 
     else:
         raise UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
 
-    return op_schemes, op_name, str_template
+    return op_schemes, op_name.lower(), str_template
 
 
 if __name__ == "__main__":

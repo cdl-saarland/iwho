@@ -96,7 +96,7 @@ class MemoryOperand(iwho.OperandInstance):
             offset += str(self.index)
             parts.append(offset)
         if self.displacement != 0:
-            parts.append(str(self.displacement))
+            parts.append(hex(self.displacement))
 
         res += " + ".join(parts)
         res = "[" + res + "]"
@@ -158,7 +158,8 @@ class MemConstraint(iwho.OperandConstraint):
     def from_match(self, match):
         kwargs = dict()
         reg_fun = lambda r: self.ctx.all_registers[r]
-        for k, fun in (("segement", reg_fun), ("base", reg_fun), ("index", reg_fun), ("scale", int), ("displacement", int)):
+        hex_fun = lambda x: x[0]
+        for k, fun in (("segement", reg_fun), ("base", reg_fun), ("index", reg_fun), ("scale", int), ("displacement", hex_fun)):
             if k in match:
                 kwargs[k] = fun(match[k])
 
@@ -168,6 +169,7 @@ class MemConstraint(iwho.OperandConstraint):
     @cached_property
     def parser_pattern(self):
         int_pattern = pp.pyparsing_common.integer
+        hex_pattern = pp.Suppress(pp.Literal('0x')) + pp.pyparsing_common.hex_integer
         allowed_registers = self.ctx.get_registers_where(category=self.ctx._reg_category_enum["GPR"])
         reg_pattern = pp.MatchFirst([pp.Literal(r.name) for r in allowed_registers]) # TODO this should probably be cached
 
@@ -185,7 +187,7 @@ class MemConstraint(iwho.OperandConstraint):
         mem_pattern += pp.Optional(seg_pattern.setResultsName("segment") + pp.Suppress(pp.Literal(":")))
         mem_pattern += pp.Optional(reg_pattern.setResultsName("base") + plus_or_end)
         mem_pattern += pp.Optional(scale_and_index + plus_or_end)
-        mem_pattern += pp.Optional(int_pattern.setResultsName("displacement"))
+        mem_pattern += pp.Optional(hex_pattern.setResultsName("displacement"))
         mem_pattern += pp.Suppress(pp.Literal("]"))
 
         mem_pattern = pp.Group(mem_pattern)
@@ -213,14 +215,15 @@ class ImmediateOperand(iwho.OperandInstance):
     def __init__(self, width, value):
         """ TODO document
         """
+        assert isinstance(value, int)
         self.width = width
         self.value = value
 
     def __str__(self):
-        return str(self.value)
+        return hex(self.value)
 
     def __repr__(self):
-        return "ImmediateOperand(width={}, value={})".format(self.width, repr(self.value))
+        return "ImmediateOperand(width={}, value={})".format(self.width, hex(self.value))
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
@@ -246,23 +249,25 @@ class ImmConstraint(iwho.OperandConstraint):
         self.width = width
 
     def is_valid(self, operand):
-        val = int(operand.value)
+        if not (isinstance(operand, ImmediateOperand) and self.width == operand.width):
+            return False
+
+        val = operand.value
         # the union of the possible ranges if interpreted signed or unsigned
         inbounds = -(2 ** (self.width - 1)) <= val < (2 ** (self.width))
 
-        return (isinstance(operand, ImmediateOperand) and
-                self.width == operand.width) and inbounds
+        return inbounds
 
     def from_match(self, match):
         # a match will be a single token, which is the constant
-        imm = str(match)
+        imm = match[0]
+        assert isinstance(imm, int)
         op = self.ctx.dedup_store.get(ImmediateOperand, width=self.width, value=imm)
         return op
 
     @cached_property
     def parser_pattern(self):
-        # TODO hex and other constants might be needed as well
-        return pp.pyparsing_common.integer
+        return pp.Suppress(pp.Literal('0x')) + pp.pyparsing_common.hex_integer
 
     def __str__(self):
         return "IMM({})".format(self.width)
@@ -375,15 +380,15 @@ class Context(iwho.Context):
 
         groups = defaultdict(list)
         for k, regop in self.all_registers.items():
-            if "IP" not in k:
+            if "ip" not in k:
                 groups[(regop.category, regop.width)].append(regop)
 
         for (category, width), group in groups.items():
             intro_name_for_reg_group(f"{category.name}:{width}", group)
 
-        intro_name_for_reg_group("K1..7", {f"K{n}" for n in range(1, 8)})
-        intro_name_for_reg_group("XMM0..15", {f"XMM{n}" for n in range(0, 16)})
-        intro_name_for_reg_group("YMM0..15", {f"YMM{n}" for n in range(0, 16)})
+        intro_name_for_reg_group("K1..7", {f"k{n}" for n in range(1, 8)})
+        intro_name_for_reg_group("XMM0..15", {f"xmm{n}" for n in range(0, 16)})
+        intro_name_for_reg_group("YMM0..15", {f"ymm{n}" for n in range(0, 16)})
 
 
     def operand_constraint_from_json_dict(self, jsondict):
@@ -486,6 +491,7 @@ class LLVMMCCoder(iwho.ASMCoder):
         cmd.append("--arch=x86-64")
         cmd.append("--disassemble")
         cmd.append("--filetype=asm")
+        cmd.append("--print-imm-hex") # print immediates as hex
         cmd.append("--output-asm-variant=1") # use intel syntax
 
         # "ABCDEF" -> "[0xAB,0xCD,0xEF]"
@@ -512,7 +518,7 @@ class LLVMMCCoder(iwho.ASMCoder):
             asm_str = " ".join(tokens)
             if len(asm_str) == 0 or asm_str[0] == '.':
                 continue
-            asm_str = asm_str.upper()
+            asm_str = asm_str.lower()
             asm_lines.append(asm_str)
 
         return asm_lines
@@ -564,7 +570,7 @@ class DefaultInstantiator:
         """ Create an OperandInstance instance from a scheme
         """
 
-        base_reg = self.ctx.all_registers["RBX"]
+        base_reg = self.ctx.all_registers["rbx"]
         displacement = 64
 
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
@@ -578,5 +584,5 @@ class DefaultInstantiator:
         assert width >= 8
         val = 2 ** (width-8) + 42
 
-        return ImmediateOperand(width=width, value=str(val))
+        return ImmediateOperand(width=width, value=val)
 
