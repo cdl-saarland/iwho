@@ -14,7 +14,6 @@ import iwho as iwho
 
 
 def extract_mnemonic(insn_str):
-    # TODO also use this in parsing
     tokens = insn_str.split()
     for t in tokens:
         if t.startswith("{"):
