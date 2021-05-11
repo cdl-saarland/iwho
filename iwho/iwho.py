@@ -8,6 +8,9 @@ from dataclasses import dataclass
 
 from functools import cached_property
 import string
+from collections import defaultdict
+
+from iwho.iwho_utils import DedupStore
 
 import pyparsing as pp
 
@@ -49,24 +52,115 @@ class Context(ABC):
     """ TODO document
     """
 
+    def __init__(self, coder: "ASMCoder"):
+        self.coder = coder
+
+        self.insn_schemes = []
+
+        # used for caching OperandInstances, OperandSchemes,
+        # OperandConstraints,...
+        # This requires usage from subclasses!
+        self.dedup_store = DedupStore()
+
+        # this is an index to speed up parsing by only trying to match
+        # instruction schemes with a fitting mnemonic
+        self.mnemonic_to_insn_schemes = defaultdict(list)
+
     @abstractmethod
-    def decode_insns(self, data: str):
+    def extract_mnemonic(self, insn_str: str) -> str:
+        """ Extract the mnemonic from the assembly of a single instruction
+        """
+        pass
+
+    @abstractmethod
+    def operand_constraint_from_json_dict(self, jsondict):
+        """ Produce an OperandConstraint from a jsondict representing one
+        """
+        pass
+
+    @abstractmethod
+    def operand_from_json_dict(self, jsondict):
+        """ Produce an OperandInstance from a jsondict representing one
+        """
+        pass
+
+    def decode_insns(self, hex_str: str) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of instruction instances.
-        """
-        pass
 
-    @abstractmethod
+        Raises an ASMCoderError decoding the hex_str fails, or an
+        InstantiationError if there is no fitting scheme for a decoded
+        instruction.
+        """
+
+        asm_lines = self.coder.hex2asm(hex_str)
+
+        insns = []
+        for l in asm_lines:
+            insn_instance = self.match_insn_str(l)
+            insns.append(insn_instance)
+
+        return insns
+
+
+    def match_insn_str(self, insn_str: str):
+        """ Match the assembly string representing an instruction to the
+        InsnScheme that captures it best and return an instance of this scheme
+        with appropriate operands.
+
+        Raises an InstantiationError if no fitting scheme is found.
+        """
+
+        insn_str = insn_str.strip()
+        mnemonic = self.extract_mnemonic(insn_str)
+
+        candidate_schemes = self.mnemonic_to_insn_schemes[mnemonic]
+        if len(candidate_schemes) == 0:
+            raise InstantiationError(
+                    f"instruction: {insn_str}, no schemes with matching mnemonic '{mnemonic}' found")
+
+        # TODO cache that instead?
+        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
+        try:
+            match = pat.parseString(insn_str)
+        except pp.ParseException as e:
+            raise InstantiationError(f"instruction: {insn_str}, ParsingError: {e.msg}")
+
+        assert len(match) == 1, "an internal pyparsing assumption is violated"
+
+        keys = list(match.keys())
+        assert len(keys) == 1, "an internal pyparsing assumption is violated"
+        key  = keys[0]
+        matching_scheme = candidate_schemes[int(key)]
+
+        # TODO deduplicate parsing
+        return matching_scheme.instantiate(insn_str)
+
+
     def encode_insns(self, insn_instances: Sequence["InsnInstance"]) -> str:
-        """ TODO document
-        """
-        pass
+        """ Encode a sequence of instruction instances into a byte stream
+        represented as string of hex characters.
 
-    @abstractmethod
-    def add_insn_scheme(self, scheme):
-        """ TODO document
+        Raises an ASMCoderError encoding the instances fails.
         """
-        pass
+
+        asm_str = ""
+        for ii in insn_instances:
+            asm_str += str(ii)
+
+        res = self.coder.asm2hex(asm_str)
+
+        return res
+
+
+    def add_insn_scheme(self, scheme: "InsnScheme"):
+        """ Add an instruction scheme to the Context and make it known to the
+        necessary data structures. """
+
+        self.insn_schemes.append(scheme)
+        mnemonic = self.extract_mnemonic(scheme.str_template.template)
+        self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
+
 
     def fill_from_json_dict(self, jsondict):
         """ TODO document

@@ -4,28 +4,13 @@ from typing import Sequence, Optional
 from enum import Enum
 from collections import defaultdict
 import os
-import string
 import subprocess
 
 from functools import cached_property
 import pyparsing as pp
 
 import iwho.iwho as iwho
-from .iwho_utils import DedupStore, is_hex_str
-
-
-def extract_mnemonic(insn_str: str) -> str:
-    """ Extract the mnemonic from the assembly of a single instruction
-
-    Here, this is the first whitespace-separated token that does not
-    start with a brace.
-    """
-    tokens = insn_str.split()
-    for t in tokens:
-        if t.startswith("{"):
-            continue
-        return t
-    return None
+from iwho.iwho_utils import is_hex_str
 
 
 class RegisterOperand(iwho.OperandInstance):
@@ -299,16 +284,11 @@ class Context(iwho.Context):
 
     def __init__(self, coder: Optional[iwho.ASMCoder]=None):
         self.all_registers = dict()
-        self.insn_schemes = []
-        self.dedup_store = DedupStore()
 
         if coder is None:
             coder = LLVMMCCoder("llvm-mc")
-        self.coder = coder
 
-        # this is an index to speed up parsing by only trying to match
-        # instruction schemes with a fitting mnemonic
-        self.mnemonic_to_insn_schemes = defaultdict(list)
+        super().__init__(coder)
 
         self._add_registers()
 
@@ -324,6 +304,20 @@ class Context(iwho.Context):
                 it = tuple(filter(lambda x: getattr(x, key) == cond, it))
 
         return it
+
+
+    def extract_mnemonic(self, insn_str: str) -> str:
+        """ Extract the mnemonic from the assembly of a single instruction
+
+        Here, this is the first whitespace-separated token that does not
+        start with a brace.
+        """
+        tokens = insn_str.split()
+        for t in tokens:
+            if t.startswith("{"):
+                continue
+            return t
+        return None
 
 
     class CSVKeywords:
@@ -392,74 +386,6 @@ class Context(iwho.Context):
         intro_name_for_reg_group("YMM0..15", {f"YMM{n}" for n in range(0, 16)})
 
 
-    def add_insn_scheme(self, scheme: iwho.InsnScheme):
-        """ TODO document
-        """
-
-        self.insn_schemes.append(scheme)
-        mnemonic = extract_mnemonic(scheme.str_template.template)
-        self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
-
-
-    def decode_insns(self, hex_str: str) -> Sequence[iwho.InsnInstance]:
-        """ Decode a byte stream represented as string of hex characters into a
-        sequence of instruction instances.
-        """
-
-        asm_lines = self.coder.hex2asm(hex_str)
-
-        insns = []
-        for l in asm_lines:
-            insn_instance = self.match_insn_str(l)
-            insns.append(insn_instance)
-
-        return insns
-
-
-    def match_insn_str(self, insn_str: str):
-        """ TODO document
-        """
-
-        insn_str = insn_str.strip()
-        mnemonic = extract_mnemonic(insn_str)
-
-        candidate_schemes = self.mnemonic_to_insn_schemes[mnemonic]
-        if len(candidate_schemes) == 0:
-            raise iwho.InstantiationError(
-                    f"instruction: {insn_str}, no schemes with matching mnemonic '{mnemonic}' found")
-
-        # TODO cache that instead?
-        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
-        try:
-            match = pat.parseString(insn_str)
-        except pp.ParseException as e:
-            raise iwho.InstantiationError(f"instruction: {insn_str}, ParsingError: {e.msg}")
-
-        assert len(match) == 1, "an internal pyparsing assumption is violated"
-
-        keys = list(match.keys())
-        assert len(keys) == 1, "an internal pyparsing assumption is violated"
-        key  = keys[0]
-        matching_scheme = candidate_schemes[int(key)]
-
-        # TODO deduplicate parsing
-        return matching_scheme.instantiate(insn_str)
-
-
-    def encode_insns(self, insn_instances: Sequence[iwho.InsnInstance]) -> str:
-        """ Encode a sequence of instruction instances into a byte stream
-        represented as string of hex characters.
-        """
-
-        asm_str = ""
-        for ii in insn_instances:
-            asm_str += str(ii)
-
-        res = self.coder.asm2hex(asm_str)
-
-        return res
-
-
     def operand_constraint_from_json_dict(self, jsondict):
         """ TODO document
         """
@@ -473,6 +399,7 @@ class Context(iwho.Context):
         elif kind == "x86MemConstraint":
             return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         raise iwho.SchemeError("unknown operand constraint kind: '{}'".format(kind))
+
 
     def operand_from_json_dict(self, jsondict):
         """ TODO document
