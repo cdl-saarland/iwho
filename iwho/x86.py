@@ -514,7 +514,7 @@ class Context(iwho.Context):
             return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86MemConstraint":
             return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
-        raise IWHOError("unknown operand constraint kind: '{}'".format(kind))
+        raise iwho.SchemeError("unknown operand constraint kind: '{}'".format(kind))
 
     def operand_from_json_dict(self, jsondict):
         """ TODO document
@@ -524,7 +524,7 @@ class Context(iwho.Context):
         if kind == "x86RegisterOperand":
             register_op = self.all_registers.get(jsondict["name"], None)
             if register_op is None:
-                raise IWHOError("unknown register: '{}'".format(jsondict["name"]))
+                raise iwho.SchemeError("unknown register: '{}'".format(jsondict["name"]))
             return register_op
         elif kind == "x86ImmediateOperand":
             return self.dedup_store.get(ImmediateOperand, width=jsondict["width"], value=jsondict["value"])
@@ -538,13 +538,7 @@ class Context(iwho.Context):
 
             return self.dedup_store.get(MemoryOperand, width=width, segment=segment, base=base, index=index, scale=scale, displacement=displacement)
 
-        raise IWHOError("unknown operand kind: '{}'".format(kind))
-
-
-class ASMCoder(ABC):
-    """ Interface for transforming readable assembly strings into hex strings
-    and vice versa.
-    """
+        raise iwho.SchemeError("unknown operand kind: '{}'".format(kind))
 
     @abstractmethod
     def asm2hex(self, asm_str: str) -> str:
@@ -662,7 +656,7 @@ class DefaultInstantiator:
             return self.for_insn(scheme)
         elif isinstance(scheme, iwho.OperandScheme):
             return self.for_operand(scheme)
-        raise IWHOError("trying to instantiate incompatible object: {}".format(repr(scheme)))
+        raise iwho.SchemeError("trying to instantiate incompatible object: {}".format(repr(scheme)))
 
     def for_insn(self, insn_scheme: iwho.InsnScheme) -> iwho.InsnInstance:
         """ Create an instruction instance from a scheme
