@@ -1,7 +1,7 @@
 
 # IWHO: Instructions With HOles
 
-from typing import Sequence, Optional, Dict
+from typing import Sequence, Optional, Dict, Union
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -67,7 +67,7 @@ class Context(ABC):
         self.mnemonic_to_insn_schemes = defaultdict(list)
 
     @abstractmethod
-    def extract_mnemonic(self, insn_str: str) -> str:
+    def extract_mnemonic(self, insn: Union[str, "InsnScheme", "InsnInstance"]) -> str:
         """ Extract the mnemonic from the assembly of a single instruction
         """
         pass
@@ -158,7 +158,7 @@ class Context(ABC):
         necessary data structures. """
 
         self.insn_schemes.append(scheme)
-        mnemonic = self.extract_mnemonic(scheme.str_template.template)
+        mnemonic = self.extract_mnemonic(scheme)
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
 
 

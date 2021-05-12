@@ -1,5 +1,5 @@
 
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 from enum import Enum
 from collections import defaultdict
@@ -311,12 +311,20 @@ class Context(iwho.Context):
         return it
 
 
-    def extract_mnemonic(self, insn_str: str) -> str:
+    def extract_mnemonic(self, insn: Union[str, iwho.InsnScheme, iwho.InsnInstance]) -> str:
         """ Extract the mnemonic from the assembly of a single instruction
 
         Here, this is the first whitespace-separated token that does not
         start with a brace.
         """
+        if isinstance(insn, iwho.InsnScheme):
+            insn_str = insn.str_template.template
+        elif isinstance(insn, iwho.InsnInstance):
+            insn_str = insn.scheme.str_template.template
+        else:
+            assert isinstance(insn, str)
+            insn_str = insn
+
         tokens = insn_str.split()
         for t in tokens:
             if t.startswith("{"):
