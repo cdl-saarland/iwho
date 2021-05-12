@@ -273,6 +273,11 @@ class ImmConstraint(iwho.OperandConstraint):
         hex_pat = pp.Word("0123456789abcdefABCDEF", min=1, max=max_num_nibbles)
         return pp.Suppress(pp.Literal('0x')) + hex_pat.setParseAction(lambda s, l, t: [int(t[0], 16)])
 
+    @property
+    def parser_priority(self) -> int:
+        # the smaller the width, the earlier we should try to match this
+        return self.width
+
     def __str__(self):
         return "IMM({})".format(self.width)
 

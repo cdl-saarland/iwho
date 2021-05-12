@@ -119,6 +119,8 @@ class Context(ABC):
             raise InstantiationError(
                     f"instruction: {insn_str}, no schemes with matching mnemonic '{mnemonic}' found")
 
+        candidate_schemes = sorted(candidate_schemes, key=lambda x: x.parser_priority)
+
         # TODO cache that instead?
         pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
         try:
@@ -268,6 +270,23 @@ class OperandConstraint(ABC):
         """
         pass
 
+    @property
+    def parser_priority(self) -> int:
+        """ An positive number corresponding to the priority with which an
+        instruction scheme with this constraint should be matched.
+
+        The smaller the number, the earlier the pattern should be tried. This
+        only really matters for constellations of patterns where one is more
+        specific than the other (and should therefore be matched first). If
+        this can happen, the number of possible matching operands would be a
+        reasonable choice here. If this cannot happen, the default
+        implementation will do.
+
+        The priorities for the operand constraints are multiplied to produce
+        the priority of the instruction scheme.
+        """
+        return 2**16 - 1
+
     @abstractmethod
     def to_json_dict(self):
         """ TODO document
@@ -314,6 +333,10 @@ class SetConstraint(OperandConstraint):
     @cached_property
     def parser_pattern(self):
         return pp.Group(pp.MatchFirst([pp.Group(o.parser_pattern).setResultsName(str(x)) for x, o in enumerate(self.acceptable_operands)]))
+
+    @property
+    def parser_priority(self) -> int:
+        return len(self.acceptable_operands)
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
@@ -512,6 +535,25 @@ class InsnScheme:
                 pattern += pp.Suppress(pp.Literal(f))
 
         return pattern
+
+
+    @property
+    def parser_priority(self) -> int:
+        """ An positive number corresponding to the priority with which this
+        instruction scheme should be matched.
+
+        The smaller the number, the earlier the pattern should be tried. This
+        only really matters for constellations of patterns where one is more
+        specific than the other (and should therefore be matched first).
+
+        The priorities for the operand constraints are multiplied to produce
+        the priority of the instruction scheme.
+        """
+        res = 1
+        for key, opscheme in self._operand_schemes.items():
+            if not opscheme.is_fixed():
+                res *= opscheme.operand_constraint.parser_priority
+        return res
 
 
     @property
