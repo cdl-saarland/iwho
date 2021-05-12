@@ -341,9 +341,6 @@ class Context(iwho.Context):
 
         from csv import DictReader
 
-        alias_class_mapping = dict()
-        alias_class_mapping = dict()
-
         # read the registers from the specification in csv format
         csv_path = os.path.join(os.path.dirname(__file__), "x86_registers.csv")
         with open(csv_path, "r") as csv_file:
