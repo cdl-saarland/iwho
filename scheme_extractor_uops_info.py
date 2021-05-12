@@ -179,7 +179,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
         else:
             str_template += "${" + op_name + "}"
-            width = str(operandNode.attrib.get('width'))
+            width = int(operandNode.attrib.get('width'))
             constraint = ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
