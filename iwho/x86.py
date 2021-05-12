@@ -398,7 +398,7 @@ class Context(iwho.Context):
         kind = jsondict["kind"]
         if kind == "SetConstraint":
             acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
-            return self.dedup_store.get(iwho.SetConstraint, acceptable_operands=acceptable_operands)
+            return self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(acceptable_operands))
         elif kind == "x86ImmConstraint":
             return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86MemConstraint":
