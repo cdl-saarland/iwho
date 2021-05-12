@@ -267,7 +267,11 @@ class ImmConstraint(iwho.OperandConstraint):
 
     @cached_property
     def parser_pattern(self):
-        return pp.Suppress(pp.Literal('0x')) + pp.pyparsing_common.hex_integer
+        # since we use hex immediates, we can match for width easily
+        assert self.width % 4 == 0, "Width checking of immedidates is only supported for multiples of 4"
+        max_num_nibbles = self.width // 4
+        hex_pat = pp.Word("0123456789abcdefABCDEF", min=1, max=max_num_nibbles)
+        return pp.Suppress(pp.Literal('0x')) + hex_pat.setParseAction(lambda s, l, t: [int(t[0], 16)])
 
     def __str__(self):
         return "IMM({})".format(self.width)

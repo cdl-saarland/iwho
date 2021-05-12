@@ -258,6 +258,45 @@ def test_parser_bulk(x86_ctx, task):
     assert str(insn_instance) == insn_str
 
 
+def test_parser_validate_immediates(x86_ctx):
+    found_scheme = None
+
+    # search for an "adc RW:GPR:32, IMM(8)" InsnScheme
+    for scheme in x86_ctx.insn_schemes:
+        if str(scheme) == "adc RW:GPR:32, IMM(8)":
+            found_scheme = scheme
+            break
+
+    assert found_scheme is not None
+
+    pat = found_scheme.parser_pattern
+
+    # sufficiently small immediates should match
+    pat.parseString("adc ebx, 0x3", parseAll=True)
+    pat.parseString("adc ebx, 0x2a", parseAll=True)
+    pat.parseString("adc ebx, 0xff", parseAll=True)
+    pat.parseString("adc ebx, 0x00", parseAll=True)
+
+    # immediates that require more than 8 bit should not match
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0x100", parseAll=True)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0x2a2a", parseAll=True)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0xffffffff", parseAll=True)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0x1ffffffff", parseAll=True)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0xffffffffffffffff", parseAll=True)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("adc ebx, 0x1ffffffffffffffff", parseAll=True)
+
+
 @pytest.mark.parametrize("task", valid_insns)
 def test_matcher_success(x86_ctx, task):
     # in contrast to the test_parser_bulk test, this also tests the selection
