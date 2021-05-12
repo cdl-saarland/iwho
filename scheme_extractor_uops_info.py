@@ -132,8 +132,8 @@ def add_uops_info_xml(ctx, xml_path):
             # TODO set affects_control_flow
             scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
-            ctx.insn_schemes.append(scheme)
-            ctx.mnemonic_to_insn_schemes[mnemonic].append(scheme)
+            # TODO remove duplicates
+            ctx.add_insn_scheme(scheme)
 
         except UnsupportedFeatureError as e:
             logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
