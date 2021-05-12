@@ -26,6 +26,7 @@ def get_regs(ctx, category, width=None):
 
     return res
 
+
 def get_adc_scheme():
     ctx = x86.Context()
     str_template = "adc ${r0}, ${r1}"
@@ -37,6 +38,7 @@ def get_adc_scheme():
     implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in get_regs(ctx, "FLAG")]
     scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
     return scheme, ctx
+
 
 def test_construct_insn():
     scheme, ctx = get_adc_scheme()
@@ -63,6 +65,7 @@ def test_construct_insn():
 
     print("written operands:")
     print(insn.written_operands)
+
 
 def test_construct_memory_op():
     ctx = x86.Context()
@@ -99,6 +102,7 @@ def test_construct_memory_op():
     print("written operands:")
     print(insn.written_operands)
 
+
 def test_construct_invalid_insn_op_missing():
     scheme, ctx = get_adc_scheme()
 
@@ -123,6 +127,7 @@ def test_construct_invalid_insn_wrong_op():
     with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
 
+
 def test_construct_invalid_insn_superfluous_op():
     scheme, ctx = get_adc_scheme()
 
@@ -135,6 +140,7 @@ def test_construct_invalid_insn_superfluous_op():
 
     with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
+
 
 @pytest.fixture(scope="module")
 def x86_ctx():
@@ -194,7 +200,7 @@ valid_insns = [
         Task(text="adcx rax, qword ptr [r12 + 2*rbx + 0x2a]", hex_str="66490f38f6445c2a", template="adcx ${reg0}, qword ptr ${mem0}"),
         Task(text="adcx rax, qword ptr [r12]", hex_str="66490f38f60424", template="adcx ${reg0}, qword ptr ${mem0}"),
         Task(text="adcx rax, qword ptr [r12 + 0x2a]", hex_str="66490f38f644242a", template="adcx ${reg0}, qword ptr ${mem0}"),
-        # Task(text="adcx rax, qword ptr [4 * rbx + 0x30]", hex_str="66480f38f64330", template="adcx ${reg0}, qword ptr ${mem0}"), # todo
+        # Task(text="adcx rax, qword ptr [4 * rbx + 0x30]", hex_str="66480f38f64330", template="adcx ${reg0}, qword ptr ${mem0}"), # TODO
         Task(text="adc eax, 0x2a", hex_str="83d02a", template="adc ${reg0}, ${imm0}"),
 
         # b"\x01\xc0",
@@ -267,6 +273,7 @@ def test_matcher_success(x86_ctx, task):
     print(repr(insn_instance))
     assert str(insn_instance) == insn_str
 
+
 def test_matcher_inclusion_order(x86_ctx):
     # This test checks that among multiple matching schemes, the most specific
     # is chosen.
@@ -274,6 +281,7 @@ def test_matcher_inclusion_order(x86_ctx):
     ctx = x86_ctx
     insn_instance = ctx.match_insn_str(insn_str)
     assert insn_instance.scheme.operand_schemes["imm0"].is_fixed()
+
 
 @pytest.mark.parametrize("task", invalid_insns)
 def test_matcher_fail(x86_ctx, task):
@@ -295,6 +303,7 @@ def test_llvmmc_encoder_single(task):
 
     assert hex_str == ref_hex_str
 
+
 def test_llvmmc_encoder_cat():
     asm = ""
     ref_hex_str = ""
@@ -306,6 +315,7 @@ def test_llvmmc_encoder_cat():
     hex_str = coder.asm2hex(asm)
 
     assert hex_str == ref_hex_str
+
 
 @pytest.mark.parametrize("task", valid_insns)
 def test_llvmmc_decoder_single(task):
@@ -320,6 +330,7 @@ def test_llvmmc_decoder_single(task):
     asm = asm_lines[0]
 
     assert asm == ref_asm
+
 
 def test_llvmmc_decoder_cat():
     ref_asm = ""
@@ -351,6 +362,7 @@ def test_assemble_all(x86_ctx):
             num_errors += 1
 
     assert num_errors == 0
+
 
 def test_assemble_then_disassemble_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)
