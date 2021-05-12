@@ -176,7 +176,7 @@ def test_parser_adcx(x86_ctx):
         pat = scheme.parser_pattern
         print(pat)
         try:
-            match = pat.parseString(insn_str)
+            match = pat.parseString(insn_str, parseAll=True)
             matches.append((scheme, match))
         except pp.ParseException as e:
             pass
@@ -242,7 +242,7 @@ def test_parser_bulk(x86_ctx, task):
     for scheme in res:
         pat = scheme.parser_pattern
         try:
-            match = pat.parseString(insn_str)
+            match = pat.parseString(insn_str, parseAll=True)
             matches.append((scheme, match))
         except pp.ParseException as e:
             pass

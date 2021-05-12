@@ -122,7 +122,7 @@ class Context(ABC):
         # TODO cache that instead?
         pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
         try:
-            match = pat.parseString(insn_str)
+            match = pat.parseString(insn_str, parseAll=True)
         except pp.ParseException as e:
             raise InstantiationError(f"instruction: {insn_str}")
 
