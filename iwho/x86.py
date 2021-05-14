@@ -170,11 +170,8 @@ class MemConstraint(iwho.OperandConstraint):
     def parser_pattern(self):
         int_pattern = pp.pyparsing_common.integer
         hex_pattern = pp.Suppress(pp.Literal('0x')) + pp.pyparsing_common.hex_integer
-        allowed_registers = self.ctx.get_registers_where(category=self.ctx._reg_category_enum["GPR"])
-        reg_pattern = pp.MatchFirst([pp.Literal(r.name) for r in allowed_registers]) # TODO this should probably be cached
-
-        segment_registers = self.ctx.get_registers_where(category=self.ctx._reg_category_enum["SEGMENT"])
-        seg_pattern = pp.MatchFirst([pp.Literal(r.name) for r in segment_registers]) # TODO this should probably be cached
+        reg_pattern = self.ctx.pattern_all_gprs
+        seg_pattern = self.ctx.pattern_all_segs
 
         plus_or_end = (pp.Suppress(pp.Literal("+") + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
 
@@ -318,6 +315,18 @@ class Context(iwho.Context):
                 it = tuple(filter(lambda x: getattr(x, key) == cond, it))
 
         return it
+
+
+    @cached_property
+    def pattern_all_gprs(self):
+        allowed_registers = self.get_registers_where(category=self._reg_category_enum["GPR"])
+        return pp.MatchFirst([pp.Literal(r.name) for r in allowed_registers])
+
+
+    @cached_property
+    def pattern_all_segs(self):
+        segment_registers = self.get_registers_where(category=self._reg_category_enum["SEGMENT"])
+        return pp.MatchFirst([pp.Literal(r.name) for r in segment_registers])
 
 
     def extract_mnemonic(self, insn: Union[str, iwho.InsnScheme, iwho.InsnInstance]) -> str:
