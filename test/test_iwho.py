@@ -402,6 +402,16 @@ def test_assemble_all(x86_ctx):
 
     assert num_errors == 0
 
+def test_scheme_matching(x86_ctx):
+    instor = x86.DefaultInstantiator(x86_ctx)
+
+    num_assemble_errors = 0
+
+    instances = []
+    for x, scheme in enumerate(x86_ctx.insn_schemes):
+        instance = instor(scheme)
+        scheme.instantiate(str(instance))
+
 
 def test_assemble_then_disassemble_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)
@@ -423,7 +433,7 @@ def test_assemble_then_disassemble_all(x86_ctx):
     num_disassemble_errors = 0
 
     for original_instance, hex_str in instances:
-        print(f"trying to decode {original_instance}")
+        print(f"trying to decode {original_instance} ('{hex_str}')")
         try:
             new_instances = x86_ctx.decode_insns(hex_str)
             assert len(new_instances) == 1
@@ -433,7 +443,7 @@ def test_assemble_then_disassemble_all(x86_ctx):
                 print(repr(original_instance))
             assert new_instance == original_instance
         except iwho.IWHOError as e:
-            print(f"error: {e}")
+            print(f"error: {repr(e)}")
             num_disassemble_errors += 1
 
     assert num_assemble_errors == 0 and num_disassemble_errors == 0
@@ -444,5 +454,6 @@ if __name__ == "__main__":
     init_logging('debug')
 
     x86_ctx = make_test_x86ctx()
-    test_assemble_then_disassemble_all(x86_ctx)
+    # test_assemble_then_disassemble_all(x86_ctx)
+    from IPython import embed; embed()
 

@@ -122,11 +122,15 @@ class Context(ABC):
         candidate_schemes = sorted(candidate_schemes, key=lambda x: x.parser_priority)
 
         # TODO cache that instead?
-        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) for x, cs in enumerate(candidate_schemes)])
+        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) + pp.StringEnd() for x, cs in enumerate(candidate_schemes)])
+        # The StringEnd() at this specific location is very much non-optional.
+        # If it were placed outside of the MatchFirst (as it is done implicitly
+        # by parseString(..., parseAll=True)), a too short prefix pattern might
+        # match, so that the end of string is not reached.
         try:
-            match = pat.parseString(insn_str, parseAll=True)
+            match = pat.parseString(insn_str)
         except pp.ParseException as e:
-            raise InstantiationError(f"instruction: {insn_str}")
+            raise InstantiationError(f"instruction '{insn_str}' does not match any candidate scheme")
 
         assert len(match) == 1, "an internal pyparsing assumption is violated"
 
@@ -484,7 +488,7 @@ class InsnScheme:
         """
         if isinstance(args, str):
             try:
-                match = self.parser_pattern.parseString(args, parseAll=True)
+                match = self.parser_pattern.parseString(args)
             except pp.ParseException as e:
                 raise InstantiationError("Invalid instruction for scheme: {}".format(args))
 

@@ -129,6 +129,7 @@ def add_uops_info_xml(ctx, xml_path):
                     str_template += ', {sae}'
 
             str_template = str_template.lower()
+            # TODO check realizability, adjust templates (e.g. "sar <.>, 1" -> "sar <.>")
             # TODO set affects_control_flow
             scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
 
