@@ -200,18 +200,15 @@ valid_insns = [
         Task(text="adcx rax, qword ptr [r12 + 2*rbx + 0x2a]", hex_str="66490f38f6445c2a", template="adcx ${reg0}, qword ptr ${mem0}"),
         Task(text="adcx rax, qword ptr [r12]", hex_str="66490f38f60424", template="adcx ${reg0}, qword ptr ${mem0}"),
         Task(text="adcx rax, qword ptr [r12 + 0x2a]", hex_str="66490f38f644242a", template="adcx ${reg0}, qword ptr ${mem0}"),
-        # Task(text="adcx rax, qword ptr [4 * rbx + 0x30]", hex_str="66480f38f64330", template="adcx ${reg0}, qword ptr ${mem0}"), # TODO
+        Task(text="adcx rax, qword ptr [4*rbx + 0x30]", hex_str="66480f38f6049d30000000", template="adcx ${reg0}, qword ptr ${mem0}"),
         Task(text="adc eax, 0x2a", hex_str="83d02a", template="adc ${reg0}, ${imm0}"),
 
-        # b"\x01\xc0",
-        # b"\x48\x81\xc4\xc8\x00\x00\x00", # add rsp, 0Xc8
-        # b"\x81\xc4\xc8\x00\x00\x00", # add esp, 0Xc8
-        # b"\x48\xd1\xfe", # sar rsi, 1
-        # b"\x48\xc1\xfe\x07", # sar rsi, 7
-        # b"\x48\xd3\xfe", # sar rsi, cl
-        # b"\xd1\xfa", # sar edx, 1
-        # b"\xf3\x0f\xc2\xc8\x06", # cmpnless xmm1, xmm0
-        # b"\x4f\x11\x44\x6e\x08", # adc qword ptr [r14+2*r13+8], r8
+        Task(text="sar edx", hex_str="d1fa", template="sar ${reg0}"),
+        Task(text="sar rsi", hex_str="48d1fe", template="sar ${reg0}"),
+        Task(text="sar rsi, 0x7", hex_str="48c1fe07", template="sar ${reg0}, ${imm0}"),
+        Task(text="sar rsi, cl", hex_str="48d3fe", template="sar ${reg0}, ${reg1}"),
+        Task(text="add rsp, 0xc8", hex_str="4881c4c8000000", template="add ${reg0}, ${imm0}"),
+        Task(text="add esp, 0xc8", hex_str="81c4c8000000", template="add ${reg0}, ${imm0}"),
     ]
 
 invalid_insns = [
