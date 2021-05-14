@@ -65,6 +65,7 @@ class Context(ABC):
         # this is an index to speed up parsing by only trying to match
         # instruction schemes with a fitting mnemonic
         self.mnemonic_to_insn_schemes = defaultdict(list)
+        self.mnemonic_pattern_cache = dict()
 
     @abstractmethod
     def extract_mnemonic(self, insn: Union[str, "InsnScheme", "InsnInstance"]) -> str:
@@ -114,6 +115,8 @@ class Context(ABC):
         insn_str = insn_str.strip()
         mnemonic = self.extract_mnemonic(insn_str)
 
+        # Get schemes with this mnemonic, sort them according to their
+        # priority, and get a pattern that maches the first of them.
         candidate_schemes = self.mnemonic_to_insn_schemes[mnemonic]
         if len(candidate_schemes) == 0:
             raise InstantiationError(
@@ -121,12 +124,21 @@ class Context(ABC):
 
         candidate_schemes = sorted(candidate_schemes, key=lambda x: x.parser_priority)
 
-        # TODO cache that instead?
-        pat = pp.MatchFirst([pp.Group(cs.parser_pattern).setResultsName(str(x)) + pp.StringEnd() for x, cs in enumerate(candidate_schemes)])
-        # The StringEnd() at this specific location is very much non-optional.
-        # If it were placed outside of the MatchFirst (as it is done implicitly
-        # by parseString(..., parseAll=True)), a too short prefix pattern might
-        # match, so that the end of string is not reached.
+        cached_pattern = self.mnemonic_pattern_cache.get(mnemonic, None)
+
+        if cached_pattern is not None:
+            pat = cached_pattern
+        else:
+            pat = pp.MatchFirst(
+                    [pp.Group(cs.parser_pattern).setResultsName(str(x)) + pp.StringEnd() for x, cs in enumerate(candidate_schemes)])
+            # The StringEnd() at this specific location is very much
+            # non-optional. If it were placed outside of the MatchFirst (as it
+            # is done implicitly by parseString(..., parseAll=True)), a too
+            # short prefix pattern might match, so that the end of string is
+            # not reached.
+
+            self.mnemonic_pattern_cache[mnemonic] = pat
+
         try:
             match = pat.parseString(insn_str)
         except pp.ParseException as e:
@@ -166,6 +178,9 @@ class Context(ABC):
         self.insn_schemes.append(scheme)
         mnemonic = self.extract_mnemonic(scheme)
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
+
+        # invalidate the pattern cache
+        self.mnemonic_pattern_cache.pop(mnemonic, None)
 
 
     def fill_from_json_dict(self, jsondict):
