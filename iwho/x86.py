@@ -537,6 +537,12 @@ class LLVMMCCoder(iwho.ASMCoder):
 
         asm_lines = []
         for l in lines:
+
+            # eliminate comments
+            loc = l.find("#")
+            if loc >= 0:
+                l = l[:loc]
+
             tokens = l.split()
             asm_str = " ".join(tokens)
             if len(asm_str) == 0 or asm_str[0] == '.':
