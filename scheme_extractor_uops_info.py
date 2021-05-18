@@ -62,6 +62,8 @@ def add_uops_info_xml(ctx, xml_path):
 
     num_errors = 0
 
+    all_schemes = dict()
+
     for instrNode in xml_root.iter('instruction'):
         try:
             affects_control_flow = False
@@ -69,7 +71,11 @@ def add_uops_info_xml(ctx, xml_path):
             if instrNode.attrib['category'] in ['COND_BR', 'UNCOND_BR', 'CALL', 'RET']:
                 affects_control_flow = True
 
-            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL',
+            if instrNode.attrib.get('cpl', '0') != '3':
+                # that's a kernel mode instruction, we don't support these
+                continue
+
+            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL', 'RDWRFSGS', 'RDPID',
                     'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'CET', 'SYSTEM', 'SEGOP']:
                 # Unsupported instructions
                 continue
@@ -142,8 +148,15 @@ def add_uops_info_xml(ctx, xml_path):
                     affects_control_flow=affects_control_flow
                 )
 
-            # TODO remove duplicates
-            ctx.add_insn_scheme(scheme)
+            key = str(scheme)
+            if key in all_schemes:
+                print(f"Duplicate scheme key: {key}")
+                # print("for these schemes:")
+                # print(f"  {repr(scheme)}")
+                # print(f"  {repr(all_schemes[key])}")
+            else:
+                all_schemes[key] = scheme
+                ctx.add_insn_scheme(scheme)
 
         except UnsupportedFeatureError as e:
             logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
@@ -153,6 +166,35 @@ def add_uops_info_xml(ctx, xml_path):
         logger.info(f"Encountered {num_errors} error(s) while processing uops.info xml.")
 
     logger.info(f"{len(ctx.insn_schemes)} instruction schemes after processing uops.info xml.")
+
+
+    # ensure that all schemes are realizable and make it through encoder and decoder
+    instor = x86.DefaultInstantiator(ctx)
+
+    mismatches = 0
+    errors = 0
+    for x, scheme in enumerate(ctx.insn_schemes):
+        instance = instor(scheme)
+        print(f"instruction number {x} : {instance}")
+        try:
+            hex_str = ctx.encode_insns([instance])
+            assert len(hex_str) > 0
+            new_instances = ctx.decode_insns(hex_str)
+            assert len(new_instances) == 1
+            new_instance = new_instances[0]
+
+            if str(new_instance.scheme) != str(scheme):
+                mismatches += 1
+                print(f"mismatch")
+
+
+        except iwho.IWHOError as e:
+            print(f"error: {e}")
+            errors += 1
+
+    print(f"found {mismatches} mismatches")
+    print(f"found {errors} errors")
+
 
 
 def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
