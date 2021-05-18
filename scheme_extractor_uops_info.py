@@ -64,9 +64,13 @@ def add_uops_info_xml(ctx, xml_path):
 
     for instrNode in xml_root.iter('instruction'):
         try:
-            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT',
-                    'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'COND_BR',
-                    'UNCOND_BR', 'CALL', 'CET', 'SYSTEM', 'SEGOP']:
+            affects_control_flow = False
+
+            if instrNode.attrib['category'] in ['COND_BR', 'UNCOND_BR', 'CALL', 'RET']:
+                affects_control_flow = True
+
+            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL',
+                    'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'CET', 'SYSTEM', 'SEGOP']:
                 # Unsupported instructions
                 continue
 
@@ -130,8 +134,13 @@ def add_uops_info_xml(ctx, xml_path):
 
             str_template = str_template.lower()
             # TODO check realizability, adjust templates (e.g. "sar <.>, 1" -> "sar <.>")
-            # TODO set affects_control_flow
-            scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit_operands, implicit_operands=implicit_operands)
+
+            scheme = iwho.InsnScheme(
+                    str_template=str_template,
+                    operand_schemes=explicit_operands,
+                    implicit_operands=implicit_operands,
+                    affects_control_flow=affects_control_flow
+                )
 
             # TODO remove duplicates
             ctx.add_insn_scheme(scheme)
@@ -210,9 +219,12 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             constraint = ctx.dedup_store.get(x86.ImmConstraint, unhashed_kwargs={"context": ctx}, width=width)
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
-    # elif op_type == 'relbr':
-        # str_template = '1: ' + str_template + '1b'
-        # TODO
+    elif op_type == 'relbr':
+        width = int(operandNode.attrib['width'])
+        str_template += "${" + op_name + "}"
+        constraint = ctx.dedup_store.get(x86.ImmConstraint, unhashed_kwargs={"context": ctx}, width=width)
+        op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
+
     elif op_type == 'flags':
         for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
             fval = operandNode.attrib.get(f, '')
