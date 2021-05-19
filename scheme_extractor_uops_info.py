@@ -75,7 +75,7 @@ def add_uops_info_xml(ctx, xml_path):
                 # that's a kernel mode instruction, we don't support these
                 continue
 
-            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL', 'RDWRFSGS', 'RDPID',
+            if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL', 'VTX', 'RDWRFSGS', 'RDPID',
                     'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'CET', 'SYSTEM', 'SEGOP']:
                 # Unsupported instructions
                 continue
@@ -101,6 +101,14 @@ def add_uops_info_xml(ctx, xml_path):
             str_template = instrNode.get('asm')
             str_template = str_template.replace("{load} ", "")
             str_template = str_template.replace("{store} ", "")
+
+            # replace some wrong mnemonics
+            mnemonic_replacements = {
+                    "VPCMPESTRIQ": "VPCMPESTRI", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
+                    "VPCMPESTRMQ": "VPCMPESTRM", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
+                }
+            str_template = mnemonic_replacements.get(str_template, str_template)
+
             mnemonic = str_template
 
             if mnemonic in ["PREFETCHW", "PREFETCH"]:
