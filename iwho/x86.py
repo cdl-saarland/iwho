@@ -482,7 +482,7 @@ class LLVMMCCoder(iwho.ASMCoder):
         res = subprocess.run(cmd, **subprocess_args)
         if res.returncode != 0:
             raise iwho.ASMCoderError(
-                    "Non-zero return code from llvm-mc when encoding: {}\nstderr:\n".format(res.returncode) + res.stderr)
+                    "Non-zero return code {} from llvm-mc when encoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
 
         asm_output = res.stdout
         lines = asm_output.split("\n")
@@ -530,7 +530,7 @@ class LLVMMCCoder(iwho.ASMCoder):
         res = subprocess.run(cmd, **subprocess_args)
         if res.returncode != 0:
             raise iwho.ASMCoderError(
-                    "Non-zero return code from llvm-mc when decoding: {}\nstderr:\n".format(res.returncode) + res.stderr)
+                    "Non-zero return code {} from llvm-mc when decoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
 
         asm_output = res.stdout
         lines = asm_output.split("\n")

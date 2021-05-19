@@ -139,7 +139,6 @@ def add_uops_info_xml(ctx, xml_path):
                     str_template += ', {sae}'
 
             str_template = str_template.lower()
-            # TODO check realizability, adjust templates (e.g. "sar <.>, 1" -> "sar <.>")
 
             scheme = iwho.InsnScheme(
                     str_template=str_template,
@@ -171,26 +170,45 @@ def add_uops_info_xml(ctx, xml_path):
     # ensure that all schemes are realizable and make it through encoder and decoder
     instor = x86.DefaultInstantiator(ctx)
 
-    mismatches = 0
-    errors = 0
-    for x, scheme in enumerate(ctx.insn_schemes):
-        instance = instor(scheme)
-        print(f"instruction number {x} : {instance}")
-        try:
-            hex_str = ctx.encode_insns([instance])
-            assert len(hex_str) > 0
-            new_instances = ctx.decode_insns(hex_str)
-            assert len(new_instances) == 1
-            new_instance = new_instances[0]
+    with open("./error_log.txt", "w") as err_file:
 
-            if str(new_instance.scheme) != str(scheme):
-                mismatches += 1
-                print(f"mismatch")
+        mismatches = 0
+        errors = 0
+        for x, scheme in enumerate(ctx.insn_schemes):
+            instance = instor(scheme)
+            error_log = f"scheme no. {x}\n"
+            error_log += "original scheme: {}\n  {}\n".format(str(scheme), repr(scheme))
+            error_log += "original instance: {}\n".format(str(instance))
+            print(f"instruction number {x} : {instance}")
+            try:
+                hex_str = ctx.encode_insns([instance])
+                if not (len(hex_str) > 0):
+                    error_log += "ERROR: encoded to empty hex string\n"
+                    raise iwho.IWHOError("see error log")
+
+                new_instances = ctx.decode_insns(hex_str)
+
+                if not (len(new_instances) == 1):
+                    error_log += "ERROR: decoded to {} instructions\n".format(len(new_instances))
+                    raise iwho.IWHOError("see error log")
+
+                new_instance = new_instances[0]
+                error_log += "decoded instance: {}\n".format(str(new_instance))
+                new_scheme = new_instance.scheme
+                error_log += "decoded scheme: {}\n  {}\n".format(str(new_scheme), repr(new_scheme))
+
+                if str(new_scheme) != str(scheme):
+                    mismatches += 1
+                    error_log += "ERROR: scheme mismatch\n"
+                    raise iwho.IWHOError("see error log")
 
 
-        except iwho.IWHOError as e:
-            print(f"error: {e}")
-            errors += 1
+            except iwho.IWHOError as e:
+                print(f"error: {e}")
+                errors += 1
+                error_log += f"EXCEPTION: {e}\n"
+                print("### NEXT ERROR ###\n" + error_log, file=err_file)
+
 
     print(f"found {mismatches} mismatches")
     print(f"found {errors} errors")
