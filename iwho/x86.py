@@ -589,7 +589,15 @@ class DefaultInstantiator:
         constraint = operand_scheme.operand_constraint
 
         if isinstance(constraint, iwho.SetConstraint):
-            return next(iter(constraint.acceptable_operands))
+            for op in constraint.acceptable_operands:
+                if "a" in str(op) or "c" in str(op):
+                    # rax and ecx (and variants thereof) might be used for more
+                    # specific hard-wired schemes, so avoid them here if
+                    # possible
+                    continue
+                return op
+            # if not possible, just return the last one
+            return op
         elif isinstance(constraint, MemConstraint):
             return self.get_valid_memory_operand(constraint)
         elif isinstance(constraint, ImmConstraint):
