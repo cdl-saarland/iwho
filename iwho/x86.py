@@ -536,6 +536,7 @@ class LLVMMCCoder(iwho.ASMCoder):
         lines = asm_output.split("\n")
 
         asm_lines = []
+        prev_line_prefix = ""
         for l in lines:
 
             # eliminate comments
@@ -548,7 +549,15 @@ class LLVMMCCoder(iwho.ASMCoder):
             if len(asm_str) == 0 or asm_str[0] == '.':
                 continue
             asm_str = asm_str.lower()
-            asm_lines.append(asm_str)
+
+            if asm_str == "lock":
+                prev_line_prefix += asm_str + " "
+                continue
+
+            asm_lines.append(prev_line_prefix + asm_str)
+            prev_line_prefix = ""
+
+        assert prev_line_prefix == ""
 
         return asm_lines
 
