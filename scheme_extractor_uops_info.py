@@ -114,12 +114,16 @@ def add_uops_info_xml(ctx, xml_path):
                     "CMOVNLE": "CMOVG", # those are aliases for the same instruction ("not less or equal" and "greater"), and llvm-mc produces the G version
                     "CMOVNZ": "CMOVNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
                     "CMOVZ": "CMOVE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
+                    "ENTERW": "ENTER", # llvm-mc doesn't recognize ENTERW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
+                    "LEAVEW": "LEAVE", # llvm-mc doesn't recognize LEAVEW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
                 }
             str_template = mnemonic_replacements.get(str_template, str_template)
 
             mnemonic = str_template
 
-            if mnemonic in ["PREFETCHW", "PREFETCH"]:
+            if mnemonic in ["PREFETCHW", "PREFETCH",
+                    "INS", "INSB", "INSW", "INSD", # input from port
+                    "IRETW",]:
                 continue
 
             explicit_operands = dict()
