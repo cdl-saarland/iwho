@@ -101,11 +101,19 @@ def add_uops_info_xml(ctx, xml_path):
             str_template = instrNode.get('asm')
             str_template = str_template.replace("{load} ", "")
             str_template = str_template.replace("{store} ", "")
+            str_template = str_template.replace("{disp32} ", "")
 
             # replace some wrong mnemonics
             mnemonic_replacements = {
                     "VPCMPESTRIQ": "VPCMPESTRI", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
                     "VPCMPESTRMQ": "VPCMPESTRM", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
+                    "CALL FAR": "CALL", # the `FAR` would here be interpreted as a symbol and result in a relocation
+                    "CMOVNB": "CMOVAE", # those are aliases for the same instruction ("not below" and "above or equal"), and llvm-mc produces the AE version
+                    "CMOVNBE": "CMOVA", # those are aliases for the same instruction ("not below or equal" and "above"), and llvm-mc produces the A version
+                    "CMOVNL": "CMOVGE", # those are aliases for the same instruction ("not less" and "greater or equal"), and llvm-mc produces the GE version
+                    "CMOVNLE": "CMOVG", # those are aliases for the same instruction ("not less or equal" and "greater"), and llvm-mc produces the G version
+                    "CMOVNZ": "CMOVNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
+                    "CMOVZ": "CMOVE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
                 }
             str_template = mnemonic_replacements.get(str_template, str_template)
 

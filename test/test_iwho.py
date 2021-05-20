@@ -381,6 +381,12 @@ def test_llvmmc_decoder_cat():
 
     assert asm_str == ref_asm
 
+def test_encode_relocation():
+
+    coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
+    with pytest.raises(iwho.ASMCoderError):
+        hex_str = coder.asm2hex("call far [rbx + 0x40]")
+
 
 def test_assemble_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)

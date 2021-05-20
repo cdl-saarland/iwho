@@ -498,13 +498,21 @@ class LLVMMCCoder(iwho.ASMCoder):
                 raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
             hexlist = tokens[1]
             hexlist = hexlist.strip()
-            hexlist = hexlist.replace("[", "")
-            hexlist = hexlist.replace("]", "")
-            hexlist = hexlist.replace(",", "")
-            hexlist = hexlist.replace("0x", "")
-            if len(hexlist) == 0 or not is_hex_str(hexlist):
+            if hexlist[0] != '[' or hexlist[-1] != ']':
                 raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
-            hex_lines.append(hexlist)
+            hex_tokens = hexlist[1:-1].split(",")
+            hex_bytes = []
+            for t in hex_tokens:
+                if not t.startswith("0x"):
+                    # TODO maybe we should do something to properly handle relocations
+                    raise iwho.ASMCoderError("Unexpected llvm-mc output line (possible relocation):\n  {}".format(l))
+                hex_bytes.append(t[2:])
+
+            hexstr = "".join(hex_bytes)
+
+            if len(hexstr) == 0 or not is_hex_str(hexstr):
+                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+            hex_lines.append(hexstr)
 
         return "".join(hex_lines)
 
