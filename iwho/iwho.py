@@ -47,10 +47,23 @@ class ASMCoderError(IWHOError):
 
 
 class Context(ABC):
-    """ TODO document
+    """ Manager for the instruction schemes of a single instruction set
+    architecture.
+    It provides access to the available instruction schemes, manages and
+    caches related objects and provides functionality to encode and decode
+    instructions according to the schemes.
+
+    When implementing iwho for a new ISA, an early  step will be to create
+    a new subclass of this, overwriting the abstract methods.
+
+    Most applications using this library will only need one instance of this in
+    a program run.
     """
 
     def __init__(self, coder: "ASMCoder"):
+        """ Super class constructor, requires an ASMCoder that is used for
+        encoding and decoding instructions.
+        """
         self.coder = coder
 
         self.insn_schemes = []
