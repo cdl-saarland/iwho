@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 class IWHOError(Exception):
     """ Superclass for exceptions in the package
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 class SchemeError(IWHOError):
     """ An instruction scheme itself or a component of it is broken
