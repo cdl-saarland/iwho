@@ -108,6 +108,7 @@ def add_uops_info_xml(ctx, xml_path):
                     "VPCMPESTRIQ": "VPCMPESTRI", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
                     "VPCMPESTRMQ": "VPCMPESTRM", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
                     "CALL FAR": "CALL", # the `FAR` would here be interpreted as a symbol and result in a relocation
+                    "JMP FAR": "JMP", # the `FAR` would here be interpreted as a symbol and result in a relocation
                     "CMOVNB": "CMOVAE", # those are aliases for the same instruction ("not below" and "above or equal"), and llvm-mc produces the AE version
                     "CMOVNBE": "CMOVA", # those are aliases for the same instruction ("not below or equal" and "above"), and llvm-mc produces the A version
                     "CMOVNL": "CMOVGE", # those are aliases for the same instruction ("not less" and "greater or equal"), and llvm-mc produces the GE version
@@ -160,6 +161,36 @@ def add_uops_info_xml(ctx, xml_path):
 
             str_template = str_template.lower()
 
+            weird_string_ops_whose_operands_may_or_may_not_be_omitted = {
+                    "cmpsb", "cmpsw", "cmpsd", "cmpsq",
+                    "movsb", "movsw", "movsd", "movsq",
+                    "lodsb", "lodsw", "lodsd", "lodsq",
+                }
+            # llvm-mc prefers to give these operands explicitly, so we need to
+            # transform some implicit memory operands to explicit ones.
+            if str_template in weird_string_ops_whose_operands_may_or_may_not_be_omitted:
+                memory_operands = []
+                actual_implicit_operands = []
+                for op_scheme in implicit_operands:
+                    assert op_scheme.is_fixed()
+                    fixed_op = op_scheme.fixed_operand
+                    if isinstance(fixed_op, x86.MemoryOperand):
+                        memory_operands.append(op_scheme)
+                    else:
+                        actual_implicit_operands.append(op_scheme)
+                implicit_operands = actual_implicit_operands
+
+                op_strs = []
+                for x, mem_op in enumerate(memory_operands):
+                    op_key = f"mem{x}"
+                    prefix = {64: "qword", 32: "dword", 16: "word", 8: "byte"}[mem_op.fixed_operand.width]
+                    prefix += " ptr"
+                    op_strs.append(prefix + " ${" + op_key +"}")
+                    assert op_key not in explicit_operands
+                    explicit_operands[op_key] = mem_op
+
+                str_template += " " + ", ".join(op_strs)
+
             scheme = iwho.InsnScheme(
                     str_template=str_template,
                     operand_schemes=explicit_operands,
@@ -168,11 +199,21 @@ def add_uops_info_xml(ctx, xml_path):
                 )
 
             key = str(scheme)
-            if key in all_schemes:
+
+            # filter out schemes that lead to mismatches when their instances are encoded and then again decoded
+            blocked_schemes = {
+                    "vpcmpestri R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestriq that we changed before, llvm-mc does not produce this without `qword ptr`
+                    "vpcmpestrm R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestrmq that we changed before, llvm-mc does not produce this without `qword ptr`
+                    "call R:MEM(32)", # wrong width, missing `qword ptr`
+                    "call R:MEM(48)", # wrong width, missing `qword ptr`
+                    "call R:MEM(80)", # wrong width, missing `qword ptr`
+
+                    }
+            if key in blocked_schemes:
+                continue
+            elif key in all_schemes:
                 print(f"Duplicate scheme key: {key}")
-                # print("for these schemes:")
-                # print(f"  {repr(scheme)}")
-                # print(f"  {repr(all_schemes[key])}")
+                continue
             else:
                 all_schemes[key] = scheme
                 ctx.add_insn_scheme(scheme)
@@ -249,8 +290,13 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
         except KeyError as e:
             raise UnsupportedFeatureError(f"Unsupported register: {e}")
-        constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
-        op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
+
+        if len(allowed_registers) == 1:
+            fixed_op = next(iter(allowed_registers))
+            op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, fixed_operand=fixed_op, read=read, written=written))
+        else:
+            constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+            op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
         if not operandNode.attrib.get('opmask', '') == '1':
             str_template += "${" + op_name + "}"
@@ -270,8 +316,18 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
         else:
             str_template += "${" + op_name + "}"
             width = int(operandNode.attrib.get('width'))
-            constraint = ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
-            op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
+            if operandNode.attrib.get('base', '') != '':
+                # fixed memory operand
+                base_reg = ctx.all_registers[operandNode.attrib['base'].lower()]
+                segment = None
+                if operandNode.attrib.get('seg', 'DS') != 'DS':
+                    segment = ctx.all_registers[operandNode.attrib['seg'].lower()]
+
+                op = ctx.dedup_store.get(x86.MemoryOperand, width=width, base=base_reg, segment=segment)
+                op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=read, written=written))
+            else:
+                constraint = ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
+                op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
         memorySuffix = operandNode.attrib.get('memory-suffix', '')
         if memorySuffix:
@@ -300,6 +356,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
     elif op_type == 'relbr':
+        # TODO we can't really give immediates as relbr arguments to llvm-mc, so this should be something else
         width = int(operandNode.attrib['width'])
         str_template += "${" + op_name + "}"
         constraint = ctx.dedup_store.get(x86.ImmConstraint, unhashed_kwargs={"context": ctx}, width=width)
