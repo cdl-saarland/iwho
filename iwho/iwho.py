@@ -175,6 +175,9 @@ class Context(ABC):
 
         asm_str = ""
         for ii in insn_instances:
+            if not ii.scheme.is_encodable():
+                print(ii.scheme.to_json_dict())
+                raise ASMCoderError(f"InsnScheme {ii.scheme} is not encodable")
             asm_str += str(ii)
 
         res = self.coder.asm2hex(asm_str)
@@ -339,6 +342,15 @@ class OperandConstraint(ABC):
         """
         pass
 
+    def is_encodable(self):
+        """ Check whether Instances of an InsnScheme with this
+        OperandConstraint can be encoded at all.
+
+        This would not be the case e.g. for x86 relative branch operands, since
+        they would need a symbol/label and a relocation.
+        """
+        return True
+
     @abstractmethod
     def __str__(self):
         pass
@@ -474,6 +486,13 @@ class OperandScheme:
         else:
             return self.operand_constraint.is_valid(operand)
 
+    def is_encodable(self):
+        """ Check if an Instance of this OperandScheme can be encoded.
+        """
+        if self.is_fixed():
+            return True
+        return self.operand_constraint.is_encodable()
+
     def from_match(self, match):
         """ TODO document
         """
@@ -602,6 +621,16 @@ class InsnScheme:
         assert isinstance(args, dict)
 
         return InsnInstance(scheme=self, operands=args)
+
+    def is_encodable(self):
+        """ Check if an Instance of this InsnScheme can be encoded.
+
+        That is the case if all explicit operand schemes can be encoded.
+        """
+        for k, v in self._operand_schemes.items():
+            if not v.is_encodable():
+                return False
+        return True
 
     @cached_property
     def parser_pattern(self):

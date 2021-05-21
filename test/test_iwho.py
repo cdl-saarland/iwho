@@ -388,6 +388,32 @@ def test_encode_relocation():
         hex_str = coder.asm2hex("call far [rbx + 0x40]")
 
 
+def test_not_encodable():
+    ctx = x86.Context()
+
+    scheme_dicts = [
+        { 'kind': 'InsnScheme', 'str_template': 'jne ${relbr}',
+        'operand_schemes': {
+            'relbr': {'kind': 'OperandScheme', 'operand_constraint': {'kind': 'x86SymbolConstraint', 'width': 8}, 'read': False, 'written': False}},
+        'implicit_operands': [
+            {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'rip'}, 'read': True, 'written': True},
+            {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'flag_zf'}, 'read': True, 'written': False}],
+        'affects_control_flow': True
+        }
+    ]
+
+    ctx.fill_from_json_dict(scheme_dicts)
+
+    hex_str = "752a"
+    iis = ctx.decode_insns(hex_str)
+    assert len(iis) == 1
+    ii = iis[0]
+    assert str(ii) == "jne 0x2a"
+
+    with pytest.raises(iwho.ASMCoderError):
+        ctx.encode_insns([ii])
+
+
 def test_assemble_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)
 

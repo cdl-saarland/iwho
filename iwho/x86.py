@@ -288,6 +288,40 @@ class ImmConstraint(iwho.OperandConstraint):
         return { "kind": "x86ImmConstraint", "width": self.width }
 
 
+class SymbolConstraint(ImmConstraint):
+    """ Constraint for symbol operands (for relocations/labels).
+
+    Those are bit odd, since for encoding, llvm-mc will not accept integer
+    operands in place of symbols (i.e. we would need to print them as labels,
+    but that would yield an instruction with a hole for a relocation). llvm-mc
+    is however happy to decode corresponding instructions with an immediate
+    operand.
+
+    We therefore parse them just as immediates so that we can decode them (by
+    inheriting most functionality from ImmConstraint), but don't allow encoding
+    them.
+    """
+
+    def is_encodable(self):
+        return False
+
+    def __init__(self, context: "Context", width: int):
+        super().__init__(context, width)
+
+    def __str__(self):
+        return "SYM({})".format(self.width)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.width == other.width)
+
+    def __hash__(self):
+        return hash((self.width))
+
+    def to_json_dict(self):
+        return { "kind": "x86SymbolConstraint", "width": self.width }
+
+
 class Context(iwho.Context):
     """ TODO document
     """
@@ -425,6 +459,8 @@ class Context(iwho.Context):
             return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86MemConstraint":
             return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
+        elif kind == "x86SymbolConstraint":
+            return self.dedup_store.get(SymbolConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         raise iwho.SchemeError("unknown operand constraint kind: '{}'".format(kind))
 
 

@@ -356,10 +356,9 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
     elif op_type == 'relbr':
-        # TODO we can't really give immediates as relbr arguments to llvm-mc, so this should be something else
         width = int(operandNode.attrib['width'])
         str_template += "${" + op_name + "}"
-        constraint = ctx.dedup_store.get(x86.ImmConstraint, unhashed_kwargs={"context": ctx}, width=width)
+        constraint = ctx.dedup_store.get(x86.SymbolConstraint, unhashed_kwargs={"context": ctx}, width=width)
         op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
     elif op_type == 'flags':
