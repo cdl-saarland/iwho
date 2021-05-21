@@ -195,7 +195,11 @@ class Context(ABC):
 
 
     def fill_from_json_dict(self, jsondict):
-        """ TODO document
+        """ Fill this context from externally stored instruction schemes.
+
+        The jsondict is a nested structure of dicts and lists as it is produced
+        by the `to_json_dict` method. This structure can be dumped as and
+        parsed from a json file.
         """
 
         # currently, that's actually a list. TODO: add a version check
@@ -203,7 +207,11 @@ class Context(ABC):
             self.add_insn_scheme(InsnScheme.from_json_dict(self, insn_scheme_dict))
 
     def to_json_dict(self):
-        """ TODO document
+        """ Generate a nested structure of dicts and lists that represents the
+        available instruction schemes.
+
+        This structure can be dumped as and parsed from a json file. It should
+        be usable by the `fill_from_json_dict` method.
         """
 
         # currently, that's actually a list. TODO: add a version check
