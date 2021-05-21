@@ -246,28 +246,66 @@ class ASMCoder(ABC):
 
 
 class OperandInstance(ABC):
-    """ TODO document
+    """ Interface that needs to be implemented by classes that represent
+    concrete operand instances.
+
+    When implementing an ISA in iwho, there will be several subclasses of this
+    required to represent different operand types, e.g. one for register
+    operands, one for memory operands, and one for immediate operands.
+    Each object that is an instance of a class implementing this interface
+    should represent a single concrete operand, like e.g. the register `rax` in
+    x86-64 or the immediate constant 42.
+
+    Implementations need to have reasonable methods for hashing and equality
+    checking as well as str and repr implementations.
+
+    If using the operand requires accessing additional resources (e.g. like in
+    x86-64, where using a memory operand (for reading, writing, or just for
+    address generation) requires reading all the registers that contribute to
+    the address computation), operand instances for these resources should be
+    returned by `additionally_read` or `additionally_written` via overriding.
     """
 
     def additionally_read(self) -> Sequence["OperandInstance"]:
-        """ TODO document
+        """ If using the operand requires reading additional resources (e.g.
+        like in x86-64, where using a memory operand (for reading, writing, or
+        just for address generation) requires reading all the registers that
+        contribute to the address computation), this method returns a list of
+        operand instances for these resources. These are necessary for accurate
+        dependencies.
+
+        Only needs to be overridden if it applies for the operand.
         """
         return []
 
     def additionally_written(self) -> Sequence["OperandInstance"]:
-        """ TODO document
+        """ If using the operand requires writing additional resources , this
+        method returns a list of operand instances for these resources. These
+        are necessary for accurate dependencies.
+        Could be used to represent auto-incrementing memory references.
+
+        Only needs to be overridden if it applies for the operand.
         """
         return []
 
     @property
     def parser_pattern(self):
-        """ TODO document
+        """ Return a pyparsing grammar fragment that matches this specific
+        operand.
+
+        By default, this is just matches the string representation of the
+        operand.
         """
         return pp.Literal(str(self))
 
     @abstractmethod
     def to_json_dict(self):
-        """ TODO document
+        """ Generate a nested structure of dicts and lists that represents this
+        operand.
+
+        The corresponding method to construct OperandInstances from dicts is
+        the `operand_from_json_dict` method of the `Context` (since it needs to
+        know all possible operand kinds, which are ISA specific).
         """
         pass
 
@@ -282,12 +320,22 @@ class OperandInstance(ABC):
 
 
 class OperandConstraint(ABC):
-    """ TODO document
+    """ Interface that needs to be implemented by classes that represent
+    constraints on operands.
+
+    These constraints describe the set of possible operands that can be used in
+    an InsnScheme for a specific operand. Examples would be "a 64-bit
+    register", "a memory location", or "an 8-bit immediate constant". Since
+    these are similarly ISA-specific as OperandInstances, an ISA implementation
+    needs to define the necessary constraints.
+
+    Implementations need to have reasonable methods for hashing and equality
+    checking as well as str and repr implementations.
     """
 
     @abstractmethod
     def is_valid(self, operand):
-        """ TODO document
+        """ Check whether the operand satisfies this operand constraint.
         """
         pass
 
@@ -296,15 +344,21 @@ class OperandConstraint(ABC):
         pass
 
     @abstractmethod
-    def from_match(self, match):
-        """ TODO document
+    def from_match(self, match: pp.ParseResults) -> OperandInstance:
+        """ Given a successful pyparsing ParseResults object produced by the
+        `parser_pattern` of this Constraint, return an OperandInstance that is
+        described by the match.
         """
         pass
 
     @property
     @abstractmethod
     def parser_pattern(self):
-        """ TODO document
+        """ Return a pyparsing grammar fragment that matches all possible
+        strings that represent an operand that fulfills this constraint.
+
+        The resulting match may be given to `from_match` to obtain a
+        corresponding OperandInstance.
         """
         pass
 
@@ -327,7 +381,12 @@ class OperandConstraint(ABC):
 
     @abstractmethod
     def to_json_dict(self):
-        """ TODO document
+        """ Generate a nested structure of dicts and lists that represents this
+        operand constraint.
+
+        The corresponding method to construct OperandConstraints from dicts is
+        the `operand_constraint_from_json_dict` method of the `Context` (since
+        it needs to know all possible operand kinds, which are ISA specific).
         """
         pass
 
