@@ -155,7 +155,7 @@ class MemConstraint(iwho.OperandConstraint):
         return (isinstance(operand, MemoryOperand) and
                 self.width == operand.width)
 
-    def from_match(self, match):
+    def from_match(self, match: pp.ParseResults) -> iwho.OperandInstance:
         kwargs = dict()
         reg_fun = lambda r: self.ctx.all_registers[r]
         hex_fun = lambda x: x[0]
