@@ -79,11 +79,6 @@ class MemoryOperand(iwho.OperandInstance):
         return res
 
     def __str__(self):
-        res = ""
-
-        if self.segment is not None:
-            res += "{}:".format(str(self.segment))
-
         parts = []
 
         if self.base is not None:
@@ -98,8 +93,12 @@ class MemoryOperand(iwho.OperandInstance):
         if self.displacement != 0:
             parts.append(hex(self.displacement))
 
-        res += " + ".join(parts)
+        res = " + ".join(parts)
         res = "[" + res + "]"
+
+        if self.segment is not None:
+            res = f"{self.segment}:" + res
+
         return res
 
     def __repr__(self):
