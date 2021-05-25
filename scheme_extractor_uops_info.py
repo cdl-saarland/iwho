@@ -2,6 +2,11 @@
 
 import json
 import os
+import re
+
+from collections import defaultdict
+
+import pyparsing as pp
 
 import iwho.iwho as iwho
 import iwho.x86 as x86
@@ -50,6 +55,77 @@ def main():
         #     json.dump(x, outfile)
         #     outfile.write(",\n")
 
+
+def make_operands_explicit(scheme, operand_keys):
+    implicit_operand_indices_to_remove = set()
+
+    new_explicit_operands = dict(scheme.operand_schemes)
+
+    # find the next free numbers to use in the keys for the operands
+    next_op_indices = defaultdict(lambda: 0)
+    for k in new_explicit_operands:
+        patterns = ["\(mem\)\(\d+\)", "\(reg\)\(\d+\)", "\(imm\)\(\d+\)", "\(agen\)\(\d+\)", "\(relbr\)\(\d+\)"]
+        patterns = list(map(lambda x: re.compile(x), patterns))
+        for p in patterns:
+            mat = p.fullmatch(k)
+            if mat is not None:
+                next_op_indices[mat.group(1)] = max(next_op_indices[mat.group(1)], int(mat.group(2)) + 1)
+                break
+
+    op_strs = []
+    for key in operand_keys:
+        for idx, opscheme in enumerate(scheme.implicit_operands):
+            try:
+                match = opscheme.parser_pattern.parseString(key, parseAll=True)
+                operand = opscheme.from_match(match)
+                if isinstance(operand, x86.MemoryOperand):
+                    x = next_op_indices["mem"]
+                    next_op_indices["mem"] += 1
+                    op_key = f"mem{x}"
+                    prefix = {64: "qword", 32: "dword", 16: "word", 8: "byte"}[operand.width]
+                    prefix += " ptr"
+                    op_strs.append(prefix + " ${" + op_key +"}")
+                    assert op_key not in new_explicit_operands
+                    new_explicit_operands[op_key] = opscheme
+                elif isinstance(operand, x86.RegisterOperand):
+                    x = next_op_indices["reg"]
+                    next_op_indices["reg"] += 1
+                    op_key = f"reg{x}"
+                    op_strs.append("${" + op_key +"}")
+                    assert op_key not in new_explicit_operands
+                    new_explicit_operands[op_key] = opscheme
+                elif isinstance(operand, x86.ImmediateOperand):
+                    x = next_op_indices["imm"]
+                    next_op_indices["imm"] += 1
+                    op_key = f"imm{x}"
+                    op_strs.append("${" + op_key +"}")
+                    assert op_key not in new_explicit_operands
+                    new_explicit_operands[op_key] = opscheme
+                else:
+                    assert False, "Unknown operand: {}".format(operand)
+
+                implicit_operand_indices_to_remove.add(idx)
+                break
+            except pp.ParseException as e:
+                pass
+        else:
+            assert False, "operand key {}, which should be made explicit, not found in this scheme: {}".format(key, repr(scheme))
+
+    # remove from implicit operands
+    new_implicit_operands = [op for x, op in enumerate(scheme.implicit_operands) if x not in implicit_operand_indices_to_remove]
+
+    new_str_template = scheme.str_template.template
+    if len(op_strs) > 0:
+        new_str_template += " " + ", ".join(op_strs)
+
+    new_affects_cf = scheme.affects_control_flow
+
+    return iwho.InsnScheme(
+            str_template=new_str_template,
+            operand_schemes=new_explicit_operands,
+            implicit_operands=new_implicit_operands,
+            affects_control_flow=new_affects_cf,
+        )
 
 def add_uops_info_xml(ctx, xml_path):
 
@@ -124,6 +200,7 @@ def add_uops_info_xml(ctx, xml_path):
 
             if mnemonic in ["PREFETCHW", "PREFETCH",
                     "INS", "INSB", "INSW", "INSD", # input from port
+                    "OUTS", "OUTSB", "OUTSW", "OUTSD", # output to port
                     "IRETW",]:
                 continue
 
@@ -161,35 +238,11 @@ def add_uops_info_xml(ctx, xml_path):
 
             str_template = str_template.lower()
 
-            weird_string_ops_whose_operands_may_or_may_not_be_omitted = {
-                    "cmpsb", "cmpsw", "cmpsd", "cmpsq",
-                    "movsb", "movsw", "movsd", "movsq",
-                    "lodsb", "lodsw", "lodsd", "lodsq",
-                }
-            # llvm-mc prefers to give these operands explicitly, so we need to
-            # transform some implicit memory operands to explicit ones.
-            if str_template in weird_string_ops_whose_operands_may_or_may_not_be_omitted:
-                memory_operands = []
-                actual_implicit_operands = []
-                for op_scheme in implicit_operands:
-                    assert op_scheme.is_fixed()
-                    fixed_op = op_scheme.fixed_operand
-                    if isinstance(fixed_op, x86.MemoryOperand):
-                        memory_operands.append(op_scheme)
-                    else:
-                        actual_implicit_operands.append(op_scheme)
-                implicit_operands = actual_implicit_operands
-
-                op_strs = []
-                for x, mem_op in enumerate(memory_operands):
-                    op_key = f"mem{x}"
-                    prefix = {64: "qword", 32: "dword", 16: "word", 8: "byte"}[mem_op.fixed_operand.width]
-                    prefix += " ptr"
-                    op_strs.append(prefix + " ${" + op_key +"}")
-                    assert op_key not in explicit_operands
-                    explicit_operands[op_key] = mem_op
-
-                str_template += " " + ", ".join(op_strs)
+            if (str_template == "mov ${reg0}, ${imm0}" and
+                    explicit_operands["reg0"].operand_constraint.acceptable_operands[0].width == 64 and
+                    explicit_operands["imm0"].operand_constraint.width == 64):
+                # this move with a very wide immediate is known by llvm-mc as 'movabs'
+                str_template = "movabs ${reg0}, ${imm0}"
 
             scheme = iwho.InsnScheme(
                     str_template=str_template,
@@ -197,6 +250,21 @@ def add_uops_info_xml(ctx, xml_path):
                     implicit_operands=implicit_operands,
                     affects_control_flow=affects_control_flow
                 )
+
+            # llvm-mc prefers to give these operands explicitly, so we need to
+            # transform some implicit  operands to explicit ones.
+            if str_template in ["cmpsb", "cmpsw", "cmpsd", "cmpsq"]:
+                scheme = make_operands_explicit(scheme, ["[rsi]", "es:[rdi]"])
+            if str_template in ["movsb", "movsw", "movsd", "movsq"]:
+                scheme = make_operands_explicit(scheme, ["es:[rdi]", "[rsi]"])
+            elif str_template in ["lodsb"]:
+                scheme = make_operands_explicit(scheme, ["al", "[rsi]"])
+            elif str_template in ["lodsw"]:
+                scheme = make_operands_explicit(scheme, ["ax", "[rsi]"])
+            elif str_template in ["lodsd"]:
+                scheme = make_operands_explicit(scheme, ["eax", "[rsi]"])
+            elif str_template in ["lodsq"]:
+                scheme = make_operands_explicit(scheme, ["rax", "[rsi]"])
 
             key = str(scheme)
 
@@ -210,6 +278,7 @@ def add_uops_info_xml(ctx, xml_path):
                     "jmp R:MEM(32)", # wrong width, missing `qword ptr`
                     "jmp R:MEM(48)", # wrong width, missing `qword ptr`
                     "jmp R:MEM(80)", # wrong width, missing `qword ptr`
+                    "mov W:GPR:16, R:SEGMENT:16", # wrong width, is implicitly changed to GPR:32
 
                     }
             if key in blocked_schemes:
@@ -229,7 +298,6 @@ def add_uops_info_xml(ctx, xml_path):
         logger.info(f"Encountered {num_errors} error(s) while processing uops.info xml.")
 
     logger.info(f"{len(ctx.insn_schemes)} instruction schemes after processing uops.info xml.")
-
 
     # ensure that all schemes are realizable and make it through encoder and decoder
     instor = x86.DefaultInstantiator(ctx)
