@@ -528,6 +528,10 @@ class LLVMMCCoder(iwho.ASMCoder):
             raise iwho.ASMCoderError(
                     "Non-zero return code {} from llvm-mc when encoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
 
+        if "warning" in res.stderr:
+            raise iwho.ASMCoderError(
+                    "llvm-mc produced a warning when encoding input \"{}\":\n".format(input_str) + res.stderr)
+
         asm_output = res.stdout
         lines = asm_output.split("\n")
 
@@ -583,6 +587,10 @@ class LLVMMCCoder(iwho.ASMCoder):
         if res.returncode != 0:
             raise iwho.ASMCoderError(
                     "Non-zero return code {} from llvm-mc when decoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
+
+        if "warning" in res.stderr:
+            raise iwho.ASMCoderError(
+                    "llvm-mc produced a warning when decoding input \"{}\":\n".format(input_str) + res.stderr)
 
         asm_output = res.stdout
         lines = asm_output.split("\n")
