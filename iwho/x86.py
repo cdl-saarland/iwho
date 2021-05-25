@@ -12,6 +12,8 @@ import pyparsing as pp
 import iwho.iwho as iwho
 from iwho.iwho_utils import is_hex_str
 
+import logging
+logger = logging.getLogger(__name__)
 
 class RegisterOperand(iwho.OperandInstance):
     """ TODO document
@@ -288,7 +290,30 @@ class ImmConstraint(iwho.OperandConstraint):
         return { "kind": "x86ImmConstraint", "width": self.width }
 
 
-class SymbolConstraint(ImmConstraint):
+class SymbolOperand(iwho.OperandInstance):
+    """ TODO document
+    """
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return "pseudo_reloc_symbol"
+
+    def __repr__(self):
+        return "SymbolOperand()"
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__)
+
+    def __hash__(self):
+        return 42
+
+    def to_json_dict(self):
+        return { "kind": "x86SymbolOperand" }
+
+
+class SymbolConstraint(iwho.OperandConstraint):
     """ Constraint for symbol operands (for relocations/labels).
 
     Those are bit odd, since for encoding, llvm-mc will not accept integer
@@ -301,25 +326,36 @@ class SymbolConstraint(ImmConstraint):
     inheriting most functionality from ImmConstraint), but don't allow encoding
     them.
     """
+    # TODO update documentation
 
-    def is_encodable(self):
-        return False
+    def __init__(self, context: "Context"):
+        self.ctx = context
 
-    def __init__(self, context: "Context", width: int):
-        super().__init__(context, width)
+    def from_match(self, match):
+        logger.warning("Encountered a relocation (e.g. for a jump label) in the input. It will not be handled semantically correct.")
+        # we don't care for the actual value
+        op = self.ctx.dedup_store.get(SymbolOperand)
+        return op
+
+    @cached_property
+    def parser_pattern(self):
+        hex_pat = pp.Word("0123456789abcdefABCDEF", min=1)
+        return pp.Suppress(pp.Literal('0x')) + hex_pat.setParseAction(lambda s, l, t: [int(t[0], 16)])
+
+    def is_valid(self, operand):
+        return (isinstance(operand, SymbolOperand))
 
     def __str__(self):
-        return "SYM({})".format(self.width)
+        return "SYM"
 
     def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.width == other.width)
+        return (self.__class__ == other.__class__)
 
     def __hash__(self):
-        return hash((self.width))
+        return 42
 
     def to_json_dict(self):
-        return { "kind": "x86SymbolConstraint", "width": self.width }
+        return { "kind": "x86SymbolConstraint" }
 
 
 class Context(iwho.Context):
@@ -460,7 +496,7 @@ class Context(iwho.Context):
         elif kind == "x86MemConstraint":
             return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86SymbolConstraint":
-            return self.dedup_store.get(SymbolConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
+            return self.dedup_store.get(SymbolConstraint, unhashed_kwargs={"context": self})
         raise iwho.SchemeError("unknown operand constraint kind: '{}'".format(kind))
 
 
@@ -476,6 +512,8 @@ class Context(iwho.Context):
             return register_op
         elif kind == "x86ImmediateOperand":
             return self.dedup_store.get(ImmediateOperand, width=jsondict["width"], value=jsondict["value"])
+        elif kind == "x86SymbolOperand":
+            return self.dedup_store.get(SymbolOperand)
         elif kind == "x86MemoryOperand":
             width = jsondict["width"]
             if jsondict["segment"] is not None:
@@ -552,8 +590,12 @@ class LLVMMCCoder(iwho.ASMCoder):
             hex_bytes = []
             for t in hex_tokens:
                 if not t.startswith("0x"):
-                    # TODO maybe we should do something to properly handle relocations
-                    raise iwho.ASMCoderError("Unexpected llvm-mc output line (possible relocation):\n  {}".format(l))
+                    # this is most likely a relocation (represented as an "A" byte)
+                    if t == "A":
+                        # we "resolve" the relocation with a dummy value to allow testing jump instructions
+                        hex_bytes.append("42")
+                    else:
+                        raise iwho.ASMCoderError("Unexpected llvm-mc output line (weird relocation?):\n  {}".format(l))
                 hex_bytes.append(t[2:])
 
             hexstr = "".join(hex_bytes)
@@ -669,6 +711,8 @@ class DefaultInstantiator:
             return op
         elif isinstance(constraint, MemConstraint):
             return self.get_valid_memory_operand(constraint)
+        elif isinstance(constraint, SymbolConstraint):
+            return self.ctx.dedup_store.get(SymbolOperand)
         elif isinstance(constraint, ImmConstraint):
             return self.get_valid_imm_operand(constraint)
 

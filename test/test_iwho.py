@@ -381,6 +381,7 @@ def test_llvmmc_decoder_cat():
 
     assert asm_str == ref_asm
 
+@pytest.mark.xfail # this has been "fixed" by handling relocations
 def test_encode_relocation():
 
     coder = x86.LLVMMCCoder("llvm-mc") # use the system llvm-mc
@@ -388,6 +389,7 @@ def test_encode_relocation():
         hex_str = coder.asm2hex("call far [rbx + 0x40]")
 
 
+@pytest.mark.xfail # this has been "fixed" by handling relocations
 def test_not_encodable():
     ctx = x86.Context()
 
