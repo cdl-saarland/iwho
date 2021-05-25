@@ -433,6 +433,9 @@ def test_fixed_memory_operand():
     inp_str = "lodsb byte ptr [rsi]"
     res = pat.parseString(inp_str)
 
+    insn = ctx.match_insn_str(inp_str)
+    assert str(insn) == inp_str
+
     with pytest.raises(pp.ParseException):
         pat.parseString("lodsb byte ptr [rdx]")
 
