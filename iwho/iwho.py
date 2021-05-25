@@ -412,11 +412,24 @@ class OperandConstraint(ABC):
 
 
 class SetConstraint(OperandConstraint):
-    """ TODO document
+    """ A generic Constraint to allow one of a specific set of predetermined
+    Operands.
+
+    This may be used in ISA implementations for e.g. allowing a fixed set of
+    register operands.
     """
 
     def __init__(self, acceptable_operands):
-        """ TODO document
+        """ Constructor
+
+        `acceptable_operands` should be an iterable containing all acceptable
+        operands for this constraint. Order does not matter, duplicate items
+        are removed.
+
+        After creation, a name can also be set for a set constraints, which is
+        then used for pretty-printing. The name is not relevant for hashing or
+        equality. (This, in combination with the dedup_store, allows
+        introducing names for common set constraints).
         """
 
         self.name = None
@@ -445,6 +458,8 @@ class SetConstraint(OperandConstraint):
 
     @property
     def parser_priority(self) -> int:
+        # if one set constraint is more specific than the other (i.e. it has
+        # fewer acceptable operands), it should be checked first.
         return len(self.acceptable_operands)
 
     def __eq__(self, other):
@@ -461,11 +476,22 @@ class SetConstraint(OperandConstraint):
 
 
 class OperandScheme:
-    """ TODO document
+    """ Instances of this class describe what operands can be used as an
+    operand of an instruction and how they are used (i.e. whether they are read
+    and/or written).
+
+    They are subcomponents of InsnSchemes, which may have several explicit and
+    implicit operand schemes.
+
+    They can either contain a constraint describing the allowed operands or
+    only descirbe one fixed (hard-coded) operand.
     """
 
     def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[OperandInstance]=None, read: bool=False, written: bool=False):
-        """ TODO document
+        """ Constructor
+
+        One of `constraint` or `fixed_operand` should be not None. Every
+        combination of boolean values for `read` and `written` is possible.
         """
         assert (constraint is None) != (fixed_operand is None)
         self.operand_constraint = constraint
@@ -474,12 +500,13 @@ class OperandScheme:
         self.is_written = written
 
     def is_fixed(self):
-        """ TODO document
+        """ Check whether this operand scheme only describes a single fixed
+        operand.
         """
         return self.fixed_operand is not None
 
-    def is_operand_valid(self, operand):
-        """ TODO document
+    def is_operand_valid(self, operand: OperandInstance):
+        """ Check whether an OperandInstance fits this OperandScheme.
         """
         if self.is_fixed():
             return self.fixed_operand == operand
@@ -494,7 +521,9 @@ class OperandScheme:
         return self.operand_constraint.is_encodable()
 
     def from_match(self, match):
-        """ TODO document
+        """ Given a pyparsing ParseResults object that describes an acceptable
+        operand for this OperandScheme (i.e. is the result of matching the
+        self.parser_pattern), produce the corresponding OperandInstance object.
         """
         if self.is_fixed():
             return self.fixed_operand
@@ -503,7 +532,8 @@ class OperandScheme:
 
     @property
     def parser_pattern(self):
-        """ TODO document
+        """ Produce a pyparsing pattern that matches the acceptable operands of
+        this OperandScheme. Matches may be given to `from_match`.
         """
         if self.is_fixed():
             return self.fixed_operand.parser_pattern
@@ -530,7 +560,11 @@ class OperandScheme:
         return str(self.to_json_dict())
 
     def to_json_dict(self):
-        """ TODO document
+        """ Generate a nested structure of dicts and lists that represents the
+        operand scheme.
+
+        This structure can be dumped as and parsed from a json file. It should
+        be usable by the `from_json_dict` method.
         """
 
         res = {"kind": self.__class__.__name__,}
@@ -543,8 +577,13 @@ class OperandScheme:
 
         return res
 
+    @staticmethod
     def from_json_dict(ctx, jsondict):
-        """ TODO document
+        """ Create an OperandScheme from externally stored data.
+
+        The jsondict is a nested structure of dicts and lists as it is produced
+        by the `to_json_dict` method. This structure can be dumped as and
+        parsed from a json file.
         """
 
         assert "kind" in jsondict and jsondict["kind"] == "OperandScheme"
