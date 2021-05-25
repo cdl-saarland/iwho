@@ -375,6 +375,8 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
                 written = True
             elif fval == "undef":
                 written = True
+            if not (read or written):
+                continue
             reg = ctx.all_registers[f.lower()]
             op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
 
