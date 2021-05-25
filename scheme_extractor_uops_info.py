@@ -207,6 +207,9 @@ def add_uops_info_xml(ctx, xml_path):
                     "call R:MEM(32)", # wrong width, missing `qword ptr`
                     "call R:MEM(48)", # wrong width, missing `qword ptr`
                     "call R:MEM(80)", # wrong width, missing `qword ptr`
+                    "jmp R:MEM(32)", # wrong width, missing `qword ptr`
+                    "jmp R:MEM(48)", # wrong width, missing `qword ptr`
+                    "jmp R:MEM(80)", # wrong width, missing `qword ptr`
 
                     }
             if key in blocked_schemes:
