@@ -478,9 +478,18 @@ class Context(iwho.Context):
             return self.dedup_store.get(ImmediateOperand, width=jsondict["width"], value=jsondict["value"])
         elif kind == "x86MemoryOperand":
             width = jsondict["width"]
-            segment = self.operand_from_json_dict(jsondict["segment"])
-            base = self.operand_from_json_dict(jsondict["base"])
-            index = self.operand_from_json_dict(jsondict["index"])
+            if jsondict["segment"] is not None:
+                segment = self.operand_from_json_dict(jsondict["segment"])
+            else:
+                segment = None
+            if jsondict["base"] is not None:
+                base = self.operand_from_json_dict(jsondict["base"])
+            else:
+                base = None
+            if jsondict["index"] is not None:
+                index = self.operand_from_json_dict(jsondict["index"])
+            else:
+                index = None
             scale = jsondict["scale"]
             displacement = jsondict["displacement"]
 
