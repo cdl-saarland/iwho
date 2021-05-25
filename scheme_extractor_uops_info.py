@@ -191,8 +191,20 @@ def add_uops_info_xml(ctx, xml_path):
                     "CMOVNLE": "CMOVG", # those are aliases for the same instruction ("not less or equal" and "greater"), and llvm-mc produces the G version
                     "CMOVNZ": "CMOVNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
                     "CMOVZ": "CMOVE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
+
+                    "JNB": "JAE", # those are aliases for the same instruction ("not below" and "above or equal"), and llvm-mc produces the AE version
+                    "JNBE": "JA", # those are aliases for the same instruction ("not below or equal" and "above"), and llvm-mc produces the A version
+                    "JNL": "JGE", # those are aliases for the same instruction ("not less" and "greater or equal"), and llvm-mc produces the GE version
+                    "JNLE": "JG", # those are aliases for the same instruction ("not less or equal" and "greater"), and llvm-mc produces the G version
+                    "JNZ": "JNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
+                    "JZ": "JE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
+
                     "ENTERW": "ENTER", # llvm-mc doesn't recognize ENTERW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
                     "LEAVEW": "LEAVE", # llvm-mc doesn't recognize LEAVEW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
+                    "POPW": "POP", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "POPFW": "POPF", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "PUSHW": "PUSH", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "PUSHFW": "PUSHF", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
                 }
             str_template = mnemonic_replacements.get(str_template, str_template)
 
