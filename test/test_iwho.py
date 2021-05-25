@@ -413,6 +413,29 @@ def test_not_encodable():
     with pytest.raises(iwho.ASMCoderError):
         ctx.encode_insns([ii])
 
+def test_fixed_memory_operand():
+    ctx = x86.Context()
+
+    scheme_dicts = [
+        {'kind': 'InsnScheme', 'str_template': 'lodsb byte ptr ${mem0}',
+        'operand_schemes': {'mem0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86MemoryOperand', 'width': 8, 'segment': None, 'base': {'kind': 'x86RegisterOperand', 'name': 'rsi'}, 'index': None, 'scale': 1, 'displacement': 0}, 'read': True, 'written': False}},
+        'implicit_operands': [
+            {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'al'}, 'read': False, 'written': True},
+            {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'flag_df'}, 'read': True, 'written': False}],
+        'affects_control_flow': False}
+    ]
+
+    ctx.fill_from_json_dict(scheme_dicts)
+
+    scheme = ctx.insn_schemes[0]
+    pat = scheme.parser_pattern
+
+    inp_str = "lodsb byte ptr [rsi]"
+    res = pat.parseString(inp_str)
+
+    with pytest.raises(pp.ParseException):
+        pat.parseString("lodsb byte ptr [rdx]")
+
 
 def test_assemble_all(x86_ctx):
     instor = x86.DefaultInstantiator(x86_ctx)
