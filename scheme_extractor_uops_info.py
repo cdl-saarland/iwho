@@ -362,7 +362,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
         op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=False))
 
     elif op_type == 'flags':
-        for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF"]:
+        for f in ["flag_AF", "flag_CF", "flag_OF", "flag_PF", "flag_SF", "flag_ZF", "flag_DF"]:
             fval = operandNode.attrib.get(f, '')
             read = False
             written = False
