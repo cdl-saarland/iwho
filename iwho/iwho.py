@@ -593,7 +593,24 @@ class OperandScheme:
 
 
 class InsnScheme:
-    """ TODO document
+    """ An instance of this class describes a group of closely related
+    instructions, (mostly) only differing in the details of their operands
+    (e.g. which register of a certain width is used).
+
+    An InsnScheme consists of
+      - A template string (as in string.Template), which specifies the textual
+        representation of the covered instructions. It contains named `${...}`
+        placeholders for operands.
+      - A dictionary mapping placeholder names in the template string to
+        OperandSchemes (fixed or with constraint) for the explicit operands
+        (which are present in the assembly). These schemes describe whether the
+        operands are read and/or written and what instantiations are allowed in
+        the scheme.
+      - A list of further OperandSchemes (fixed only) that are not represented
+        in the assembly, but are used implicitly by the instructions (e.g. flag
+        registers, etc).
+      - Information whether executing this instruction may affect control flow
+        (i.e. if it is some branching instruction).
     """
 
     def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
