@@ -178,11 +178,14 @@ def add_uops_info_xml(ctx, xml_path):
             str_template = str_template.replace("{load} ", "")
             str_template = str_template.replace("{store} ", "")
             str_template = str_template.replace("{disp32} ", "")
+            str_template = str_template.replace("REX64 ", "")
 
             # replace some wrong mnemonics
             mnemonic_replacements = {
                     "VPCMPESTRIQ": "VPCMPESTRI", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
                     "VPCMPESTRMQ": "VPCMPESTRM", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
+                    "PCMPESTRIQ": "PCMPESTRI", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
+                    "PCMPESTRMQ": "PCMPESTRM", # the Q here is not actually part of the mnemonic, it just signifies a different encoding
                     "CALL FAR": "CALL", # the `FAR` would here be interpreted as a symbol and result in a relocation
                     "JMP FAR": "JMP", # the `FAR` would here be interpreted as a symbol and result in a relocation
                     "CMOVNB": "CMOVAE", # those are aliases for the same instruction ("not below" and "above or equal"), and llvm-mc produces the AE version
@@ -214,15 +217,29 @@ def add_uops_info_xml(ctx, xml_path):
                     "PUSHW": "PUSH", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
                     "PUSHFW": "PUSHFQ", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
                     "PUSHF": "PUSHFQ", # llvm-mc calls it PUSHFQ
+                    "RETFW": "RETF", # W refers to something else
+
+                    "XLAT": "XLATB", # llvm-mc wants the width specified (even though B is the only option)
                 }
             str_template = mnemonic_replacements.get(str_template, str_template)
 
+            if str_template.startswith("REPE"):
+                # llvm-mc calls this "REP" instead of "REPE"
+                str_template = str_template.replace("REPE", "REP", 1)
+
             mnemonic = str_template
 
-            if mnemonic in ["PREFETCHW", "PREFETCH",
+            if mnemonic in [ "CLFLUSHOPT", "CLFLUSH", "CLWB"
                     "INS", "INSB", "INSW", "INSD", # input from port
+                    "REP INS", "REP INSB", "REP INSW", "REP INSD", # input from port
+                    "REPNE INS", "REPNE INSB", "REPNE INSW", "REPNE INSD", # input from port
                     "OUTS", "OUTSB", "OUTSW", "OUTSD", # output to port
+                    "REP OUTS", "REP OUTSB", "REP OUTSW", "REP OUTSD", # output to port
+                    "REPNE OUTS", "REPNE OUTSB", "REPNE OUTSW", "REPNE OUTSD", # output to port
                     "IRETW",]:
+                continue
+
+            if "PREFETCH" in mnemonic:
                 continue
 
             explicit_operands = dict()
@@ -265,6 +282,10 @@ def add_uops_info_xml(ctx, xml_path):
                 # this move with a very wide immediate is known by llvm-mc as 'movabs'
                 str_template = "movabs ${reg0}, ${imm0}"
 
+            if (str_template == "xchg ${reg0}, ${reg1}" and explicit_operands["reg1"].is_fixed()):
+                # llvm-mc likes to have the hardcoded register as a first operand here
+                str_template = "xchg ${reg1}, ${reg0}"
+
             scheme = iwho.InsnScheme(
                     str_template=str_template,
                     operand_schemes=explicit_operands,
@@ -274,18 +295,42 @@ def add_uops_info_xml(ctx, xml_path):
 
             # llvm-mc prefers to give these operands explicitly, so we need to
             # transform some implicit  operands to explicit ones.
-            if str_template in ["cmpsb", "cmpsw", "cmpsd", "cmpsq"]:
+            if str_template in ["cmpsb", "cmpsw", "cmpsd", "cmpsq",
+                    "rep cmpsb", "rep cmpsw", "rep cmpsd", "rep cmpsq",
+                    "repne cmpsb", "repne cmpsw", "repne cmpsd", "repne cmpsq"]:
                 scheme = make_operands_explicit(scheme, ["[rsi]", "es:[rdi]"])
-            if str_template in ["movsb", "movsw", "movsd", "movsq"]:
+
+            elif str_template in ["movsb", "movsw", "movsd", "movsq",
+                    "rep movsb", "rep movsw", "rep movsd", "rep movsq",
+                    "repne movsb", "repne movsw", "repne movsd", "repne movsq"]:
                 scheme = make_operands_explicit(scheme, ["es:[rdi]", "[rsi]"])
-            elif str_template in ["lodsb"]:
+
+            elif str_template in ["lodsb", "rep lodsb", "repne lodsb"]:
                 scheme = make_operands_explicit(scheme, ["al", "[rsi]"])
-            elif str_template in ["lodsw"]:
+            elif str_template in ["lodsw", "rep lodsw", "repne lodsw"]:
                 scheme = make_operands_explicit(scheme, ["ax", "[rsi]"])
-            elif str_template in ["lodsd"]:
+            elif str_template in ["lodsd", "rep lodsd", "repne lodsd"]:
                 scheme = make_operands_explicit(scheme, ["eax", "[rsi]"])
-            elif str_template in ["lodsq"]:
+            elif str_template in ["lodsq", "rep lodsq", "repne lodsq"]:
                 scheme = make_operands_explicit(scheme, ["rax", "[rsi]"])
+
+            elif str_template in ["scasb", "rep scasb", "repne scasb"]:
+                scheme = make_operands_explicit(scheme, ["al", "es:[rdi]"])
+            elif str_template in ["scasw", "rep scasw", "repne scasw"]:
+                scheme = make_operands_explicit(scheme, ["ax", "es:[rdi]"])
+            elif str_template in ["scasd", "rep scasd", "repne scasd"]:
+                scheme = make_operands_explicit(scheme, ["eax", "es:[rdi]"])
+            elif str_template in ["scasq", "rep scasq", "repne scasq"]:
+                scheme = make_operands_explicit(scheme, ["rax", "es:[rdi]"])
+
+            elif str_template in ["stosb", "rep stosb", "repne stosb"]:
+                scheme = make_operands_explicit(scheme, ["es:[rdi]", "al"])
+            elif str_template in ["stosw", "rep stosw", "repne stosw"]:
+                scheme = make_operands_explicit(scheme, ["es:[rdi]", "ax"])
+            elif str_template in ["stosd", "rep stosd", "repne stosd"]:
+                scheme = make_operands_explicit(scheme, ["es:[rdi]", "eax"])
+            elif str_template in ["stosq", "rep stosq", "repne stosq"]:
+                scheme = make_operands_explicit(scheme, ["es:[rdi]", "rax"])
 
             if ctx.extract_mnemonic(scheme) in ["rcl", "rcr", "rol", "ror", "shl", "shr", "sar"]:
                 imop = scheme.operand_schemes.get("imm0", None)
@@ -307,6 +352,8 @@ def add_uops_info_xml(ctx, xml_path):
             blocked_schemes = {
                     "vpcmpestri R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestriq that we changed before, llvm-mc does not produce this without `qword ptr`
                     "vpcmpestrm R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestrmq that we changed before, llvm-mc does not produce this without `qword ptr`
+                    "pcmpestri R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestriq that we changed before, llvm-mc does not produce this without `qword ptr`
+                    "pcmpestrm R:XMM0..15, R:MEM(128), IMM(8)", # that's actually a vpcmpestrmq that we changed before, llvm-mc does not produce this without `qword ptr`
                     "call R:MEM(32)", # wrong width, missing `qword ptr`
                     "call R:MEM(48)", # wrong width, missing `qword ptr`
                     "call R:MEM(80)", # wrong width, missing `qword ptr`
