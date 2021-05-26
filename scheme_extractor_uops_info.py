@@ -199,12 +199,21 @@ def add_uops_info_xml(ctx, xml_path):
                     "JNZ": "JNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
                     "JZ": "JE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
 
+                    "SETNB": "SETAE", # those are aliases for the same instruction ("not below" and "above or equal"), and llvm-mc produces the AE version
+                    "SETNBE": "SETA", # those are aliases for the same instruction ("not below or equal" and "above"), and llvm-mc produces the A version
+                    "SETNL": "SETGE", # those are aliases for the same instruction ("not less" and "greater or equal"), and llvm-mc produces the GE version
+                    "SETNLE": "SETG", # those are aliases for the same instruction ("not less or equal" and "greater"), and llvm-mc produces the G version
+                    "SETNZ": "SETNE", # those are aliases for the same instruction ("not zero" and "not equal"), and llvm-mc produces the NE version
+                    "SETZ": "SETE", # those are aliases for the same instruction ("zero" and "equal"), and llvm-mc produces the E version
+
                     "ENTERW": "ENTER", # llvm-mc doesn't recognize ENTERW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
                     "LEAVEW": "LEAVE", # llvm-mc doesn't recognize LEAVEW, the W signifies an 66H prefix that sets the frame pointer operand size to 16bit
                     "POPW": "POP", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
-                    "POPFW": "POPF", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "POPFW": "POPFQ", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "POPF": "POPFQ", # llvm-mc calls it POPFQ
                     "PUSHW": "PUSH", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
-                    "PUSHFW": "PUSHF", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "PUSHFW": "PUSHFQ", # llvm-mc doesn't recognize POPW, the W probably signifies another 66H prefix
+                    "PUSHF": "PUSHFQ", # llvm-mc calls it PUSHFQ
                 }
             str_template = mnemonic_replacements.get(str_template, str_template)
 
@@ -277,6 +286,20 @@ def add_uops_info_xml(ctx, xml_path):
                 scheme = make_operands_explicit(scheme, ["eax", "[rsi]"])
             elif str_template in ["lodsq"]:
                 scheme = make_operands_explicit(scheme, ["rax", "[rsi]"])
+
+            if ctx.extract_mnemonic(scheme) in ["rcl", "rcr", "rol", "ror", "shl", "shr", "sar"]:
+                imop = scheme.operand_schemes.get("imm0", None)
+                if imop is not None and imop.is_fixed() and imop.fixed_operand.value == 1:
+                    # llvm-mc prefers those with the hardcoded shift amount not present
+                    new_template = scheme.str_template.template.replace(", ${imm0}", "")
+                    new_explicit_operands = { k: v for k, v in scheme.operand_schemes.items() if k != "imm0" }
+                    new_implicit_operands = [imop] + scheme.implicit_operands
+                    new_affects_cf = scheme.affects_control_flow
+                    scheme = iwho.InsnScheme(str_template=new_template,
+                                operand_schemes=new_explicit_operands,
+                                implicit_operands=new_implicit_operands,
+                                affects_control_flow=new_affects_cf,
+                            )
 
             key = str(scheme)
 
