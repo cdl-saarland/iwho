@@ -640,14 +640,9 @@ class InsnScheme:
                 match = self.parser_pattern.parseString(args)
             except pp.ParseException as e:
                 raise InstantiationError("Invalid instruction for scheme: {}".format(args))
+            args = match
 
-            args = dict()
-
-            for key, op_scheme in self._operand_schemes.items():
-                sub_match = match[key]
-                args[key] = op_scheme.from_match(sub_match)
-
-        elif isinstance(args, pp.ParseResults):
+        if isinstance(args, pp.ParseResults):
             match = args
             args = dict()
 
