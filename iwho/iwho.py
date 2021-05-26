@@ -429,10 +429,10 @@ class SetConstraint(OperandConstraint):
         else:
             return ",".join(map(str, self.acceptable_operands))
 
-    def is_valid(self, operand):
+    def is_valid(self, operand: OperandInstance) -> bool:
         return operand in self.acceptable_operands
 
-    def from_match(self, match):
+    def from_match(self, match) -> OperandInstance:
         assert len(match) == 1
 
         keys = list(match.keys())
@@ -487,13 +487,13 @@ class OperandScheme:
         self.is_read = read
         self.is_written = written
 
-    def is_fixed(self):
+    def is_fixed(self) -> bool:
         """ Check whether this operand scheme only describes a single fixed
         operand.
         """
         return self.fixed_operand is not None
 
-    def is_operand_valid(self, operand: OperandInstance):
+    def is_operand_valid(self, operand: OperandInstance) -> bool:
         """ Check whether an OperandInstance fits this OperandScheme.
         """
         if self.is_fixed():
@@ -501,7 +501,7 @@ class OperandScheme:
         else:
             return self.operand_constraint.is_valid(operand)
 
-    def from_match(self, match):
+    def from_match(self, match) -> OperandInstance:
         """ Given a pyparsing ParseResults object that describes an acceptable
         operand for this OperandScheme (i.e. is the result of matching the
         self.parser_pattern), produce the corresponding OperandInstance object.
@@ -611,10 +611,18 @@ class InsnScheme:
         registers, etc).
       - Information whether executing this instruction may affect control flow
         (i.e. if it is some branching instruction).
+
+    InsnSchemes should be used immutably. They can be instantiated with a
+    mapping of placeholders to OperandInstances that are acceptable according
+    to the corresponding OperandSchemes to obtain an InsnInstance.
     """
 
     def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
-        """ TODO document
+        """ Constructor, keyword use is mandatory for the arguments
+
+        This constructor validates that `operand_schemes` has a suitable
+        mapping for the placeholders in `str_template` an raises a
+        `SchemeError` if this is not the case.
         """
 
         self._str_template = string.Template(str_template)
@@ -632,9 +640,18 @@ class InsnScheme:
                 "  substitution error: {}".format(repr(e)))
 
 
-    def instantiate(self, args):
-        """ TODO document
+    def instantiate(self, args: Union[Dict[str, OperandInstance], str, pp.ParseResults]) -> "InsnInstance":
+        """ Create an InsnInstance for this InsnScheme using the
+        OperandInstances specified by `args`.
+
+        `args` can either be a dict mapping placeholder names to
+        OperandInstances, a string with the textual assembly representation of
+        an instruction fitting this InsnScheme, or the pyparsing results object
+        of matching such a string with the `parser_pattern`.
+
+        If the args do not match the scheme, an InstantationError is raised.
         """
+
         if isinstance(args, str):
             try:
                 match = self.parser_pattern.parseString(args)
@@ -656,7 +673,9 @@ class InsnScheme:
 
     @cached_property
     def parser_pattern(self):
-        """ TODO document
+        """ Produce a pyparsing pattern that matches the acceptable
+        instructions for this InsnScheme. Matches may be given to
+        `instantiate`.
         """
 
         template_str = self._str_template.template
@@ -673,6 +692,7 @@ class InsnScheme:
         first = True
         for frag in fragments:
             if not first:
+                # This removes the leading operand keys and the following `}`
                 key, frag = frag.split("}", maxsplit=1)
                 op_pattern = self._operand_schemes[key].parser_pattern
                 pattern += op_pattern.setResultsName(key)
@@ -706,21 +726,23 @@ class InsnScheme:
 
     @property
     def str_template(self):
-        """ TODO document
+        """ Getter (without setter) for the template string of this scheme.
         """
 
         return self._str_template
 
     @property
     def operand_schemes(self):
-        """ TODO document
+        """ Getter (without setter) for the dictionary of explicit
+        OperandSchemes of this scheme.
         """
 
         return self._operand_schemes
 
     @property
     def implicit_operands(self):
-        """ TODO document
+        """ Getter (without setter) for the list of implicit OperandSchemes of
+        this scheme.
         """
 
         return self._implicit_operands
@@ -733,7 +755,11 @@ class InsnScheme:
         return str(self.to_json_dict())
 
     def to_json_dict(self):
-        """ TODO document
+        """ Generate a nested structure of dicts and lists that represents the
+        instruction scheme.
+
+        This structure can be dumped as and parsed from a json file. It should
+        be usable by the `from_json_dict` method.
         """
 
         return { "kind": self.__class__.__name__,
@@ -743,16 +769,26 @@ class InsnScheme:
                 "affects_control_flow": self.affects_control_flow,
             }
 
+    @staticmethod
     def from_json_dict(ctx, jsondict):
-        """ TODO document
+        """ Create an InsnScheme from externally stored data.
+
+        The jsondict is a nested structure of dicts and lists as it is produced
+        by the `to_json_dict` method. This structure can be dumped as and
+        parsed from a json file.
         """
 
         assert "kind" in jsondict and jsondict["kind"] == "InsnScheme"
 
         str_template = jsondict["str_template"]
         operand_schemes = {
-                key: OperandScheme.from_json_dict(ctx, opdict) for key, opdict in jsondict["operand_schemes"].items()}
-        implicit_operands = [OperandScheme.from_json_dict(ctx, opdict) for opdict in jsondict["implicit_operands"]]
+                key: OperandScheme.from_json_dict(ctx, opdict)
+                    for key, opdict in jsondict["operand_schemes"].items()
+            }
+        implicit_operands = [
+                OperandScheme.from_json_dict(ctx, opdict)
+                    for opdict in jsondict["implicit_operands"]
+            ]
         affects_control_flow = jsondict["affects_control_flow"]
 
         return InsnScheme(str_template=str_template,
@@ -767,7 +803,19 @@ class InsnScheme:
         raise NotImplementedError("No equality implemented on InsnSchemes")
 
 class InsnInstance:
-    """ TODO document
+    """ An instance of this class represents a single concrete instruction.
+
+    It is a compound of an InsnScheme describing the instruction and a
+    dictionary that provides OperandInstances the explicit operands of the
+    scheme.
+
+    InsnInstances should be used immutably.
+
+    They are usually created by instantiating an InsnScheme or by using a
+    method of the Context to decode machine code.
+
+    Using a method of the Context, InsnInstances can be encoded to machine
+    code.
     """
 
     def __init__(self, scheme: InsnScheme, operands: Dict[str, OperandInstance]):
