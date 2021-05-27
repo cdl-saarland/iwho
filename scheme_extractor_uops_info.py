@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# This script is basically a collection of hardcoded special cases to make the
+# uops.info instruction descriptions compatible with llvm-mc's en/decoding
+
 import json
 import os
 import re
@@ -64,7 +67,7 @@ def make_operands_explicit(scheme, operand_keys):
     # find the next free numbers to use in the keys for the operands
     next_op_indices = defaultdict(lambda: 0)
     for k in new_explicit_operands:
-        patterns = ["\(mem\)\(\d+\)", "\(reg\)\(\d+\)", "\(imm\)\(\d+\)", "\(agen\)\(\d+\)", "\(relbr\)\(\d+\)"]
+        patterns = [r"(mem)(\d+)", r"(reg)(\d+)", r"(imm)(\d+)", r"(agen)(\d+)", r"(relbr)(\d+)"]
         patterns = list(map(lambda x: re.compile(x), patterns))
         for p in patterns:
             mat = p.fullmatch(k)
@@ -116,6 +119,9 @@ def make_operands_explicit(scheme, operand_keys):
 
     new_str_template = scheme.str_template.template
     if len(op_strs) > 0:
+        if len(scheme.operand_schemes) > 0:
+            # account for potential previous operands
+            new_str_template += ","
         new_str_template += " " + ", ".join(op_strs)
 
     new_affects_cf = scheme.affects_control_flow
@@ -152,7 +158,8 @@ def add_uops_info_xml(ctx, xml_path):
                 continue
 
             if instrNode.attrib['category'] in ['XSAVE', 'XSAVEOPT', 'SYSCALL', 'VTX', 'RDWRFSGS', 'RDPID',
-                    'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'CET', 'SYSTEM', 'SEGOP']:
+                    'X87_ALU', 'FCMOV', 'MMX', '3DNOW', 'MPX', 'CET', 'SYSTEM', 'SEGOP', 'VIA_PADLOCK'
+                    ]:
                 # Unsupported instructions
                 continue
 
@@ -229,7 +236,7 @@ def add_uops_info_xml(ctx, xml_path):
 
             mnemonic = str_template
 
-            if mnemonic in [ "CLFLUSHOPT", "CLFLUSH", "CLWB"
+            if mnemonic in [ "CLFLUSHOPT", "CLFLUSH", "CLWB",
                     "INS", "INSB", "INSW", "INSD", # input from port
                     "REP INS", "REP INSB", "REP INSW", "REP INSD", # input from port
                     "REPNE INS", "REPNE INSB", "REPNE INSW", "REPNE INSD", # input from port
@@ -332,6 +339,11 @@ def add_uops_info_xml(ctx, xml_path):
             elif str_template in ["stosq", "rep stosq", "repne stosq"]:
                 scheme = make_operands_explicit(scheme, ["es:[rdi]", "rax"])
 
+            elif ctx.extract_mnemonic(scheme) in ["sha256rnds2", "blendvpd", "blendvps", "pblendvb"]:
+                # AVX2 mask registers (which are hardwired to xmm0) are explicit in llvm-mc
+                scheme = make_operands_explicit(scheme, ["xmm0"])
+
+
             if ctx.extract_mnemonic(scheme) in ["rcl", "rcr", "rol", "ror", "shl", "shr", "sar"]:
                 imop = scheme.operand_schemes.get("imm0", None)
                 if imop is not None and imop.is_fixed() and imop.fixed_operand.value == 1:
@@ -371,6 +383,8 @@ def add_uops_info_xml(ctx, xml_path):
             else:
                 all_schemes[key] = scheme
                 ctx.add_insn_scheme(scheme)
+
+            # TODO check that RIP-writing insns have the cf flag
 
         except UnsupportedFeatureError as e:
             logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
