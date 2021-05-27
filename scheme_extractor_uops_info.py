@@ -6,6 +6,7 @@
 import json
 import os
 import re
+import sys
 
 from collections import defaultdict
 
@@ -150,7 +151,7 @@ def add_uops_info_xml(ctx, xml_path):
         try:
             affects_control_flow = False
 
-            if instrNode.attrib['category'] in ['COND_BR', 'UNCOND_BR', 'CALL', 'RET']:
+            if instrNode.attrib['category'] in ['COND_BR', 'UNCOND_BR', 'CALL', 'RET', 'INTERRUPT', 'SYSRET']:
                 affects_control_flow = True
 
             if instrNode.attrib.get('cpl', '0') != '3':
@@ -384,7 +385,18 @@ def add_uops_info_xml(ctx, xml_path):
                 all_schemes[key] = scheme
                 ctx.add_insn_scheme(scheme)
 
-            # TODO check that RIP-writing insns have the cf flag
+            # validate that we caught all control flow instructions
+            writes_ip = False
+            for k, op in scheme.operand_schemes.items():
+                if op.is_written and op.is_fixed() and isinstance(op, x86.RegisterOperand) and op.alias_class == ctx._reg_alias_class_enum["GPR_IP"]:
+                    writes_ip = True
+            for op in scheme.implicit_operands:
+                if op.is_written and op.is_fixed() and isinstance(op.fixed_operand, x86.RegisterOperand) and op.fixed_operand.alias_class == ctx._reg_alias_class_enum["GPR_IP"]:
+                    writes_ip = True
+
+            if writes_ip and not scheme.affects_control_flow:
+                # This could be an equals, except for XEND and XABORT
+                raise UnsupportedFeatureError("inconsistent control flow info")
 
         except UnsupportedFeatureError as e:
             logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
