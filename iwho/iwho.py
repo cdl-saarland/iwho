@@ -96,6 +96,23 @@ class Context(ABC):
         """
         pass
 
+    def parse_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
+        """ Parse a sequence of InsnInstances from an assembly string.
+
+        This works be first encoding the asm string into bytes and then
+        decoding the bytes to InsnInstances. While introducing unnecessary
+        overhead for certain inputs, it uses the encoder for input validation,
+        rather than the rather fragile pyparsing parser.
+
+        Raises an ASMCoderError en/decoding the input fails, or an
+        InstantiationError if there is no fitting scheme for a decoded
+        instruction.
+        """
+        # TODO we could avoid one coder step here if the coder would provide a
+        # direct asm2asm method (which llvm-mc could do)
+        hex_str = self.coder.asm2hex(asm_str)
+        return self.decode_insns(hex_str)
+
     def decode_insns(self, hex_str: str) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of instruction instances.
