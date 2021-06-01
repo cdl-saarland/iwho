@@ -209,6 +209,9 @@ valid_insns = [
         Task(text="sar rsi, cl", hex_str="48d3fe", template="sar ${reg0}, ${reg1}"),
         Task(text="add rsp, 0xc8", hex_str="4881c4c8000000", template="add ${reg0}, ${imm0}"),
         Task(text="add esp, 0xc8", hex_str="81c4c8000000", template="add ${reg0}, ${imm0}"),
+
+        Task(text="adcx rax, qword ptr [rbx + rdx]", hex_str="66480f38f60413", template="adcx ${reg0}, qword ptr ${mem0}"),
+        Task(text="adcx rax, qword ptr [rbx - 0x2a]", hex_str="66480f38f643d6", template="adcx ${reg0}, qword ptr ${mem0}"),
     ]
 
 invalid_insns = [

@@ -97,6 +97,7 @@ class MemoryOperand(iwho.OperandInstance):
 
         res = " + ".join(parts)
         res = "[" + res + "]"
+        res = res.replace("+ -", "- ") # negative displacements should be reported as subtraction
 
         if self.segment is not None:
             res = f"{self.segment}:" + res
@@ -163,6 +164,8 @@ class MemConstraint(iwho.OperandConstraint):
         for k, fun in (("segement", reg_fun), ("base", reg_fun), ("index", reg_fun), ("scale", int), ("displacement", hex_fun)):
             if k in match:
                 kwargs[k] = fun(match[k])
+        if "minus" in match and "displacement" in match:
+            kwargs["displacement"] *= -1
 
         op = self.ctx.dedup_store.get(MemoryOperand, width=self.width, **kwargs)
         return op
@@ -174,17 +177,20 @@ class MemConstraint(iwho.OperandConstraint):
         reg_pattern = self.ctx.pattern_all_gprs
         seg_pattern = self.ctx.pattern_all_segs
 
-        plus_or_end = (pp.Suppress(pp.Literal("+") + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
+        # plus_or_end = (pp.Suppress(pp.Literal("+") + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
+        plus_minus_or_end = (((pp.Suppress(pp.Literal("+")) | pp.Literal("-")("minus")) + pp.NotAny(pp.Literal("]"))) | pp.FollowedBy(pp.Literal("]")))
 
         # order seems to be more or less irrelevant
-        scale_and_index = (
+        opt_scale_and_index = (
                 (reg_pattern("index") + pp.Suppress(pp.Literal("*")) + int_pattern("scale")) |
-                (int_pattern("scale") + pp.Suppress(pp.Literal("*")) + reg_pattern("index")))
+                (int_pattern("scale") + pp.Suppress(pp.Literal("*")) + reg_pattern("index")) |
+                reg_pattern("index") # it's important that this is after "index * scale"
+                )
 
-        mem_pattern = pp.Suppress(pp.Literal("["))
-        mem_pattern += pp.Optional(seg_pattern.setResultsName("segment") + pp.Suppress(pp.Literal(":")))
-        mem_pattern += pp.Optional(reg_pattern.setResultsName("base") + plus_or_end)
-        mem_pattern += pp.Optional(scale_and_index + plus_or_end)
+        mem_pattern = pp.Optional(seg_pattern.setResultsName("segment") + pp.Suppress(pp.Literal(":")))
+        mem_pattern += pp.Suppress(pp.Literal("["))
+        mem_pattern += pp.Optional(reg_pattern.setResultsName("base") + plus_minus_or_end)
+        mem_pattern += pp.Optional(opt_scale_and_index + plus_minus_or_end)
         mem_pattern += pp.Optional(hex_pattern.setResultsName("displacement"))
         mem_pattern += pp.Suppress(pp.Literal("]"))
 
@@ -269,7 +275,7 @@ class ImmConstraint(iwho.OperandConstraint):
         assert self.width % 4 == 0, "Width checking of immedidates is only supported for multiples of 4"
         max_num_nibbles = self.width // 4
         hex_pat = pp.Word("0123456789abcdefABCDEF", min=1, max=max_num_nibbles)
-        return pp.Suppress(pp.Literal('0x')) + hex_pat.setParseAction(lambda s, l, t: [int(t[0], 16)])
+        return (pp.Optional(pp.Literal("-")("minus")) + pp.Literal('0x') + hex_pat("hex_pat")).setParseAction(lambda tokens: [int(tokens["hex_pat"], 16) * (-1 if "minus" in tokens else 1)])
 
     @property
     def parser_priority(self) -> int:
@@ -340,7 +346,7 @@ class SymbolConstraint(iwho.OperandConstraint):
     @cached_property
     def parser_pattern(self):
         hex_pat = pp.Word("0123456789abcdefABCDEF", min=1)
-        return pp.Suppress(pp.Literal('0x')) + hex_pat.setParseAction(lambda s, l, t: [int(t[0], 16)])
+        return (pp.Optional(pp.Literal("-")("minus")) + pp.Literal('0x') + hex_pat("hex_pat")).setParseAction(lambda tokens: [int(tokens["hex_pat"], 16) * (-1 if "minus" in tokens else 1)])
 
     def is_valid(self, operand):
         return (isinstance(operand, SymbolOperand))
@@ -389,13 +395,13 @@ class Context(iwho.Context):
     @cached_property
     def pattern_all_gprs(self):
         allowed_registers = self.get_registers_where(category=self._reg_category_enum["GPR"])
-        return pp.MatchFirst([pp.Literal(r.name) for r in allowed_registers])
+        return pp.MatchFirst([pp.Keyword(r.name) for r in allowed_registers])
 
 
     @cached_property
     def pattern_all_segs(self):
         segment_registers = self.get_registers_where(category=self._reg_category_enum["SEGMENT"])
-        return pp.MatchFirst([pp.Literal(r.name) for r in segment_registers])
+        return pp.MatchFirst([pp.Keyword(r.name) for r in segment_registers])
 
 
     def extract_mnemonic(self, insn: Union[str, iwho.InsnScheme, iwho.InsnInstance]) -> str:

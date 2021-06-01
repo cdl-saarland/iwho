@@ -44,9 +44,22 @@ def main():
     if not args.interactive:
         sys.exit(0)
 
+    def hex2insns(hex_str):
+        return ctx.decode_insns(hex_str)
+
+    def asm2insns(asm_str):
+        return ctx.parse_asm(asm_str)
+
+    def insns2hex(insns):
+        return ctx.encode_insns(insns)
+
     print("available variables:")
     print("  - the iwho Context as `ctx`")
     print("  - the argument InsnInstances as `insns`")
+    print("available functions:")
+    print("  - hex2insns(hex_str: str) -> List[InsnInstance]")
+    print("  - asm2insns(asm_str: str) -> List[InsnInstance]")
+    print("  - insns2hex(insns: List[InsnInstance]) -> str")
 
     use_ipython = False
     try:

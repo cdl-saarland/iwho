@@ -313,7 +313,7 @@ class OperandInstance(ABC):
         By default, this is just matches the string representation of the
         operand.
         """
-        return pp.Literal(str(self))
+        return pp.Keyword(str(self))
 
     @abstractmethod
     def to_json_dict(self):
