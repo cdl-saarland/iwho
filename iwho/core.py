@@ -1016,6 +1016,9 @@ class BasicBlock:
         """
         return "\n".join(map(str, self.insns))
 
+    def __iter__(self):
+        return iter(self.insns)
+
     def __str__(self):
         return self.get_asm()
 
