@@ -756,3 +756,21 @@ class DefaultInstantiator:
 
         return ImmediateOperand(width=width, value=val)
 
+import random
+
+@export
+class RandomRegisterInstantiator(DefaultInstantiator):
+    def __init__(self, ctx: Context):
+        super().__init__(ctx)
+
+    def for_operand(self, operand_scheme: iwho.OperandScheme) -> iwho.OperandInstance:
+        if operand_scheme.is_fixed():
+            return operand_scheme.fixed_operand
+
+        constraint = operand_scheme.operand_constraint
+
+        if isinstance(constraint, iwho.SetConstraint):
+            return random.choice(constraint.acceptable_operands)
+        else:
+            return super().for_operand(operand_scheme)
+
