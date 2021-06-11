@@ -20,7 +20,7 @@ from functools import cached_property
 import string
 from collections import defaultdict
 
-from iwho.iwho_utils import DedupStore, export
+from .utils import DedupStore, export
 
 import pyparsing as pp
 

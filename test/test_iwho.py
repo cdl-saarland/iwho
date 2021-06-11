@@ -11,7 +11,7 @@ import sys
 import_path = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(import_path)
 
-import iwho.iwho as iwho
+import iwho
 import iwho.x86 as x86
 
 
@@ -421,16 +421,19 @@ def test_not_encodable():
 def test_fixed_memory_operand():
     ctx = x86.Context()
 
-    scheme_dicts = [
-        {'kind': 'InsnScheme', 'str_template': 'lodsb ${reg0}, byte ptr ${mem0}',
-        'operand_schemes': {
-            'reg0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'al'}, 'read': False, 'written': True},
-            'mem0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86MemoryOperand', 'width': 8, 'segment': None, 'base': {'kind': 'x86RegisterOperand', 'name': 'rsi'}, 'index': None, 'scale': 1, 'displacement': 0}, 'read': True, 'written': False}
-            },
-        'implicit_operands': [
-            {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'flag_df'}, 'read': True, 'written': False}],
-        'affects_control_flow': False}
-    ]
+    scheme_dicts = {
+            "isa": "x86_64",
+            "schemes": [
+                {'kind': 'InsnScheme', 'str_template': 'lodsb ${reg0}, byte ptr ${mem0}',
+                'operand_schemes': {
+                    'reg0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'al'}, 'read': False, 'written': True},
+                    'mem0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86MemoryOperand', 'width': 8, 'segment': None, 'base': {'kind': 'x86RegisterOperand', 'name': 'rsi'}, 'index': None, 'scale': 1, 'displacement': 0}, 'read': True, 'written': False}
+                    },
+                'implicit_operands': [
+                    {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'flag_df'}, 'read': True, 'written': False}],
+                'affects_control_flow': False}
+            ]
+        }
 
     ctx.fill_from_json_dict(scheme_dicts)
 

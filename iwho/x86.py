@@ -9,14 +9,14 @@ import subprocess
 from functools import cached_property
 import pyparsing as pp
 
-import iwho.iwho as iwho
-from iwho.iwho_utils import is_hex_str, export
+from . import core
+from .utils import is_hex_str, export
 
 import logging
 logger = logging.getLogger(__name__)
 
 @export
-class RegisterOperand(iwho.OperandInstance):
+class RegisterOperand(core.OperandInstance):
     """ TODO document
     """
 
@@ -47,7 +47,7 @@ class RegisterOperand(iwho.OperandInstance):
 
 
 @export
-class MemoryOperand(iwho.OperandInstance):
+class MemoryOperand(core.OperandInstance):
     """ TODO document
     """
 
@@ -69,7 +69,7 @@ class MemoryOperand(iwho.OperandInstance):
         self.scale = scale
         self.displacement = displacement
 
-    def additionally_read(self) -> Sequence[iwho.OperandInstance]:
+    def additionally_read(self) -> Sequence[core.OperandInstance]:
         # to evaluate a memory operand, independently of whether it is written
         # or read (or only used for the agen in a LEA instruction), the
         # involved address registers are read.
@@ -146,7 +146,7 @@ class MemoryOperand(iwho.OperandInstance):
 
 
 @export
-class MemConstraint(iwho.OperandConstraint):
+class MemConstraint(core.OperandConstraint):
     """ TODO document
     """
 
@@ -160,7 +160,7 @@ class MemConstraint(iwho.OperandConstraint):
         return (isinstance(operand, MemoryOperand) and
                 self.width == operand.width)
 
-    def from_match(self, match: pp.ParseResults) -> iwho.OperandInstance:
+    def from_match(self, match: pp.ParseResults) -> core.OperandInstance:
         kwargs = dict()
         reg_fun = lambda r: self.ctx.all_registers[r]
         hex_fun = lambda x: x[0]
@@ -216,7 +216,7 @@ class MemConstraint(iwho.OperandConstraint):
 
 
 @export
-class ImmediateOperand(iwho.OperandInstance):
+class ImmediateOperand(core.OperandInstance):
     """ TODO document
     """
 
@@ -246,7 +246,7 @@ class ImmediateOperand(iwho.OperandInstance):
 
 
 @export
-class ImmConstraint(iwho.OperandConstraint):
+class ImmConstraint(core.OperandConstraint):
     """ TODO document
     """
 
@@ -302,7 +302,7 @@ class ImmConstraint(iwho.OperandConstraint):
 
 
 @export
-class SymbolOperand(iwho.OperandInstance):
+class SymbolOperand(core.OperandInstance):
     """ TODO document
     """
 
@@ -326,7 +326,7 @@ class SymbolOperand(iwho.OperandInstance):
 
 
 @export
-class SymbolConstraint(iwho.OperandConstraint):
+class SymbolConstraint(core.OperandConstraint):
     """ Constraint for symbol operands (for relocations/labels).
 
     Those are bit odd, since for encoding, llvm-mc will not accept integer
@@ -372,7 +372,7 @@ class SymbolConstraint(iwho.OperandConstraint):
 
 
 @export
-class Context(iwho.Context):
+class Context(core.Context):
     """ TODO document
     """
 
@@ -380,7 +380,7 @@ class Context(iwho.Context):
     def get_ISA_id(cls) -> str:
         return "x86_64"
 
-    def __init__(self, coder: Optional[iwho.ASMCoder]=None):
+    def __init__(self, coder: Optional[core.ASMCoder]=None):
         self.all_registers = dict()
 
         if coder is None:
@@ -416,15 +416,15 @@ class Context(iwho.Context):
         return pp.MatchFirst([pp.Keyword(r.name) for r in segment_registers])
 
 
-    def extract_mnemonic(self, insn: Union[str, iwho.InsnScheme, iwho.InsnInstance]) -> str:
+    def extract_mnemonic(self, insn: Union[str, core.InsnScheme, core.InsnInstance]) -> str:
         """ Extract the mnemonic from the assembly of a single instruction
 
         Here, this is the first whitespace-separated token that does not
         start with a brace.
         """
-        if isinstance(insn, iwho.InsnScheme):
+        if isinstance(insn, core.InsnScheme):
             insn_str = insn.str_template.template
-        elif isinstance(insn, iwho.InsnInstance):
+        elif isinstance(insn, core.InsnInstance):
             insn_str = insn.scheme.str_template.template
         else:
             assert isinstance(insn, str)
@@ -485,7 +485,7 @@ class Context(iwho.Context):
             assert len(group) > 0
             if isinstance(next(iter(group)), str):
                 group = map(lambda x: self.all_registers[x], group)
-            obj = self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(group))
+            obj = self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(group))
             obj.name = name
 
         groups = defaultdict(list)
@@ -508,14 +508,14 @@ class Context(iwho.Context):
         kind = jsondict["kind"]
         if kind == "SetConstraint":
             acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
-            return self.dedup_store.get(iwho.SetConstraint, acceptable_operands=frozenset(acceptable_operands))
+            return self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(acceptable_operands))
         elif kind == "x86ImmConstraint":
             return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86MemConstraint":
             return self.dedup_store.get(MemConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86SymbolConstraint":
             return self.dedup_store.get(SymbolConstraint, unhashed_kwargs={"context": self})
-        raise iwho.SchemeError("unknown operand constraint kind: '{}'".format(kind))
+        raise core.SchemeError("unknown operand constraint kind: '{}'".format(kind))
 
 
     def operand_from_json_dict(self, jsondict):
@@ -526,7 +526,7 @@ class Context(iwho.Context):
         if kind == "x86RegisterOperand":
             register_op = self.all_registers.get(jsondict["name"], None)
             if register_op is None:
-                raise iwho.SchemeError("unknown register: '{}'".format(jsondict["name"]))
+                raise core.SchemeError("unknown register: '{}'".format(jsondict["name"]))
             return register_op
         elif kind == "x86ImmediateOperand":
             return self.dedup_store.get(ImmediateOperand, width=jsondict["width"], value=jsondict["value"])
@@ -551,11 +551,11 @@ class Context(iwho.Context):
 
             return self.dedup_store.get(MemoryOperand, width=width, segment=segment, base=base, index=index, scale=scale, displacement=displacement)
 
-        raise iwho.SchemeError("unknown operand kind: '{}'".format(kind))
+        raise core.SchemeError("unknown operand kind: '{}'".format(kind))
 
 
 @export
-class LLVMMCCoder(iwho.ASMCoder):
+class LLVMMCCoder(core.ASMCoder):
     """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
     playground) for assembly encoding/decoding.
     """
@@ -582,11 +582,11 @@ class LLVMMCCoder(iwho.ASMCoder):
 
         res = subprocess.run(cmd, **subprocess_args)
         if res.returncode != 0:
-            raise iwho.ASMCoderError(
+            raise core.ASMCoderError(
                     "Non-zero return code {} from llvm-mc when encoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
 
         if "warning" in res.stderr:
-            raise iwho.ASMCoderError(
+            raise core.ASMCoderError(
                     "llvm-mc produced a warning when encoding input \"{}\":\n".format(input_str) + res.stderr)
 
         asm_output = res.stdout
@@ -600,11 +600,11 @@ class LLVMMCCoder(iwho.ASMCoder):
             # expected format: <instruction assembly> # encoding: [0x**,0x**,...]
             tokens = l.split(split_str)
             if len(tokens) != 2:
-                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+                raise core.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
             hexlist = tokens[1]
             hexlist = hexlist.strip()
             if hexlist[0] != '[' or hexlist[-1] != ']':
-                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+                raise core.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
             hex_tokens = hexlist[1:-1].split(",")
             hex_bytes = []
             for t in hex_tokens:
@@ -614,13 +614,13 @@ class LLVMMCCoder(iwho.ASMCoder):
                         # we "resolve" the relocation with a dummy value to allow testing jump instructions
                         hex_bytes.append("42")
                     else:
-                        raise iwho.ASMCoderError("Unexpected llvm-mc output line (weird relocation?):\n  {}".format(l))
+                        raise core.ASMCoderError("Unexpected llvm-mc output line (weird relocation?):\n  {}".format(l))
                 hex_bytes.append(t[2:])
 
             hexstr = "".join(hex_bytes)
 
             if len(hexstr) == 0 or not is_hex_str(hexstr):
-                raise iwho.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
+                raise core.ASMCoderError("Unexpected llvm-mc output line:\n  {}".format(l))
             hex_lines.append(hexstr)
 
         return "".join(hex_lines)
@@ -646,11 +646,11 @@ class LLVMMCCoder(iwho.ASMCoder):
 
         res = subprocess.run(cmd, **subprocess_args)
         if res.returncode != 0:
-            raise iwho.ASMCoderError(
+            raise core.ASMCoderError(
                     "Non-zero return code {} from llvm-mc when decoding input \"{}\"\nstderr:\n".format(res.returncode, input_str) + res.stderr)
 
         if "warning" in res.stderr:
-            raise iwho.ASMCoderError(
+            raise core.ASMCoderError(
                     "llvm-mc produced a warning when decoding input \"{}\":\n".format(input_str) + res.stderr)
 
         asm_output = res.stdout
@@ -695,13 +695,13 @@ class DefaultInstantiator:
         """ TODO document
         """
 
-        if isinstance(scheme, iwho.InsnScheme):
+        if isinstance(scheme, core.InsnScheme):
             return self.for_insn(scheme)
-        elif isinstance(scheme, iwho.OperandScheme):
+        elif isinstance(scheme, core.OperandScheme):
             return self.for_operand(scheme)
-        raise iwho.SchemeError("trying to instantiate incompatible object: {}".format(repr(scheme)))
+        raise core.SchemeError("trying to instantiate incompatible object: {}".format(repr(scheme)))
 
-    def for_insn(self, insn_scheme: iwho.InsnScheme) -> iwho.InsnInstance:
+    def for_insn(self, insn_scheme: core.InsnScheme) -> core.InsnInstance:
         """ Create an instruction instance from a scheme
         """
 
@@ -710,7 +710,7 @@ class DefaultInstantiator:
             args[name] = self.for_operand(operand_scheme)
         return insn_scheme.instantiate(args)
 
-    def for_operand(self, operand_scheme: iwho.OperandScheme) -> iwho.OperandInstance:
+    def for_operand(self, operand_scheme: core.OperandScheme) -> core.OperandInstance:
         """ Create an OperandInstance instance from a scheme
         """
 
@@ -719,7 +719,7 @@ class DefaultInstantiator:
 
         constraint = operand_scheme.operand_constraint
 
-        if isinstance(constraint, iwho.SetConstraint):
+        if isinstance(constraint, core.SetConstraint):
             for op in constraint.acceptable_operands:
                 if "a" in str(op) or "c" in str(op):
                     # rax and ecx (and variants thereof) might be used for more
@@ -763,13 +763,13 @@ class RandomRegisterInstantiator(DefaultInstantiator):
     def __init__(self, ctx: Context):
         super().__init__(ctx)
 
-    def for_operand(self, operand_scheme: iwho.OperandScheme) -> iwho.OperandInstance:
+    def for_operand(self, operand_scheme: core.OperandScheme) -> core.OperandInstance:
         if operand_scheme.is_fixed():
             return operand_scheme.fixed_operand
 
         constraint = operand_scheme.operand_constraint
 
-        if isinstance(constraint, iwho.SetConstraint):
+        if isinstance(constraint, core.SetConstraint):
             return random.choice(constraint.acceptable_operands)
         else:
             return super().for_operand(operand_scheme)

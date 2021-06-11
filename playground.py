@@ -2,12 +2,12 @@
 
 import sys
 
-import iwho.iwho as iwho
+import iwho
 import iwho.x86 as x86
 
 
 def main():
-    from iwho.iwho_utils import parse_args_with_logging
+    from iwho.utils import parse_args_with_logging
     import argparse
     argparser = argparse.ArgumentParser(description="Interactive playground for using instructions with holes (iwho)")
     argparser.add_argument("-b", "--bytes", metavar="HEXSTR", default=None, help="decode instructions from the bytes represented by the specified hex string")
@@ -16,18 +16,22 @@ def main():
 
     argparser.add_argument("-i", "--interactive", action="store_true", help="after loading instructions, open an interactive mode (IPython if available)")
 
-    argparser.add_argument("-s", "--insnschemes", metavar="JSON", required=True, help="use instruction schemes from this json file")
+    argparser.add_argument("-s", "--insnschemes", metavar="JSON", default=None, help="use instruction schemes from this json file")
 
     args = parse_args_with_logging(argparser, "warning")
     # TODO stdin
 
-    import json
 
-    with open(args.insnschemes, 'r') as infile:
-        scheme_data = json.load(infile)
+    if args.insnschemes is not None:
+        import json
+        with open(args.insnschemes, 'r') as infile:
+            scheme_data = json.load(infile)
 
-    ctx = x86.Context()
-    ctx.fill_from_json_dict(scheme_data)
+        ctx = x86.Context()
+        ctx.fill_from_json_dict(scheme_data)
+    else:
+        ctx = iwho.get_context("x86")
+        # TODO this should be an argument
 
 
     insns = []

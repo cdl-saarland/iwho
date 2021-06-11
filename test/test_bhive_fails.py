@@ -10,18 +10,12 @@ import sys
 import_path = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(import_path)
 
-import iwho.iwho as iwho
+import iwho
 import iwho.x86 as x86
 
 @pytest.fixture(scope="module")
 def ctx():
-    scheme_file = "uops_info_schemes.json"
-    with open(scheme_file, 'r') as infile:
-        scheme_data = json.load(infile)
-
-    res = x86.Context()
-    res.fill_from_json_dict(scheme_data)
-    return res
+    return iwho.get_context("x86")
 
 start_idx = 0
 # num = 200

@@ -2,7 +2,7 @@
 IWHo: Instructions With Holes
 """
 
-from .iwho import *
+from .core import *
 
 
 def get_context(ctx_id: str) -> Context:
