@@ -38,7 +38,7 @@ def main():
     argparser.add_argument("inpath", metavar="INFILE", help="the uops.info xml file")
 
 
-    argparser.add_argument("-o", "--outpath", default="uops_info_schemes.json",
+    argparser.add_argument("-o", "--outpath", default="x86_uops_info.json",
             help="destination file for the json output")
 
     args = parse_args_with_logging(argparser, "debug")

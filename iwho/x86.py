@@ -10,11 +10,12 @@ from functools import cached_property
 import pyparsing as pp
 
 import iwho.iwho as iwho
-from iwho.iwho_utils import is_hex_str
+from iwho.iwho_utils import is_hex_str, export
 
 import logging
 logger = logging.getLogger(__name__)
 
+@export
 class RegisterOperand(iwho.OperandInstance):
     """ TODO document
     """
@@ -45,6 +46,7 @@ class RegisterOperand(iwho.OperandInstance):
         return { "kind": "x86RegisterOperand", "name": self.name }
 
 
+@export
 class MemoryOperand(iwho.OperandInstance):
     """ TODO document
     """
@@ -143,6 +145,7 @@ class MemoryOperand(iwho.OperandInstance):
                 }
 
 
+@export
 class MemConstraint(iwho.OperandConstraint):
     """ TODO document
     """
@@ -212,6 +215,7 @@ class MemConstraint(iwho.OperandConstraint):
         return { "kind": "x86MemConstraint", "width": self.width }
 
 
+@export
 class ImmediateOperand(iwho.OperandInstance):
     """ TODO document
     """
@@ -241,6 +245,7 @@ class ImmediateOperand(iwho.OperandInstance):
         return { "kind": "x86ImmediateOperand", "width": self.width, "value": self.value }
 
 
+@export
 class ImmConstraint(iwho.OperandConstraint):
     """ TODO document
     """
@@ -296,6 +301,7 @@ class ImmConstraint(iwho.OperandConstraint):
         return { "kind": "x86ImmConstraint", "width": self.width }
 
 
+@export
 class SymbolOperand(iwho.OperandInstance):
     """ TODO document
     """
@@ -319,6 +325,7 @@ class SymbolOperand(iwho.OperandInstance):
         return { "kind": "x86SymbolOperand" }
 
 
+@export
 class SymbolConstraint(iwho.OperandConstraint):
     """ Constraint for symbol operands (for relocations/labels).
 
@@ -364,9 +371,14 @@ class SymbolConstraint(iwho.OperandConstraint):
         return { "kind": "x86SymbolConstraint" }
 
 
+@export
 class Context(iwho.Context):
     """ TODO document
     """
+
+    @classmethod
+    def get_ISA_id(cls) -> str:
+        return "x86_64"
 
     def __init__(self, coder: Optional[iwho.ASMCoder]=None):
         self.all_registers = dict()
@@ -542,6 +554,7 @@ class Context(iwho.Context):
         raise iwho.SchemeError("unknown operand kind: '{}'".format(kind))
 
 
+@export
 class LLVMMCCoder(iwho.ASMCoder):
     """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
     playground) for assembly encoding/decoding.
@@ -670,6 +683,7 @@ class LLVMMCCoder(iwho.ASMCoder):
         return asm_lines
 
 
+@export
 class DefaultInstantiator:
     """ TODO document
     """

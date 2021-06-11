@@ -36,3 +36,4 @@ error_log.txt
 .python-version
 
 *.egg-info
+schemes/*.json

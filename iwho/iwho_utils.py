@@ -4,6 +4,19 @@
 
 from collections import defaultdict
 
+import sys
+
+def export(fn):
+    """ A decorator to automatically add the decorated object to the __all__
+    list of the module (which describes what is imported in
+    `from module import *` statements).
+    """
+    mod = sys.modules[fn.__module__]
+    if hasattr(mod, '__all__'):
+        mod.__all__.append(fn.__name__)
+    else:
+        mod.__all__ = [fn.__name__]
+    return fn
 
 class DedupStore:
     """ TODO document thouroughly

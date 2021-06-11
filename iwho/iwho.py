@@ -1,5 +1,15 @@
 
-# IWHO: Instructions With HOles
+"""
+IWHo: Instructions With Holes
+
+This module contains the general, ISA-independent definitions for IWHo.
+
+Notable are:
+    IHWOError: the super class from which all thrown exceptions in IWHo
+        inherit
+
+TODO
+"""
 
 from typing import Sequence, Optional, Dict, Union
 
@@ -10,7 +20,7 @@ from functools import cached_property
 import string
 from collections import defaultdict
 
-from iwho.iwho_utils import DedupStore
+from iwho.iwho_utils import DedupStore, export
 
 import pyparsing as pp
 
@@ -18,11 +28,13 @@ import pyparsing as pp
 import logging
 logger = logging.getLogger(__name__)
 
+@export
 class IWHOError(Exception):
     """ Superclass for exceptions in the package
     """
     pass
 
+@export
 class SchemeError(IWHOError):
     """ An instruction scheme itself or a component of it is broken
     """
@@ -30,6 +42,7 @@ class SchemeError(IWHOError):
     def __init__(self, message):
         super().__init__(message)
 
+@export
 class InstantiationError(IWHOError):
     """ An error occured while instantiating a scheme
     """
@@ -38,6 +51,7 @@ class InstantiationError(IWHOError):
         super().__init__(message)
 
 
+@export
 class ASMCoderError(IWHOError):
     """ An error occured in the asm <-> hex transformation
     """
@@ -46,6 +60,7 @@ class ASMCoderError(IWHOError):
         super().__init__(message)
 
 
+@export
 class Context(ABC):
     """ Manager for the instruction schemes of a single instruction set
     architecture.
@@ -77,6 +92,14 @@ class Context(ABC):
         # instruction schemes with a fitting mnemonic
         self.mnemonic_to_insn_schemes = defaultdict(list)
         self.mnemonic_pattern_cache = dict()
+
+    @classmethod
+    @abstractmethod
+    def get_ISA_id(cls) -> str:
+        """ Return a string identifier for the ISA that is implemented in this
+        context.
+        """
+        pass
 
     @abstractmethod
     def extract_mnemonic(self, insn: Union[str, "InsnScheme", "InsnInstance"]) -> str:
@@ -219,8 +242,12 @@ class Context(ABC):
         parsed from a json file.
         """
 
-        # currently, that's actually a list. TODO: add a version check
-        for insn_scheme_dict in jsondict:
+        assert jsondict["isa"] == self.get_ISA_id()
+        # TODO: add a version check
+
+        scheme_list = jsondict["schemes"]
+
+        for insn_scheme_dict in scheme_list:
             self.add_insn_scheme(InsnScheme.from_json_dict(self, insn_scheme_dict))
 
     def to_json_dict(self):
@@ -231,13 +258,20 @@ class Context(ABC):
         be usable by the `fill_from_json_dict` method.
         """
 
-        # currently, that's actually a list. TODO: add a version check
-        res = []
+        scheme_list = []
         for insn_scheme in self.insn_schemes:
-            res.append(insn_scheme.to_json_dict())
+            scheme_list.append(insn_scheme.to_json_dict())
+
+        res = {
+                "isa": self.get_ISA_id(),
+                "schemes": scheme_list,
+            }
+        # TODO: add a version check
+
         return res
 
 
+@export
 class ASMCoder(ABC):
     """ Interface for transforming readable assembly strings into hex strings
     and vice versa.
@@ -262,6 +296,7 @@ class ASMCoder(ABC):
         pass
 
 
+@export
 class OperandInstance(ABC):
     """ Interface that needs to be implemented by classes that represent
     concrete operand instances.
@@ -335,7 +370,7 @@ class OperandInstance(ABC):
         pass
 
 
-
+@export
 class OperandConstraint(ABC):
     """ Interface that needs to be implemented by classes that represent
     constraints on operands.
@@ -416,6 +451,7 @@ class OperandConstraint(ABC):
         pass
 
 
+@export
 class SetConstraint(OperandConstraint):
     """ A generic Constraint to allow one of a specific set of predetermined
     Operands.
@@ -480,6 +516,7 @@ class SetConstraint(OperandConstraint):
             }
 
 
+@export
 class OperandScheme:
     """ Instances of this class describe what operands can be used as an
     operand of an instruction and how they are used (i.e. whether they are read
@@ -609,6 +646,7 @@ class OperandScheme:
         raise NotImplementedError("No equality implemented on OperandSchemes")
 
 
+@export
 class InsnScheme:
     """ An instance of this class describes a group of closely related
     instructions, (mostly) only differing in the details of their operands
@@ -819,6 +857,7 @@ class InsnScheme:
     def __eq__(self, other):
         raise NotImplementedError("No equality implemented on InsnSchemes")
 
+@export
 class InsnInstance:
     """ An instance of this class represents a single concrete instruction.
 
