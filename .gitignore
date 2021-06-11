@@ -29,8 +29,10 @@ dot_output
 dot
 *distribution.json
 
+
 error_log.txt
 
 # pyenv stuff
 .python-version
 
+*.egg-info
