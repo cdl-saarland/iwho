@@ -119,6 +119,13 @@ class Context(ABC):
         """
         pass
 
+    def make_bb(self, insns: Optional[Sequence["InsnInstance"]]=None) -> "BasicBlock":
+        """ Create a BasicBlock with this context.
+
+        Just a convenience shortcut for using the BasicBlock constructor.
+        """
+        return BasicBlock(self, insns=insns)
+
     def parse_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
         """ Parse a sequence of InsnInstances from an assembly string.
 
@@ -206,16 +213,19 @@ class Context(ABC):
         return matching_scheme.instantiate(submatch)
 
 
-    def encode_insns(self, insn_instances: Sequence["InsnInstance"]) -> str:
-        """ Encode a sequence of instruction instances into a byte stream
-        represented as string of hex characters.
+    def encode_insns(self, insn_instances: Union["BasicBlock", Sequence["InsnInstance"]]) -> str:
+        """ Encode a basic block or a sequence of instruction instances into a
+        byte stream represented as string of hex characters.
 
         Raises an ASMCoderError encoding the instances fails.
         """
 
-        asm_str = ""
-        for ii in insn_instances:
-            asm_str += str(ii)
+        if isinstance(insn_instances, BasicBlock):
+            asm_str = insn_instances.get_asm()
+        else:
+            asm_str = ""
+            for ii in insn_instances:
+                asm_str += str(ii)
 
         res = self.coder.asm2hex(asm_str)
 
@@ -973,4 +983,42 @@ class InsnInstance:
 
     def __hash__(self):
         return hash((self._scheme, self._operands))
+
+
+@export
+class BasicBlock:
+    """TODO document this
+    """
+
+    def __init__(self, context: Context, insns: Optional[Sequence[InsnInstance]]=None):
+        """TODO document this
+        """
+        self.context = context
+        # TODO validate that there are no cf instructions in the middle?
+        self.insns = []
+        if insns is not None:
+            for i in insns:
+                self.append(i)
+
+    def append(self, insn: InsnInstance):
+        """TODO document this
+        """
+        assert isinstance(insn, InsnInstance)
+        self.insns.append(insn)
+
+    def get_hex(self) -> str:
+        """TODO document this
+        """
+        return self.context.encode_insns(self)
+
+    def get_asm(self) -> str:
+        """TODO document this
+        """
+        return "\n".join(map(str, self.insns))
+
+    def __str__(self):
+        return self.get_asm()
+
+    def __repr__(self):
+        return "\n".join(map(repr, self.insns))
 
