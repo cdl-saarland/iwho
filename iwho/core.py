@@ -162,7 +162,7 @@ class Context(ABC):
         return insns
 
 
-    def match_insn_str(self, insn_str: str):
+    def match_insn_str(self, insn_str: str) -> "InsnInstance":
         """ Match the assembly string representing an instruction to the
         InsnScheme that captures it best and return an instance of this scheme
         with appropriate operands.
