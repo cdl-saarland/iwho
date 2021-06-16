@@ -4,6 +4,8 @@ IWHo: Instructions With Holes
 
 from .core import *
 
+import logging
+logger = logging.getLogger(__name__)
 
 def get_context(ctx_id: str) -> Context:
     """ Try to create an IWHo Context that corresponds to the given identifier.
@@ -36,7 +38,7 @@ def get_context(ctx_id: str) -> Context:
         selected_file_name = ctx_id + ".json"
     else:
         for f in scheme_files:
-            if f.startswith(ctx_id):
+            if f.startswith(ctx_id) and not f.endswith("_features.json"):
                 selected_file_name = f
                 break
 
@@ -60,10 +62,24 @@ def get_context(ctx_id: str) -> Context:
 
     isa = schemes_data["isa"]
 
+    filename, ext = os.path.splitext(selected_file)
+    feature_path = filename + "_features.json"
+
+    features = None
+    if os.path.isfile(feature_path):
+        logger.debug(f"Feature file found at {feature_path}.")
+        try:
+            with open(feature_path, "r") as feature_file:
+                features = json.load(feature_file)
+        except:
+            logger.warning(f"Failed to read features from feature file {feature_path}.")
+
     for ctx in supported_contexts:
         if isa == ctx.get_ISA_id():
             res = ctx()
             res.fill_from_json_dict(schemes_data)
+            if features is not None:
+                res.set_features(features)
             return res
 
     raise IWHOError(f"Found no IWHo Context for the isa '{isa}'")

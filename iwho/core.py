@@ -93,6 +93,26 @@ class Context(ABC):
         self.mnemonic_to_insn_schemes = defaultdict(list)
         self.mnemonic_pattern_cache = dict()
 
+        # if present: a mapping of InsnScheme strings to dictionaries with
+        #   features for this InsnScheme.
+        self._features = None
+
+    def set_features(self, features):
+        """ Set a feature dictionary, i.e. a dict mapping feature records to
+        InsnScheme strings.
+        """
+        self._features = features
+
+    def get_feature(self, insnscheme: "InsnScheme"):
+        """ Try to get a feature record for the given InsnScheme. Returns None
+        if no feature is found.
+        """
+        if self._features is None:
+            return None
+        key = str(insnscheme)
+        res = self._features.get(key, None)
+        return res
+
     @classmethod
     @abstractmethod
     def get_ISA_id(cls) -> str:
