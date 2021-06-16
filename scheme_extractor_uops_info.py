@@ -37,6 +37,9 @@ def main():
         )
     argparser.add_argument("inpath", metavar="INFILE", help="the uops.info xml file")
 
+    argparser.add_argument('--validate', dest='validate', action='store_true', help="validate that all instruction schemes are realizable in the coder")
+    argparser.add_argument('--no-validate', dest='validate', action='store_false', help="do not validate that all instruction schemes are realizable in the coder")
+    argparser.set_defaults(validate=True)
 
     argparser.add_argument("-o", "--outpath", default="x86_uops_info.json",
             help="destination file for the json output")
@@ -47,17 +50,17 @@ def main():
     outpath = args.outpath
 
     ctx = x86.Context()
-    add_uops_info_xml(ctx, xml_path)
+    feature_mapping = add_uops_info_xml(ctx, xml_path, validate=args.validate)
 
     jsondict = ctx.to_json_dict()
 
     with open(outpath, "w") as outfile:
         json.dump(jsondict, outfile, indent="  ")
-        # for x in jsondict:
-        #     if not ( x['str_template'].startswith("adc") or x['str_template'].startswith("add") or x['str_template'].startswith("sar") ):
-        #         continue
-        #     json.dump(x, outfile)
-        #     outfile.write(",\n")
+
+    filename, ext = os.path.splitext(outpath)
+    feature_path = filename + "_features.json"
+    with open(feature_path, "w") as outfile:
+        json.dump(feature_mapping, outfile, indent="  ")
 
 
 def make_operands_explicit(scheme, operand_keys):
@@ -134,7 +137,23 @@ def make_operands_explicit(scheme, operand_keys):
             affects_control_flow=new_affects_cf,
         )
 
-def add_uops_info_xml(ctx, xml_path):
+
+def extract_features_per_uarch(xml_entry):
+    result = dict()
+    for archnode in xml_entry.iter('architecture'):
+        uarch_name = archnode.get('name', None)
+        measurements_node = archnode.find('measurement')
+        if measurements_node is None:
+            continue
+        port_usage = measurements_node.get('ports', None)
+        if port_usage is None:
+            continue
+        result[uarch_name] = port_usage
+
+    return result
+
+
+def add_uops_info_xml(ctx, xml_path, validate):
 
     import xml.etree.ElementTree as ET
 
@@ -146,6 +165,8 @@ def add_uops_info_xml(ctx, xml_path):
     num_errors = 0
 
     all_schemes = dict()
+
+    feature_mapping = defaultdict(list)
 
     # add the SSE/AVX cmp pseudo ops
     # Maybe it would be better to map all of those versions to the corresponding immediate version, or have a predicate operand
@@ -488,7 +509,13 @@ def add_uops_info_xml(ctx, xml_path):
                     }
             if key in blocked_schemes:
                 continue
-            elif key in all_schemes:
+
+            per_uarch_features = extract_features_per_uarch(instrNode)
+            feature_mapping[key].append(per_uarch_features)
+            # TODO if multiple are in the list, check for differences?
+            # we could add more features here
+
+            if key in all_schemes:
                 print(f"Duplicate scheme key: {key}")
                 continue
             else:
@@ -517,51 +544,54 @@ def add_uops_info_xml(ctx, xml_path):
 
     logger.info(f"{len(ctx.insn_schemes)} instruction schemes after processing uops.info xml.")
 
-    # ensure that all schemes are realizable and make it through encoder and decoder
-    instor = x86.DefaultInstantiator(ctx)
+    if validate:
+        # ensure that all schemes are realizable and make it through encoder and decoder
+        instor = x86.DefaultInstantiator(ctx)
 
-    with open("./error_log.txt", "w") as err_file:
+        with open("./error_log.txt", "w") as err_file:
 
-        mismatches = 0
-        errors = 0
-        for x, scheme in enumerate(ctx.insn_schemes):
-            instance = instor(scheme)
-            error_log = f"scheme no. {x}\n"
-            error_log += "original scheme: {}\n  {}\n".format(str(scheme), repr(scheme))
-            error_log += "original instance: {}\n".format(str(instance))
-            print(f"instruction number {x} : {instance}")
-            try:
-                hex_str = ctx.encode_insns([instance])
-                if not (len(hex_str) > 0):
-                    error_log += "ERROR: encoded to empty hex string\n"
-                    raise iwho.IWHOError("see error log")
+            mismatches = 0
+            errors = 0
+            for x, scheme in enumerate(ctx.insn_schemes):
+                instance = instor(scheme)
+                error_log = f"scheme no. {x}\n"
+                error_log += "original scheme: {}\n  {}\n".format(str(scheme), repr(scheme))
+                error_log += "original instance: {}\n".format(str(instance))
+                print(f"instruction number {x} : {instance}")
+                try:
+                    hex_str = ctx.encode_insns([instance])
+                    if not (len(hex_str) > 0):
+                        error_log += "ERROR: encoded to empty hex string\n"
+                        raise iwho.IWHOError("see error log")
 
-                new_instances = ctx.decode_insns(hex_str)
+                    new_instances = ctx.decode_insns(hex_str)
 
-                if not (len(new_instances) == 1):
-                    error_log += "ERROR: decoded to {} instructions\n".format(len(new_instances))
-                    raise iwho.IWHOError("see error log")
+                    if not (len(new_instances) == 1):
+                        error_log += "ERROR: decoded to {} instructions\n".format(len(new_instances))
+                        raise iwho.IWHOError("see error log")
 
-                new_instance = new_instances[0]
-                error_log += "decoded instance: {}\n".format(str(new_instance))
-                new_scheme = new_instance.scheme
-                error_log += "decoded scheme: {}\n  {}\n".format(str(new_scheme), repr(new_scheme))
+                    new_instance = new_instances[0]
+                    error_log += "decoded instance: {}\n".format(str(new_instance))
+                    new_scheme = new_instance.scheme
+                    error_log += "decoded scheme: {}\n  {}\n".format(str(new_scheme), repr(new_scheme))
 
-                if str(new_scheme) != str(scheme):
-                    mismatches += 1
-                    error_log += "ERROR: scheme mismatch\n"
-                    raise iwho.IWHOError("see error log")
-
-
-            except iwho.IWHOError as e:
-                print(f"error: {e}")
-                errors += 1
-                error_log += f"EXCEPTION: {e}\n"
-                print("### NEXT ERROR ###\n" + error_log, file=err_file)
+                    if str(new_scheme) != str(scheme):
+                        mismatches += 1
+                        error_log += "ERROR: scheme mismatch\n"
+                        raise iwho.IWHOError("see error log")
 
 
-    print(f"found {mismatches} mismatches")
-    print(f"found {errors} errors")
+                except iwho.IWHOError as e:
+                    print(f"error: {e}")
+                    errors += 1
+                    error_log += f"EXCEPTION: {e}\n"
+                    print("### NEXT ERROR ###\n" + error_log, file=err_file)
+
+
+        print(f"found {mismatches} mismatches")
+        print(f"found {errors} errors")
+
+    return feature_mapping
 
 
 
