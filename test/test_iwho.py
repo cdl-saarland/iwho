@@ -2,11 +2,11 @@
 
 import pytest
 
-import string
-
 from collections import namedtuple
 import os
 import sys
+
+import pyparsing as pp
 
 import_path = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(import_path)
@@ -154,8 +154,6 @@ def test_instantiate_all(x86_ctx):
         str(instance)
         # print(instance)
 
-
-import pyparsing as pp
 
 def test_parser_adcx(x86_ctx):
     ctx = x86_ctx

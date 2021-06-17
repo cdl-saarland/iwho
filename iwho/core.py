@@ -103,9 +103,9 @@ class Context(ABC):
         """
         self._features = features
 
-    def get_feature(self, insnscheme: "InsnScheme"):
+    def get_features(self, insnscheme: "InsnScheme"):
         """ Try to get a feature record for the given InsnScheme. Returns None
-        if no feature is found.
+        if no feature record is found.
         """
         if self._features is None:
             return None
@@ -882,10 +882,11 @@ class InsnScheme:
                 affects_control_flow=affects_control_flow)
 
     def __hash__(self):
-        return hash((self.str_template.template,))
+        return hash(str(self))
 
     def __eq__(self, other):
-        raise NotImplementedError("No equality implemented on InsnSchemes")
+        # the string representation should be unique
+        return isinstance(other, InsnScheme) and str(other) == str(self)
 
 @export
 class InsnInstance:
@@ -1020,11 +1021,13 @@ class BasicBlock:
             for i in insns:
                 self.append(i)
 
-    def append(self, insn: InsnInstance):
+    def append(self, insn: Union[InsnInstance, Sequence[InsnInstance]]):
         """TODO document this
         """
-        assert isinstance(insn, InsnInstance)
-        self.insns.append(insn)
+        if isinstance(insn, InsnInstance):
+            self.insns.append(insn)
+        else:
+            self.insns += insn
 
     def get_hex(self) -> str:
         """TODO document this
@@ -1038,6 +1041,9 @@ class BasicBlock:
 
     def __iter__(self):
         return iter(self.insns)
+
+    def __len__(self):
+        return len(self.insns)
 
     def __str__(self):
         return self.get_asm()
