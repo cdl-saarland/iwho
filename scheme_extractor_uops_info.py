@@ -186,11 +186,11 @@ def add_uops_info_xml(ctx, xml_path, validate):
         return ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
 
     registers = [f"xmm{x}" for x in range(0,16)]
-    allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
+    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
     xmm_constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
 
     registers = [f"ymm{x}" for x in range(0,16)]
-    allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
+    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
     ymm_constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
 
     cmp_versions = ["eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord"]
@@ -529,10 +529,10 @@ def add_uops_info_xml(ctx, xml_path, validate):
             # validate that we caught all control flow instructions
             writes_ip = False
             for k, op in scheme.operand_schemes.items():
-                if op.is_written and op.is_fixed() and isinstance(op, x86.RegisterOperand) and op.alias_class == ctx._reg_alias_class_enum["GPR_IP"]:
+                if op.is_written and op.is_fixed() and isinstance(op, x86.RegisterOperand) and op.alias_class == x86.RegAliasClass["GPR_IP"]:
                     writes_ip = True
             for op in scheme.implicit_operands:
-                if op.is_written and op.is_fixed() and isinstance(op.fixed_operand, x86.RegisterOperand) and op.fixed_operand.alias_class == ctx._reg_alias_class_enum["GPR_IP"]:
+                if op.is_written and op.is_fixed() and isinstance(op.fixed_operand, x86.RegisterOperand) and op.fixed_operand.alias_class == x86.RegAliasClass["GPR_IP"]:
                     writes_ip = True
 
             if writes_ip and not scheme.affects_control_flow:
@@ -610,7 +610,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
     if op_type == 'reg':
         registers = operandNode.text.lower().split(',')
         try:
-            allowed_registers = frozenset(( ctx.all_registers[reg] for reg in registers ))
+            allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
         except KeyError as e:
             raise UnsupportedFeatureError(f"Unsupported register: {e}")
 
@@ -641,10 +641,10 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             width = int(operandNode.attrib.get('width'))
             if operandNode.attrib.get('base', '') != '':
                 # fixed memory operand
-                base_reg = ctx.all_registers[operandNode.attrib['base'].lower()]
+                base_reg = x86.all_registers[operandNode.attrib['base'].lower()]
                 segment = None
                 if operandNode.attrib.get('seg', 'DS') != 'DS':
-                    segment = ctx.all_registers[operandNode.attrib['seg'].lower()]
+                    segment = x86.all_registers[operandNode.attrib['seg'].lower()]
 
                 op = ctx.dedup_store.get(x86.MemoryOperand, width=width, base=base_reg, segment=segment)
                 op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, fixed_operand=op, read=read, written=written))
@@ -700,7 +700,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
                 written = True
             if not (read or written):
                 continue
-            reg = ctx.all_registers[f.lower()]
+            reg = x86.all_registers[f.lower()]
             op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
 
     else:

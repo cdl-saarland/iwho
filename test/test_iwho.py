@@ -20,8 +20,8 @@ from inputs import make_test_x86ctx
 
 def get_regs(ctx, category, width=None):
     res = []
-    for k, reg in ctx.all_registers.items():
-        if (width is None or reg.width == width) and reg.category == ctx._reg_category_enum[category]:
+    for k, reg in x86.all_registers.items():
+        if (width is None or reg.width == width) and reg.category == x86.RegKind[category]:
             res.append(reg)
 
     return res
@@ -86,7 +86,7 @@ def test_construct_memory_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["m0"] = x86.MemoryOperand(width=64, base=ctx.all_registers["rbx"], scale=2, index=ctx.all_registers["rdx"], displacement=42)
+    operands["m0"] = x86.MemoryOperand(width=64, base=x86.all_registers["rbx"], scale=2, index=x86.all_registers["rdx"], displacement=42)
     operands["r0"] = instor(scheme.operand_schemes["r0"])
 
     insn = scheme.instantiate(operands)

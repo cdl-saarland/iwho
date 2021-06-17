@@ -1,10 +1,13 @@
 
 from typing import Sequence, Optional, Union
 
+from csv import DictReader
 from enum import Enum
 from collections import defaultdict
 import os
+import random
 import subprocess
+
 
 from functools import cached_property
 import pyparsing as pp
@@ -14,6 +17,56 @@ from .utils import is_hex_str, export
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+all_registers = None
+RegAliasClass = None
+RegKind = None
+
+def _find_registers():
+    """ Read the x86 registers from a csv file next to this source file.
+
+    This is called at the end of the module and initializes global variables of
+    this module:
+        - all_registers: Dict[str, RegisterOperand]
+        - RegAliasClass: Enum
+        - RegKind: Enum
+    """
+
+    global all_registers,  RegAliasClass, RegKind
+
+    class CSVKeywords:
+        name = 'name'
+        alias_class = 'alias_class'
+        category = 'category'
+        width = 'width'
+
+    # read the registers from the specification in csv format
+    csv_path = os.path.join(os.path.dirname(__file__), "x86_registers.csv")
+    with open(csv_path, "r") as csv_file:
+        reader = DictReader(csv_file)
+        data = [row for row in reader]
+
+    # create enums for the alias classes (aliasing registers have the same
+    # alias class) and categories
+    alias_classes = { row[CSVKeywords.alias_class] for row in data }
+    categories = { row[CSVKeywords.category] for row in data }
+
+    RegAliasClass = Enum('RegAliasClass', sorted(alias_classes), module=__name__)
+    RegKind = Enum('RegKind', sorted(categories), module=__name__)
+
+    all_registers = dict()
+
+    for row in data:
+        name = row[CSVKeywords.name]
+        alias_class = RegAliasClass[row[CSVKeywords.alias_class]]
+        category = RegKind[row[CSVKeywords.category]]
+        width = int(row[CSVKeywords.width])
+
+        assert row["name"] not in all_registers.keys()
+        regop = RegisterOperand(name=name, alias_class=alias_class, category=category, width=width)
+        all_registers[name] = regop
+
 
 @export
 class RegisterOperand(core.OperandInstance):
@@ -162,7 +215,7 @@ class MemConstraint(core.OperandConstraint):
 
     def from_match(self, match: pp.ParseResults) -> core.OperandInstance:
         kwargs = dict()
-        reg_fun = lambda r: self.ctx.all_registers[r]
+        reg_fun = lambda r: all_registers[r]
         hex_fun = lambda x: x[0]
         for k, fun in (("segement", reg_fun), ("base", reg_fun), ("index", reg_fun), ("scale", int), ("displacement", hex_fun)):
             if k in match:
@@ -381,21 +434,43 @@ class Context(core.Context):
         return "x86_64"
 
     def __init__(self, coder: Optional[core.ASMCoder]=None):
-        self.all_registers = dict()
-
         if coder is None:
             coder = LLVMMCCoder("llvm-mc")
 
         super().__init__(coder)
 
-        self._add_registers()
+        self._introduce_reg_group_names()
+
+    def _introduce_reg_group_names(self):
+        # establish some names for common groups of allowed registers
+        # This makes the str representation of constraints and schemes more readable
+        def intro_name_for_reg_group(name, group):
+            assert len(group) > 0
+            if isinstance(next(iter(group)), str):
+                group = map(lambda x: all_registers[x], group)
+            obj = self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(group))
+            obj.name = name
+
+        groups = defaultdict(list)
+        for k, regop in all_registers.items():
+            if "ip" not in k:
+                groups[(regop.category, regop.width)].append(regop)
+
+        for (category, width), group in groups.items():
+            intro_name_for_reg_group(f"{category.name}:{width}", group)
+
+        intro_name_for_reg_group("K1..7", {f"k{n}" for n in range(1, 8)})
+        intro_name_for_reg_group("XMM0..15", {f"xmm{n}" for n in range(0, 16)})
+        intro_name_for_reg_group("YMM0..15", {f"ymm{n}" for n in range(0, 16)})
+
+
 
     def get_registers_where(self, *, name=None, alias_class=None, category=None):
         """ TODO document
         """
         # TODO this could benefit from an index
 
-        it = tuple(( reg_op for k, reg_op in self.all_registers.items() ))
+        it = tuple(( reg_op for k, reg_op in all_registers.items() ))
 
         for key, cond in (("name", name), ("alias_class", alias_class), ("category", category)):
             if cond is not None:
@@ -406,13 +481,13 @@ class Context(core.Context):
 
     @cached_property
     def pattern_all_gprs(self):
-        allowed_registers = self.get_registers_where(category=self._reg_category_enum["GPR"])
+        allowed_registers = self.get_registers_where(category=RegKind["GPR"])
         return pp.MatchFirst([pp.Keyword(r.name) for r in allowed_registers])
 
 
     @cached_property
     def pattern_all_segs(self):
-        segment_registers = self.get_registers_where(category=self._reg_category_enum["SEGMENT"])
+        segment_registers = self.get_registers_where(category=RegKind["SEGMENT"])
         return pp.MatchFirst([pp.Keyword(r.name) for r in segment_registers])
 
 
@@ -438,69 +513,6 @@ class Context(core.Context):
         return None
 
 
-    class CSVKeywords:
-        """ TODO document
-        """
-
-        name = 'name'
-        alias_class = 'alias_class'
-        category = 'category'
-        width = 'width'
-
-
-    def _add_registers(self):
-        """ TODO document
-        """
-
-        from csv import DictReader
-
-        # read the registers from the specification in csv format
-        csv_path = os.path.join(os.path.dirname(__file__), "x86_registers.csv")
-        with open(csv_path, "r") as csv_file:
-            reader = DictReader(csv_file)
-            data = [row for row in reader]
-
-        # create enums for the alias classes (aliasing registers have the same
-        # alias class) and categories
-        alias_classes = { row[self.CSVKeywords.alias_class] for row in data }
-        categories = { row[self.CSVKeywords.category] for row in data }
-
-        self._reg_alias_class_enum = Enum('X86_RegAliasClass', sorted(alias_classes), module="__name__")
-        self._reg_category_enum = Enum('X86_RegKind', sorted(categories), module="__name__")
-
-        for row in data:
-            name = row[self.CSVKeywords.name]
-            alias_class = self._reg_alias_class_enum[row[self.CSVKeywords.alias_class]]
-            category = self._reg_category_enum[row[self.CSVKeywords.category]]
-            width = int(row[self.CSVKeywords.width])
-
-            assert row["name"] not in self.all_registers.keys()
-            regop = RegisterOperand(name=name, alias_class=alias_class, category=category, width=width)
-            self.all_registers[name] = regop
-
-
-        # establish some names for common groups of allowed registers
-        # This makes the str representation of constraints and schemes more readable
-        def intro_name_for_reg_group(name, group):
-            assert len(group) > 0
-            if isinstance(next(iter(group)), str):
-                group = map(lambda x: self.all_registers[x], group)
-            obj = self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(group))
-            obj.name = name
-
-        groups = defaultdict(list)
-        for k, regop in self.all_registers.items():
-            if "ip" not in k:
-                groups[(regop.category, regop.width)].append(regop)
-
-        for (category, width), group in groups.items():
-            intro_name_for_reg_group(f"{category.name}:{width}", group)
-
-        intro_name_for_reg_group("K1..7", {f"k{n}" for n in range(1, 8)})
-        intro_name_for_reg_group("XMM0..15", {f"xmm{n}" for n in range(0, 16)})
-        intro_name_for_reg_group("YMM0..15", {f"ymm{n}" for n in range(0, 16)})
-
-
     def operand_constraint_from_json_dict(self, jsondict):
         """ TODO document
         """
@@ -524,7 +536,7 @@ class Context(core.Context):
 
         kind = jsondict["kind"]
         if kind == "x86RegisterOperand":
-            register_op = self.all_registers.get(jsondict["name"], None)
+            register_op = all_registers.get(jsondict["name"], None)
             if register_op is None:
                 raise core.SchemeError("unknown register: '{}'".format(jsondict["name"]))
             return register_op
@@ -740,7 +752,7 @@ class DefaultInstantiator:
         """ Create an OperandInstance instance from a scheme
         """
 
-        base_reg = self.ctx.all_registers["rbx"]
+        base_reg = all_registers["rbx"]
         displacement = 64
 
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
@@ -755,8 +767,6 @@ class DefaultInstantiator:
         val = 2 ** (width-8) + 42
 
         return ImmediateOperand(width=width, value=val)
-
-import random
 
 @export
 class RandomRegisterInstantiator(DefaultInstantiator):
@@ -773,4 +783,8 @@ class RandomRegisterInstantiator(DefaultInstantiator):
             return random.choice(constraint.acceptable_operands)
         else:
             return super().for_operand(operand_scheme)
+
+
+# Populate the register set and related enums
+_find_registers()
 
