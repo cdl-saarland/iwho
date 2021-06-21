@@ -1008,42 +1008,58 @@ class InsnInstance:
 
 @export
 class BasicBlock:
-    """TODO document this
+    """ Container for a list of InsnInstances with different encoding methods.
+
+    Entries may also be None, these are skipped for encoding. Use the insns
+    property if you are interested in the None entries as those are not
+    considered for the len and iter methods of the BasicBlock class.
+
+    BasicBlock structure (i.e. no non-terminator jumps) is not enforced.
     """
 
-    def __init__(self, context: Context, insns: Optional[Sequence[InsnInstance]]=None):
-        """TODO document this
+    def __init__(self, context: Context, insns: Optional[Sequence[Union[InsnInstance, None]]]=None):
+        """ Create an empty BasicBlock and insert insns (if given).
+
+        The context is necessary to provide encoding options.
         """
         self.context = context
-        # TODO validate that there are no cf instructions in the middle?
         self.insns = []
         if insns is not None:
-            for i in insns:
-                self.append(i)
+            self.append(insns)
 
-    def append(self, insn: Union[InsnInstance, Sequence[InsnInstance]]):
-        """TODO document this
+    def append(self, insn: Union[Union[InsnInstance, None], Sequence[Union[InsnInstance, None]]]):
+        """ Add a single Instruction Instance or a list thereof to the end of
+        this BasicBlock.
         """
-        if isinstance(insn, InsnInstance):
+        if insn is None or isinstance(insn, InsnInstance):
             self.insns.append(insn)
         else:
             self.insns += insn
 
     def get_hex(self) -> str:
-        """TODO document this
+        """ Return a string of hex numbers (the ascii characters, not actual
+        bytes) that encode this basic block.
+
+        This might be slow since it may use an external encoder.
         """
         return self.context.encode_insns(self)
 
     def get_asm(self) -> str:
-        """TODO document this
+        """ Return a string representation of the assembly instructions for
+        this BasicBlock.
+
+        This should be rather fast since it does not use an external
+        en/decoder.
         """
-        return "\n".join(map(str, self.insns))
+        return "\n".join(map(str, filter(lambda x: x is not None, self.insns)))
 
     def __iter__(self):
-        return iter(self.insns)
+        # this does not include the None entries
+        return iter(filter(lambda x: x is not None, self.insns))
 
     def __len__(self):
-        return len(self.insns)
+        # this does not include the None entries
+        return len(list(filter(lambda x: x is not None, self.insns)))
 
     def __str__(self):
         return self.get_asm()
