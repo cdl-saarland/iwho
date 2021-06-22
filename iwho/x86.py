@@ -479,6 +479,15 @@ class Context(core.Context):
         return it
 
 
+    def must_alias(self, op1: core.OperandInstance, op2: core.OperandInstance):
+        if isinstance(op1, RegisterOperand) and isinstance(op2, RegisterOperand):
+            return op1.alias_class == op2.alias_class
+        else:
+            # Immediates are not considered aliasing.
+            # Without further information MemoryOperands may or may not alias.
+            return False
+
+
     @cached_property
     def pattern_all_gprs(self):
         allowed_registers = self.get_registers_where(category=RegKind["GPR"])

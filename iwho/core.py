@@ -139,6 +139,17 @@ class Context(ABC):
         """
         pass
 
+
+    @abstractmethod
+    def must_alias(self, op1: "OperandInstance", op2: "OperandInstance"):
+        """ Return true iff the two OperandInstances must always alias.
+
+        That would be the case if they refer to the same register or one to a
+        sub-register of the other.
+        """
+        pass
+
+
     def make_bb(self, insns: Optional[Sequence["InsnInstance"]]=None) -> "BasicBlock":
         """ Create a BasicBlock with this context.
 
@@ -832,6 +843,24 @@ class InsnScheme:
 
         return self._implicit_operands
 
+
+    @cached_property
+    def indexable_operand_schemes(self):
+        """ TODO document
+        """
+        op_schemes = list(filter(lambda x: x[1].is_read or x[1].is_written, self.operand_schemes.items()))
+        op_schemes.sort(key=lambda x: sum((1 if x[1].is_read else 0, 2 if x[1].is_written else 0)), reverse=True)
+        for impl_idx, s in enumerate(self.implicit_operands):
+            if s.is_written or s.is_read:
+                op_schemes.append((impl_idx, s))
+
+        res = []
+        for idx, (key, scheme) in enumerate(op_schemes):
+            res.append((idx, scheme, key))
+
+        return res
+
+
     def __str__(self):
         mapping = { k: str(v) for k, v in self._operand_schemes.items()}
         return self.str_template.substitute(mapping)
@@ -935,6 +964,24 @@ class InsnInstance:
         """
 
         return self._scheme
+
+    def get_indexable_operand(self, op_key):
+        """ TODO document
+        """
+        if isinstance(op_key, int):
+            # it is an implicit operand
+            return self._scheme.implicit_operands[op_key].fixed_operand
+        assert isinstance(op_key, str)
+        # it is an explicit operand
+        return self._operands[op_key]
+
+    def indexable_operands(self):
+        """ TODO document
+        """
+        res = []
+        for (op_idx, op_scheme, key) in self.scheme.indexable_operand_schemes:
+            res.append((self.get_indexable_operand(key), (op_idx, op_scheme, key)))
+        return res
 
     @cached_property
     def read_operands(self):
