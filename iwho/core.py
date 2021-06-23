@@ -722,26 +722,26 @@ class InsnScheme:
     to the corresponding OperandSchemes to obtain an InsnInstance.
     """
 
-    def __init__(self, *, str_template: str, operand_schemes: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
+    def __init__(self, *, str_template: str, explicit_operands: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
         """ Constructor, keyword use is mandatory for the arguments
 
-        This constructor validates that `operand_schemes` has a suitable
+        This constructor validates that `explicit_operands` has a suitable
         mapping for the placeholders in `str_template` an raises a
         `SchemeError` if this is not the case.
         """
 
         self._str_template = string.Template(str_template)
-        self._operand_schemes = operand_schemes
+        self._explicit_operands = explicit_operands
         self._implicit_operands = implicit_operands
         self.affects_control_flow = affects_control_flow
 
-        # check whether operand_schemes and str_template match
+        # check whether explicit_operands and str_template match
         try:
-            mapping = { k: "<hole>" for k in self._operand_schemes.keys() }
+            mapping = { k: "<hole>" for k in self._explicit_operands.keys() }
             self._str_template.substitute(mapping)
         except (ValueError, KeyError) as e:
             raise SchemeError("The operand schemes {} do not fit to the string template '{}'\n".format(
-                    list(self._operand_schemes.keys()), self._str_template.template) +
+                    list(self._explicit_operands.keys()), self._str_template.template) +
                 "  substitution error: {}".format(repr(e)))
 
 
@@ -768,7 +768,7 @@ class InsnScheme:
             match = args
             args = dict()
 
-            for key, op_scheme in self._operand_schemes.items():
+            for key, op_scheme in self._explicit_operands.items():
                 sub_match = match[key]
                 args[key] = op_scheme.from_match(sub_match)
 
@@ -799,7 +799,7 @@ class InsnScheme:
             if not first:
                 # This removes the leading operand keys and the following `}`
                 key, frag = frag.split("}", maxsplit=1)
-                op_pattern = self._operand_schemes[key].parser_pattern
+                op_pattern = self._explicit_operands[key].parser_pattern
                 pattern += op_pattern.setResultsName(key)
 
             first = False
@@ -823,7 +823,7 @@ class InsnScheme:
         the priority of the instruction scheme.
         """
         res = 1
-        for key, opscheme in self._operand_schemes.items():
+        for key, opscheme in self._explicit_operands.items():
             if not opscheme.is_fixed():
                 res *= opscheme.operand_constraint.parser_priority
         return res
@@ -837,12 +837,12 @@ class InsnScheme:
         return self._str_template
 
     @property
-    def operand_schemes(self):
+    def explicit_operands(self):
         """ Getter (without setter) for the dictionary of explicit
         OperandSchemes of this scheme.
         """
 
-        return self._operand_schemes
+        return self._explicit_operands
 
     @property
     def implicit_operands(self):
@@ -857,7 +857,7 @@ class InsnScheme:
     def indexable_operand_schemes(self):
         """ TODO document
         """
-        op_schemes = list(filter(lambda x: x[1].is_read or x[1].is_written, self.operand_schemes.items()))
+        op_schemes = list(filter(lambda x: x[1].is_read or x[1].is_written, self.explicit_operands.items()))
         op_schemes.sort(key=lambda x: sum((1 if x[1].is_read else 0, 2 if x[1].is_written else 0)), reverse=True)
         for impl_idx, s in enumerate(self.implicit_operands):
             if s.is_written or s.is_read:
@@ -871,7 +871,7 @@ class InsnScheme:
 
 
     def __str__(self):
-        mapping = { k: str(v) for k, v in self._operand_schemes.items()}
+        mapping = { k: str(v) for k, v in self._explicit_operands.items()}
         return self.str_template.substitute(mapping)
 
     def __repr__(self):
@@ -887,7 +887,7 @@ class InsnScheme:
 
         return { "kind": self.__class__.__name__,
                 "str_template": self._str_template.template,
-                "operand_schemes": { key: op_scheme.to_json_dict() for key, op_scheme in self._operand_schemes.items()},
+                "explicit_operands": { key: op_scheme.to_json_dict() for key, op_scheme in self._explicit_operands.items()},
                 "implicit_operands": [ op_scheme.to_json_dict() for op_scheme in self._implicit_operands],
                 "affects_control_flow": self.affects_control_flow,
             }
@@ -904,9 +904,9 @@ class InsnScheme:
         assert "kind" in jsondict and jsondict["kind"] == "InsnScheme"
 
         str_template = jsondict["str_template"]
-        operand_schemes = {
+        explicit_operands = {
                 key: OperandScheme.from_json_dict(ctx, opdict)
-                    for key, opdict in jsondict["operand_schemes"].items()
+                    for key, opdict in jsondict["explicit_operands"].items()
             }
         implicit_operands = [
                 OperandScheme.from_json_dict(ctx, opdict)
@@ -915,7 +915,7 @@ class InsnScheme:
         affects_control_flow = jsondict["affects_control_flow"]
 
         return InsnScheme(str_template=str_template,
-                operand_schemes=operand_schemes,
+                explicit_operands=explicit_operands,
                 implicit_operands=implicit_operands,
                 affects_control_flow=affects_control_flow)
 
@@ -955,7 +955,7 @@ class InsnInstance:
         """ TODO document
         """
 
-        for k, opscheme in self.scheme.operand_schemes.items():
+        for k, opscheme in self.scheme.explicit_operands.items():
             if k not in self._operands:
                 raise InstantiationError(f"instruction instance for scheme {self.scheme} does not specify operand {k}")
 
@@ -964,7 +964,7 @@ class InsnInstance:
                 raise InstantiationError(f"instruction instance for scheme {self.scheme} specifies invalid operand {k}: {repr(opinst)}")
 
         for k in self._operands.keys():
-            if k not in self.scheme.operand_schemes:
+            if k not in self.scheme.explicit_operands:
                 raise InstantiationError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
 
     @property
@@ -999,7 +999,7 @@ class InsnInstance:
 
         res = []
         # all explicit operands that are read
-        for k, v in self._scheme.operand_schemes.items():
+        for k, v in self._scheme.explicit_operands.items():
             if v.is_read:
                 res.append(self._operands[k])
 
@@ -1026,7 +1026,7 @@ class InsnInstance:
 
         res = []
         # all explicit operands that are written
-        for k, v in self._scheme.operand_schemes.items():
+        for k, v in self._scheme.explicit_operands.items():
             if v.is_written:
                 res.append(self._operands[k])
 

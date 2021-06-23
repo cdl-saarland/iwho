@@ -36,7 +36,7 @@ def get_adc_scheme():
             "r1": iwho.OperandScheme(constraint=isGPR64, read=True),
         }
     implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in get_regs(ctx, "FLAG")]
-    scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
+    scheme = iwho.InsnScheme(str_template=str_template, explicit_operands=explicit, implicit_operands=implicit)
     return scheme, ctx
 
 
@@ -50,8 +50,8 @@ def test_construct_insn():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor(scheme.operand_schemes["r0"])
-    operands["r1"] = instor(scheme.operand_schemes["r1"])
+    operands["r0"] = instor(scheme.explicit_operands["r0"])
+    operands["r1"] = instor(scheme.explicit_operands["r1"])
 
     insn = scheme.instantiate(operands)
 
@@ -77,7 +77,7 @@ def test_construct_memory_op():
             "r0": iwho.OperandScheme(constraint=isGPR64, read=True),
         }
     implicit = [iwho.OperandScheme(fixed_operand=f, written=True) for f in get_regs(ctx, "FLAG")]
-    scheme = iwho.InsnScheme(str_template=str_template, operand_schemes=explicit, implicit_operands=implicit)
+    scheme = iwho.InsnScheme(str_template=str_template, explicit_operands=explicit, implicit_operands=implicit)
 
     print("scheme:")
     print(scheme)
@@ -87,7 +87,7 @@ def test_construct_memory_op():
 
     operands = dict()
     operands["m0"] = x86.MemoryOperand(width=64, base=x86.all_registers["rbx"], scale=2, index=x86.all_registers["rdx"], displacement=42)
-    operands["r0"] = instor(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.explicit_operands["r0"])
 
     insn = scheme.instantiate(operands)
 
@@ -109,7 +109,7 @@ def test_construct_invalid_insn_op_missing():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.explicit_operands["r0"])
 
     with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
@@ -121,7 +121,7 @@ def test_construct_invalid_insn_wrong_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor(scheme.operand_schemes["r0"])
+    operands["r0"] = instor(scheme.explicit_operands["r0"])
     operands["r1"] = x86.ImmediateOperand(32, 42)
 
     with pytest.raises(iwho.InstantiationError):
@@ -134,9 +134,9 @@ def test_construct_invalid_insn_superfluous_op():
     instor = x86.DefaultInstantiator(ctx)
 
     operands = dict()
-    operands["r0"] = instor(scheme.operand_schemes["r0"])
-    operands["r1"] = instor(scheme.operand_schemes["r1"])
-    operands["r2"] = instor(scheme.operand_schemes["r1"])
+    operands["r0"] = instor(scheme.explicit_operands["r0"])
+    operands["r1"] = instor(scheme.explicit_operands["r1"])
+    operands["r2"] = instor(scheme.explicit_operands["r1"])
 
     with pytest.raises(iwho.InstantiationError):
         insn = scheme.instantiate(operands)
@@ -317,7 +317,7 @@ def test_matcher_inclusion_order(x86_ctx):
     insn_str = "adc dword ptr [rbx + 0x64], 0x0"
     ctx = x86_ctx
     insn_instance = ctx.match_insn_str(insn_str)
-    assert insn_instance.scheme.operand_schemes["imm0"].is_fixed()
+    assert insn_instance.scheme.explicit_operands["imm0"].is_fixed()
 
 
 @pytest.mark.parametrize("task", invalid_insns)
@@ -396,7 +396,7 @@ def test_not_encodable():
 
     scheme_dicts = [
         { 'kind': 'InsnScheme', 'str_template': 'jne ${relbr}',
-        'operand_schemes': {
+        'explicit_operands': {
             'relbr': {'kind': 'OperandScheme', 'operand_constraint': {'kind': 'x86SymbolConstraint', 'width': 8}, 'read': False, 'written': False}},
         'implicit_operands': [
             {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'rip'}, 'read': True, 'written': True},
@@ -423,7 +423,7 @@ def test_fixed_memory_operand():
             "isa": "x86_64",
             "schemes": [
                 {'kind': 'InsnScheme', 'str_template': 'lodsb ${reg0}, byte ptr ${mem0}',
-                'operand_schemes': {
+                'explicit_operands': {
                     'reg0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86RegisterOperand', 'name': 'al'}, 'read': False, 'written': True},
                     'mem0': {'kind': 'OperandScheme', 'fixed_operand': {'kind': 'x86MemoryOperand', 'width': 8, 'segment': None, 'base': {'kind': 'x86RegisterOperand', 'name': 'rsi'}, 'index': None, 'scale': 1, 'displacement': 0}, 'read': True, 'written': False}
                     },

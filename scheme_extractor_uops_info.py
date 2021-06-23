@@ -66,7 +66,7 @@ def main():
 def make_operands_explicit(scheme, operand_keys):
     implicit_operand_indices_to_remove = set()
 
-    new_explicit_operands = dict(scheme.operand_schemes)
+    new_explicit_operands = dict(scheme.explicit_operands)
 
     # find the next free numbers to use in the keys for the operands
     next_op_indices = defaultdict(lambda: 0)
@@ -123,7 +123,7 @@ def make_operands_explicit(scheme, operand_keys):
 
     new_str_template = scheme.str_template.template
     if len(op_strs) > 0:
-        if len(scheme.operand_schemes) > 0:
+        if len(scheme.explicit_operands) > 0:
             # account for potential previous operands
             new_str_template += ","
         new_str_template += " " + ", ".join(op_strs)
@@ -132,7 +132,7 @@ def make_operands_explicit(scheme, operand_keys):
 
     return iwho.InsnScheme(
             str_template=new_str_template,
-            operand_schemes=new_explicit_operands,
+            explicit_operands=new_explicit_operands,
             implicit_operands=new_implicit_operands,
             affects_control_flow=new_affects_cf,
         )
@@ -199,7 +199,7 @@ def add_uops_info_xml(ctx, xml_path, validate):
     def make_scheme(str_template, explicit_operands, implicit_operands=[], affects_control_flow=False):
         scheme = iwho.InsnScheme(
                 str_template=str_template,
-                operand_schemes=explicit_operands,
+                explicit_operands=explicit_operands,
                 implicit_operands=implicit_operands,
                 affects_control_flow=affects_control_flow
             )
@@ -431,7 +431,7 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
             scheme = iwho.InsnScheme(
                     str_template=str_template,
-                    operand_schemes=explicit_operands,
+                    explicit_operands=explicit_operands,
                     implicit_operands=implicit_operands,
                     affects_control_flow=affects_control_flow
                 )
@@ -481,15 +481,15 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
 
             if ctx.extract_mnemonic(scheme) in ["rcl", "rcr", "rol", "ror", "shl", "shr", "sar"]:
-                imop = scheme.operand_schemes.get("imm0", None)
+                imop = scheme.explicit_operands.get("imm0", None)
                 if imop is not None and imop.is_fixed() and imop.fixed_operand.value == 1:
                     # llvm-mc prefers those with the hardcoded shift amount not present
                     new_template = scheme.str_template.template.replace(", ${imm0}", "")
-                    new_explicit_operands = { k: v for k, v in scheme.operand_schemes.items() if k != "imm0" }
+                    new_explicit_operands = { k: v for k, v in scheme.explicit_operands.items() if k != "imm0" }
                     new_implicit_operands = [imop] + scheme.implicit_operands
                     new_affects_cf = scheme.affects_control_flow
                     scheme = iwho.InsnScheme(str_template=new_template,
-                                operand_schemes=new_explicit_operands,
+                                explicit_operands=new_explicit_operands,
                                 implicit_operands=new_implicit_operands,
                                 affects_control_flow=new_affects_cf,
                             )
@@ -528,7 +528,7 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
             # validate that we caught all control flow instructions
             writes_ip = False
-            for k, op in scheme.operand_schemes.items():
+            for k, op in scheme.explicit_operands.items():
                 if op.is_written and op.is_fixed() and isinstance(op, x86.RegisterOperand) and op.alias_class == x86.RegAliasClass["GPR_IP"]:
                     writes_ip = True
             for op in scheme.implicit_operands:

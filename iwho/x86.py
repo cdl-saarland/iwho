@@ -744,7 +744,7 @@ class DefaultInstantiator:
         """
 
         args = dict()
-        for name, operand_scheme in insn_scheme.operand_schemes.items():
+        for name, operand_scheme in insn_scheme.explicit_operands.items():
             args[name] = self.for_operand(operand_scheme)
         return insn_scheme.instantiate(args)
 
