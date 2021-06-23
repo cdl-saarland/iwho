@@ -150,6 +150,15 @@ class Context(ABC):
         pass
 
 
+    @abstractmethod
+    def may_alias(self, op1: "OperandInstance", op2: "OperandInstance"):
+        """ Return true iff the two OperandInstances may or must alias.
+
+        That would e.g. not be the case if they refer to disjoint registers.
+        """
+        pass
+
+
     def make_bb(self, insns: Optional[Sequence["InsnInstance"]]=None) -> "BasicBlock":
         """ Create a BasicBlock with this context.
 
