@@ -465,14 +465,14 @@ class Context(core.Context):
 
 
 
-    def get_registers_where(self, *, name=None, alias_class=None, category=None):
+    def get_registers_where(self, *, name=None, alias_class=None, category=None, width=None):
         """ TODO document
         """
         # TODO this could benefit from an index
 
         it = tuple(( reg_op for k, reg_op in all_registers.items() ))
 
-        for key, cond in (("name", name), ("alias_class", alias_class), ("category", category)):
+        for key, cond in (("name", name), ("alias_class", alias_class), ("category", category), ("width", width)):
             if cond is not None:
                 it = tuple(filter(lambda x: getattr(x, key) == cond, it))
 
