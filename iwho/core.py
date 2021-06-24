@@ -15,6 +15,7 @@ from typing import Sequence, Optional, Dict, Union
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 
 from functools import cached_property
 import string
@@ -744,8 +745,56 @@ class InsnScheme:
                     list(self._explicit_operands.keys()), self._str_template.template) +
                 "  substitution error: {}".format(repr(e)))
 
+        # check whether implicit_operands are all fixed
+        for op in self._implicit_operands:
+            if not op.is_fixed:
+                raise SchemeError("The scheme {} for an implicit operand is not a fixed scheme".format(op))
 
-    def instantiate(self, args: Union[Dict[str, OperandInstance], str, pp.ParseResults]) -> "InsnInstance":
+
+    class OperandKind(Enum):
+        EXPLICIT = 1
+        IMPLICIT = 2
+
+        def __lt__(self, other):
+            return self.value < other.value
+
+        def __repr__(self):
+            if self.value == 1:
+                return "E"
+            elif self.value == 2:
+                return "I"
+
+    @cached_property
+    def operand_keys(self):
+        """ A list of `(key, op_scheme)` pairs, where `key` can be used in
+        `get_operand_scheme()` or `instantiate()` to address the respective
+        operand scheme.
+
+        This includes an entry with a key for each explicit and implicit
+        OperandScheme.
+        """
+        res = []
+        for ref, op_scheme in self._explicit_operands.items():
+            res.append(((InsnScheme.OperandKind.EXPLICIT, ref), op_scheme))
+
+        for ref, op_scheme in enumerate(self.implicit_operands):
+            res.append(((InsnScheme.OperandKind.IMPLICIT, ref), op_scheme))
+
+        return res
+
+    def get_operand_scheme(self, key):
+        """ Get the (implicit or explicit) OperandScheme associated with the
+        given key.
+        """
+        kind, ref = key
+
+        if kind == InsnScheme.OperandKind.EXPLICIT:
+            return self.explicit_operands[ref]
+        else:
+            assert kind == InsnScheme.OperandKind.IMPLICIT
+            return self.implicit_operands[ref]
+
+    def instantiate(self, args: Union[Dict[Union[str, "OpKeyType"], OperandInstance], str, pp.ParseResults]) -> "InsnInstance": # TODO adjust type
         """ Create an InsnInstance for this InsnScheme using the
         OperandInstances specified by `args`.
 
@@ -753,6 +802,10 @@ class InsnScheme:
         OperandInstances, a string with the textual assembly representation of
         an instruction fitting this InsnScheme, or the pyparsing results object
         of matching such a string with the `parser_pattern`.
+        Instead of placerholder names, the dict might also use operand keys as
+        produced by `operand_keys()`. If a key addresses an implicit operand,
+        (which is fixed), this call will validate that the OperandInstance
+        under this key is indeed the correct fixed OperandInstance.
 
         If the args do not match the scheme, an InstantationError is raised.
         """
@@ -774,7 +827,21 @@ class InsnScheme:
 
         assert isinstance(args, dict)
 
-        return InsnInstance(scheme=self, operands=args)
+        operands = dict()
+        for key, operand in args.items():
+            if isinstance(key, str):
+                operands[key] = operand
+            else:
+                kind, ref = key
+                if kind == InsnScheme.OperandKind.EXPLICIT:
+                    operands[ref] = operand
+                else:
+                    assert kind == InsnScheme.OperandKind.IMPLICIT
+                    op_scheme = self.get_operand_scheme((kind, ref))
+                    if not operand == op_scheme.fixed_operand:
+                        raise InstantiationError("Invalid operand for fixed operand scheme '{}': {}".format(op_scheme, operand))
+
+        return InsnInstance(scheme=self, operands=operands)
 
     @cached_property
     def parser_pattern(self):
@@ -851,24 +918,6 @@ class InsnScheme:
         """
 
         return self._implicit_operands
-
-
-    @cached_property
-    def indexable_operand_schemes(self):
-        """ TODO document
-        """
-        op_schemes = list(filter(lambda x: x[1].is_read or x[1].is_written, self.explicit_operands.items()))
-        op_schemes.sort(key=lambda x: sum((1 if x[1].is_read else 0, 2 if x[1].is_written else 0)), reverse=True)
-        for impl_idx, s in enumerate(self.implicit_operands):
-            if s.is_written or s.is_read:
-                op_schemes.append((impl_idx, s))
-
-        res = []
-        for idx, (key, scheme) in enumerate(op_schemes):
-            res.append((idx, scheme, key))
-
-        return res
-
 
     def __str__(self):
         mapping = { k: str(v) for k, v in self._explicit_operands.items()}
@@ -952,7 +1001,10 @@ class InsnInstance:
         self.validate_operands()
 
     def validate_operands(self):
-        """ TODO document
+        """ Check that the operands specified for this instance fit to the
+        OperandSchemes of the InsnScheme.
+
+        Raises an InstantiationError if that is not the case.
         """
 
         for k, opscheme in self.scheme.explicit_operands.items():
@@ -968,33 +1020,40 @@ class InsnInstance:
                 raise InstantiationError(f"instruction instance for scheme {self.scheme} specifies superfluous operand {k}")
 
     @property
-    def scheme(self):
-        """ TODO document
+    def scheme(self) -> InsnScheme:
+        """ The InsnScheme of this InsnInstance.
         """
 
         return self._scheme
 
-    def get_indexable_operand(self, op_key):
-        """ TODO document
+    def get_operand(self, op_key) -> OperandInstance:
+        """ Obtain the Operand associated with the given operand key (which
+        should be obtained from `get_operands()` or the `operand_keys` of the
+        InsnScheme).
         """
-        if isinstance(op_key, int):
+        kind, ref = op_key
+        if kind == InsnScheme.OperandKind.EXPLICIT:
+            # it is an explicit operand
+            return self._operands[ref]
+        else:
+            assert kind == InsnScheme.OperandKind.IMPLICIT
             # it is an implicit operand
-            return self._scheme.implicit_operands[op_key].fixed_operand
-        assert isinstance(op_key, str)
-        # it is an explicit operand
-        return self._operands[op_key]
+            return self._scheme.implicit_operands[ref].fixed_operand
 
-    def indexable_operands(self):
-        """ TODO document
+    def get_operands(self):
+        """ Get a list of tuples with all operands and their
+        `scheme.operand_keys` entry.
         """
         res = []
-        for (op_idx, op_scheme, key) in self.scheme.indexable_operand_schemes:
-            res.append((self.get_indexable_operand(key), (op_idx, op_scheme, key)))
+        for (key, op_scheme) in self.scheme.operand_keys:
+            res.append((self.get_operand(key), (key, op_scheme)))
         return res
 
     @cached_property
     def read_operands(self):
-        """ TODO document
+        """ Get all operands that are read when this InsnInstance is executed.
+        This includes additionally read operands, e.g. for computing the
+        location of a memory access.
         """
 
         res = []
@@ -1021,7 +1080,8 @@ class InsnInstance:
 
     @cached_property
     def written_operands(self):
-        """ TODO document
+        """ Get all operands that are written when this InsnInstance is
+        executed. This includes additionally written operands.
         """
 
         res = []
