@@ -784,14 +784,16 @@ class InsnScheme:
 
     def get_operand_scheme(self, key):
         """ Get the (implicit or explicit) OperandScheme associated with the
-        given key.
+        given key or None if no scheme is associated with the key.
         """
         kind, ref = key
 
         if kind == InsnScheme.OperandKind.EXPLICIT:
-            return self.explicit_operands[ref]
+            return self.explicit_operands.get(ref, None)
         else:
             assert kind == InsnScheme.OperandKind.IMPLICIT
+            if ref > len(self.implicit_operands):
+                return None
             return self.implicit_operands[ref]
 
     def instantiate(self, args: Union[Dict[Union[str, "OpKeyType"], OperandInstance], str, pp.ParseResults]) -> "InsnInstance": # TODO adjust type
