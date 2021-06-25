@@ -798,6 +798,7 @@ class DefaultInstantiator:
 class RandomRegisterInstantiator(DefaultInstantiator):
     def __init__(self, ctx: Context):
         super().__init__(ctx)
+        self.mem_registers = [all_registers[x] for x in ["rbx", "rdx", "r12", "r13"]]
 
     def for_operand(self, operand_scheme: core.OperandScheme) -> core.OperandInstance:
         if operand_scheme.is_fixed():
@@ -809,6 +810,15 @@ class RandomRegisterInstantiator(DefaultInstantiator):
             return random.choice(constraint.acceptable_operands)
         else:
             return super().for_operand(operand_scheme)
+
+    def get_valid_memory_operand(self, mem_constraint):
+        base_reg = random.choice(self.mem_registers)
+        displacement = random.choice([0, 0, 0, 8, 64, 2000])
+        index_reg = None
+        if random.choice([True, False, False, False]):
+            index_reg = random.choice(self.mem_registers)
+
+        return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
 
 
 # Populate the register set and related enums
