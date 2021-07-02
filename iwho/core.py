@@ -84,6 +84,8 @@ class Context(ABC):
 
         self.insn_schemes = []
 
+        self.str_to_scheme = dict()
+
         # used for caching OperandInstances, OperandSchemes,
         # OperandConstraints,...
         # This requires usage from subclasses!
@@ -278,6 +280,7 @@ class Context(ABC):
         necessary data structures. """
 
         self.insn_schemes.append(scheme)
+        self.str_to_scheme[str(scheme)] = scheme
         mnemonic = self.extract_mnemonic(scheme)
         self.mnemonic_to_insn_schemes[mnemonic].append(scheme)
 
