@@ -98,6 +98,21 @@ class RegisterOperand(core.OperandInstance):
         # all the other information is in the register description
         return { "kind": "x86RegisterOperand", "name": self.name }
 
+@export
+class RegisterConstraint(core.SetConstraint):
+    """ TODO document
+    """
+
+    def __init__(self, acceptable_operands):
+        super().__init__(acceptable_operands)
+
+        # used for the json representation
+        self.json_kind_id = "x86RegisterConstraint"
+
+        # we assume that all acceptable register operands here have the same
+        # width
+        self.width = next(iter(self.acceptable_operands)).width
+
 
 @export
 class MemoryOperand(core.OperandInstance):
@@ -448,7 +463,7 @@ class Context(core.Context):
             assert len(group) > 0
             if isinstance(next(iter(group)), str):
                 group = map(lambda x: all_registers[x], group)
-            obj = self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(group))
+            obj = self.dedup_store.get(RegisterConstraint, acceptable_operands=frozenset(group))
             obj.name = name
 
         groups = defaultdict(list)
@@ -505,6 +520,60 @@ class Context(core.Context):
         return True
 
 
+    def adjust_operand(self, operand: core.OperandInstance, op_scheme: core.OperandScheme) -> core.OperandInstance:
+        # if the operand is already valid: nothing to be done
+        if op_scheme.is_operand_valid(operand):
+            return operand
+
+        if isinstance(operand, SymbolOperand):
+            # we can't handle those in a meaningful way
+            return None
+
+        if op_scheme.is_fixed():
+            fixed_operand = op_scheme.fixed_operand
+            target_width = fixed_operand.width
+            if isinstance(operand, RegisterOperand) and isinstance(fixed_operand, RegisterOperand):
+                if operand.alias_class == fixed_operand.alias_class:
+                    return fixed_operand
+            # TODO we could do something better for immediates and memory operands
+            return None
+
+        constraint = op_scheme.operand_constraint
+        target_width = constraint.width
+        if isinstance(constraint, RegisterConstraint):
+            if not isinstance(operand, RegisterOperand):
+                return None
+            acceptable = constraint.acceptable_operands
+            fitting_regs = set(self.get_registers_where(alias_class=operand.alias_class, width=target_width))
+            assert len(fitting_regs) >= 1
+            if acceptable is not None:
+                fitting_regs.intersection_update(acceptable)
+            assert len(fitting_regs) >= 1
+            return next(iter(fitting_regs))
+
+        if isinstance(constraint, MemConstraint):
+            if not isinstance(operand, MemoryOperand):
+                return None
+            return self.dedup_store.get(MemoryOperand,
+                    width=target_width, # just a different width, everything else stays the same
+                    segment=operand.segment,
+                    base=operand.base, index=operand.index,
+                    scale=operand.scale,
+                    displacement=operand.displacement)
+
+        if isinstance(constraint, ImmConstraint):
+            # TODO adjust value
+            return self.dedup_store.get(ImmediateOperand,
+                    width=target_width, # just a different width, everything else stays the same
+                    value=operand.value)
+
+        if isinstance(constraint, SymbolConstraint):
+            # we can't handle those in a meaningful way
+            return None
+
+        assert False, f"unsupported operand: {operand}"
+
+
     @cached_property
     def pattern_all_gprs(self):
         allowed_registers = self.get_registers_where(category=RegKind["GPR"])
@@ -544,9 +613,9 @@ class Context(core.Context):
         """
 
         kind = jsondict["kind"]
-        if kind == "SetConstraint":
+        if kind == "x86RegisterConstraint":
             acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
-            return self.dedup_store.get(core.SetConstraint, acceptable_operands=frozenset(acceptable_operands))
+            return self.dedup_store.get(RegisterConstraint, acceptable_operands=frozenset(acceptable_operands))
         elif kind == "x86ImmConstraint":
             return self.dedup_store.get(ImmConstraint, unhashed_kwargs={"context": self}, width=jsondict["width"])
         elif kind == "x86MemConstraint":
@@ -757,7 +826,7 @@ class DefaultInstantiator:
 
         constraint = operand_scheme.operand_constraint
 
-        if isinstance(constraint, core.SetConstraint):
+        if isinstance(constraint, RegisterConstraint):
             for op in constraint.acceptable_operands:
                 if "a" in str(op) or "c" in str(op):
                     # rax and ecx (and variants thereof) might be used for more
@@ -806,7 +875,7 @@ class RandomRegisterInstantiator(DefaultInstantiator):
 
         constraint = operand_scheme.operand_constraint
 
-        if isinstance(constraint, core.SetConstraint):
+        if isinstance(constraint, RegisterConstraint):
             return random.choice(constraint.acceptable_operands)
         else:
             return super().for_operand(operand_scheme)

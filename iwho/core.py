@@ -161,6 +161,13 @@ class Context(ABC):
         """
         pass
 
+    def adjust_operand(self, operand: "OperandInstance", op_scheme: "OperandScheme") -> "OperandInstance":
+        """ Return an OperandInstance that aliases with `operand` and is valid
+        to instantiate `op_scheme` or `None` if no such operand is found.
+
+        Only needs to be overwritten if it is needed.
+        """
+        return None
 
     def make_bb(self, insns: Optional[Sequence["InsnInstance"]]=None) -> "BasicBlock":
         """ Create a BasicBlock with this context.
@@ -529,6 +536,7 @@ class SetConstraint(OperandConstraint):
 
         self.name = None
         self.acceptable_operands = tuple(set(acceptable_operands))
+        self.json_kind_id = "SetConstraint"
 
     def __str__(self):
         if self.name is not None:
@@ -565,7 +573,7 @@ class SetConstraint(OperandConstraint):
         return hash((self.acceptable_operands))
 
     def to_json_dict(self):
-        return {"kind": self.__class__.__name__,
+        return {"kind": self.json_kind_id,
                 "acceptable_operands": [ op.to_json_dict() for op in self.acceptable_operands ],
             }
 

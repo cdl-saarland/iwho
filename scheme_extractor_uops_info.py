@@ -187,11 +187,11 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
     registers = [f"xmm{x}" for x in range(0,16)]
     allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
-    xmm_constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+    xmm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
 
     registers = [f"ymm{x}" for x in range(0,16)]
     allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
-    ymm_constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+    ymm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
 
     cmp_versions = ["eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord"]
 
@@ -618,7 +618,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             fixed_op = next(iter(allowed_registers))
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, fixed_operand=fixed_op, read=read, written=written))
         else:
-            constraint = ctx.dedup_store.get(iwho.SetConstraint, acceptable_operands=allowed_registers)
+            constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
             op_schemes.append(ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=read, written=written))
 
         if not operandNode.attrib.get('opmask', '') == '1':
