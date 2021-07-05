@@ -69,8 +69,8 @@ class Context(ABC):
     caches related objects and provides functionality to encode and decode
     instructions according to the schemes.
 
-    When implementing iwho for a new ISA, an early  step will be to create
-    a new subclass of this, overwriting the abstract methods.
+    When implementing iwho for a new ISA, an early step will be to create a new
+    subclass of this, overwriting the abstract methods.
 
     Most applications using this library will only need one instance of this in
     a program run.
