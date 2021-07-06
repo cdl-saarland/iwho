@@ -19,6 +19,28 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+@export
+def extract_mnemonic(insn: Union[str, core.InsnScheme, core.InsnInstance]) -> str:
+    """ Extract the mnemonic from the assembly of a single instruction
+
+    Here, this is the first whitespace-separated token that does not
+    start with a brace.
+    """
+    if isinstance(insn, core.InsnScheme):
+        insn_str = insn.str_template.template
+    elif isinstance(insn, core.InsnInstance):
+        insn_str = insn.scheme.str_template.template
+    else:
+        assert isinstance(insn, str)
+        insn_str = insn
+
+    tokens = insn_str.split()
+    for t in tokens:
+        if t.startswith("{"):
+            continue
+        return t
+    return None
+
 all_registers = None
 RegAliasClass = None
 RegKind = None
@@ -587,25 +609,7 @@ class Context(core.Context):
 
 
     def extract_mnemonic(self, insn: Union[str, core.InsnScheme, core.InsnInstance]) -> str:
-        """ Extract the mnemonic from the assembly of a single instruction
-
-        Here, this is the first whitespace-separated token that does not
-        start with a brace.
-        """
-        if isinstance(insn, core.InsnScheme):
-            insn_str = insn.str_template.template
-        elif isinstance(insn, core.InsnInstance):
-            insn_str = insn.scheme.str_template.template
-        else:
-            assert isinstance(insn, str)
-            insn_str = insn
-
-        tokens = insn_str.split()
-        for t in tokens:
-            if t.startswith("{"):
-                continue
-            return t
-        return None
+        return extract_mnemonic(insn)
 
 
     def operand_constraint_from_json_dict(self, jsondict):
