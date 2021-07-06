@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
-from functools import cached_property
+from functools import cached_property, partial
 import string
 from collections import defaultdict
 
@@ -62,6 +62,28 @@ class ASMCoderError(IWHOError):
 
 
 @export
+class Filters:
+    """ A collection of commonly used filter functions for use in
+    Context.push_filter().
+    """
+
+    @staticmethod
+    def no_control_flow(insn_scheme, ctx):
+        """ Exclude all InsnSchmes that may affect control flow. """
+        return not insn_scheme.affects_control_flow
+
+    @staticmethod
+    def _only_mnemonics_impl(insn_scheme, ctx, allowed_mnemonics):
+        """ Exclude all InsnSchmes that may affect control flow. """
+        return ctx.extract_mnemonic(insn_scheme) in allowed_mnemonics
+
+    @staticmethod
+    def only_mnemonics(allowed_mnemonics):
+        """ Exclude all InsnSchmes with a mnemonic not in the set. """
+        return partial(Filters._only_mnemonics_impl, allowed_mnemonics=allowed_mnemonics)
+
+
+@export
 class Context(ABC):
     """ Manager for the instruction schemes of a single instruction set
     architecture.
@@ -84,6 +106,10 @@ class Context(ABC):
 
         self.insn_schemes = []
 
+        # these can be adjusted through the {push,pop}_filter methods
+        self.scheme_filters = []
+        self.filtered_insn_schemes = self.insn_schemes
+
         self.str_to_scheme = dict()
 
         # used for caching OperandInstances, OperandSchemes,
@@ -99,6 +125,25 @@ class Context(ABC):
         # if present: a mapping of InsnScheme strings to dictionaries with
         #   features for this InsnScheme.
         self._features = None
+
+    def push_filter(self, filterfun):
+        """ Register a new filter and compute the filtered_insn_schemes.
+
+        A filter is a function that takes an InsnScheme and returns true if it
+        should not be filtered away.
+        """
+        self.scheme_filters.append(filterfun)
+        self.filtered_insn_schemes = list(filter(partial(filterfun, ctx=self), self.filtered_insn_schemes))
+
+    def pop_filter(self):
+        """ Unregister the most recently added filter and recompute the
+        filtered_insn_schemes.
+        """
+        self.scheme_filters.pop()
+        res = self.insn_schemes
+        for filterfun in self.scheme_filters:
+            res = filter(partial(filterfun, ctx=self), res)
+        self.filtered_insn_schemes = list(res)
 
     def set_features(self, features):
         """ Set a feature dictionary, i.e. a dict mapping feature records to

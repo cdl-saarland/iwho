@@ -512,6 +512,39 @@ def test_assemble_then_disassemble_all(x86_ctx):
     assert num_assemble_errors == 0 and num_disassemble_errors == 0
 
 
+def test_scheme_filters():
+    ctx = iwho.get_context('x86_uops_info')
+
+    assert len(ctx.insn_schemes) > 0
+    assert len(ctx.filtered_insn_schemes) > 0
+
+    assert any(map(lambda x: x.affects_control_flow, ctx.filtered_insn_schemes))
+
+    ctx.push_filter(iwho.Filters.no_control_flow)
+
+    assert not any(map(lambda x: x.affects_control_flow, ctx.filtered_insn_schemes))
+
+    ctx.pop_filter()
+
+    assert any(map(lambda x: x.affects_control_flow, ctx.filtered_insn_schemes))
+
+    allowed_mnemonics = {"add", "adc", "sub"}
+    assert any(map(lambda x: ctx.extract_mnemonic(x) not in allowed_mnemonics, ctx.filtered_insn_schemes))
+
+    ctx.push_filter(iwho.Filters.only_mnemonics(allowed_mnemonics))
+    ctx.push_filter(iwho.Filters.no_control_flow)
+
+    assert not any(map(lambda x: ctx.extract_mnemonic(x) not in allowed_mnemonics, ctx.filtered_insn_schemes))
+
+    ctx.pop_filter()
+
+    assert not any(map(lambda x: ctx.extract_mnemonic(x) not in allowed_mnemonics, ctx.filtered_insn_schemes))
+
+    ctx.pop_filter()
+
+    assert any(map(lambda x: ctx.extract_mnemonic(x) not in allowed_mnemonics, ctx.filtered_insn_schemes))
+    assert any(map(lambda x: x.affects_control_flow, ctx.filtered_insn_schemes))
+
 if __name__ == "__main__":
     from iwho.iwho_utils import init_logging
     init_logging('debug')
