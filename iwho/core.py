@@ -848,7 +848,7 @@ class InsnScheme:
             return self.explicit_operands.get(ref, None)
         else:
             assert kind == InsnScheme.OperandKind.IMPLICIT
-            if ref > len(self.implicit_operands):
+            if ref >= len(self.implicit_operands):
                 return None
             return self.implicit_operands[ref]
 
