@@ -570,7 +570,8 @@ class Context(core.Context):
             assert len(fitting_regs) >= 1
             if acceptable is not None:
                 fitting_regs.intersection_update(acceptable)
-            assert len(fitting_regs) >= 1
+            if len(fitting_regs) == 0:
+                return None
             return next(iter(fitting_regs))
 
         if isinstance(constraint, MemConstraint):
