@@ -150,6 +150,17 @@ def extract_features_per_uarch(xml_entry):
             continue
         result[uarch_name] = port_usage
 
+    general_features = dict()
+    uops_info_url = xml_entry.get('url', None)
+    if uops_info_url is not None:
+        general_features['uops_info_url'] = uops_info_url
+
+    ref_url = xml_entry.get('url-ref', None)
+    if ref_url is not None:
+        general_features['ref_url'] = ref_url
+
+    result['any'] = general_features
+
     return result
 
 
