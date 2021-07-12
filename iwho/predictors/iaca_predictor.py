@@ -17,6 +17,7 @@ class IACAPredictor(Predictor):
     predictor_options = [
             "iaca_path", # path to the IACA binary
             "iaca_opts", # list of options to IACA, e.g. ["-arch", "SKL"]
+            "timeout", # a timeout for subprocess calls in seconds
         ]
 
     # magic iaca markers, to be placed before and after benchmarked kernel
@@ -29,17 +30,19 @@ class IACAPredictor(Predictor):
     def __init__(self, iaca_path, iaca_opts):
         self.iaca_path = iaca_path
         self.iaca_opts = iaca_opts
+        self.timeout = timeout
 
     @staticmethod
     def from_config(config):
         iaca_opts = config["iaca_opts"]
         iaca_path = config["iaca_path"]
+        timeout = config["timeout"]
         if not os.path.isfile(iaca_path):
             err_str = "no iaca binary found at specified path '{}'".format(iaca_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return IACAPredictor(iaca_path, iaca_opts)
+        return IACAPredictor(iaca_path, iaca_opts, timeout)
 
     def evaluate(self, basic_block, disable_logging=False):
         """
@@ -54,6 +57,8 @@ class IACAPredictor(Predictor):
         hex_str = self.marker_start + hex_str + self.marker_end
         byte_str = binascii.unhexlify(hex_str.encode('latin1'))
 
+        timeout = self.timeout
+
         # Write the prepared byte string into a temporary file and run IACA on
         # it.
         # Using a temporary file like this only works on Unix. Windows would
@@ -64,19 +69,25 @@ class IACAPredictor(Predictor):
             tmp_file.flush()
             tmp_name = tmp_file.name
 
-            cmd = [self.iaca_path] + self.iaca_opts + [tmp_name]
-            start = timer()
-            res = subprocess.run(cmd, capture_output=True, encoding="latin1")
-            end = timer()
-            rt = end - start
+            try:
+                cmd = [self.iaca_path] + self.iaca_opts + [tmp_name]
+                start = timer()
+                res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)
+                end = timer()
+                rt = end - start
 
-            if res.returncode != 0:
-                err_str = "IACA call failed:\n  stdout:\n"
-                err_str += textwrap.indent(res.stdout, 4*' ')
-                err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                if not disable_logging:
-                    logger.error(err_str)
-                return { 'TP': -1.0, 'error': err_str, 'rt': rt }
+                if res.returncode != 0:
+                    err_str = "IACA call failed:\n  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    return { 'TP': -1.0, 'error': err_str, 'rt': rt }
+            except subprocess.TimeoutExpired:
+                    err_str = f"IACA call hit the timeout of {timeout} seconds"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    return { 'TP': -1.0, 'error': err_str}
 
             str_res = res.stdout
 
