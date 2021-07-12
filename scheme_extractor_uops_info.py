@@ -138,30 +138,34 @@ def make_operands_explicit(scheme, operand_keys):
         )
 
 
-def extract_features_per_uarch(xml_entry):
-    result = dict()
+def extract_features(xml_entry):
+    results = dict()
+
+    def take_if_not_none(*, xmlkey, reskey=None, xmlnode=xml_entry, resdict=results):
+        if reskey is None:
+            reskey = xmlkey
+        res = xmlnode.get(xmlkey, None)
+        if res is not None:
+            resdict[reskey] = res
+
+    measurements = dict()
     for archnode in xml_entry.iter('architecture'):
         uarch_name = archnode.get('name', None)
         measurements_node = archnode.find('measurement')
         if measurements_node is None:
             continue
-        port_usage = measurements_node.get('ports', None)
-        if port_usage is None:
-            continue
-        result[uarch_name] = port_usage
+        take_if_not_none(xmlnode=measurements_node, xmlkey='ports', resdict=measurements, reskey=uarch_name)
 
-    general_features = dict()
-    uops_info_url = xml_entry.get('url', None)
-    if uops_info_url is not None:
-        general_features['uops_info_url'] = uops_info_url
+    take_if_not_none(xmlkey='url', reskey='uops_info_url')
+    take_if_not_none(xmlkey='url-ref', reskey='ref_url')
 
-    ref_url = xml_entry.get('url-ref', None)
-    if ref_url is not None:
-        general_features['ref_url'] = ref_url
+    take_if_not_none(xmlkey='extension')
+    take_if_not_none(xmlkey='isa-set')
+    take_if_not_none(xmlkey='category')
 
-    result['any'] = general_features
+    results['measurements'] = measurements
 
-    return result
+    return results
 
 
 def add_uops_info_xml(ctx, xml_path, validate):
@@ -525,7 +529,7 @@ def add_uops_info_xml(ctx, xml_path, validate):
             if key in blocked_schemes:
                 continue
 
-            per_uarch_features = extract_features_per_uarch(instrNode)
+            per_uarch_features = extract_features(instrNode)
             feature_mapping[key].append(per_uarch_features)
             # TODO if multiple are in the list, check for differences?
             # we could add more features here
