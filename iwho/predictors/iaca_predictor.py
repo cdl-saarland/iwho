@@ -27,7 +27,7 @@ class IACAPredictor(Predictor):
     # regular expression for extracting the number of cycles from IACA's output
     parsing_re = re.compile(r"Block Throughput: (\d+\.\d+)")
 
-    def __init__(self, iaca_path, iaca_opts):
+    def __init__(self, iaca_path, iaca_opts, timeout):
         self.iaca_path = iaca_path
         self.iaca_opts = iaca_opts
         self.timeout = timeout
