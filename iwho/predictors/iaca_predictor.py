@@ -70,7 +70,9 @@ class IACAPredictor(Predictor):
             tmp_name = tmp_file.name
 
             try:
-                cmd = [self.iaca_path] + self.iaca_opts + [tmp_name]
+                cmd = [self.iaca_path]
+                cmd.extend(self.iaca_opts)
+                cmd.append(tmp_name)
                 start = timer()
                 res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)
                 end = timer()

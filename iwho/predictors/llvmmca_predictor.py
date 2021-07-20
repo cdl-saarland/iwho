@@ -49,7 +49,8 @@ class LLVMMCAPredictor(Predictor):
         asm_str = basic_block.get_asm()
         asm_str = ".intel_syntax noprefix\n" + asm_str
 
-        cmd = [self.llvmmca_path] + self.llvmmca_opts
+        cmd = [self.llvmmca_path]
+        cmd.extend(self.llvmmca_opts)
 
         timeout = self.timeout
 
