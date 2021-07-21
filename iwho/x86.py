@@ -6,6 +6,7 @@ from enum import Enum
 from collections import defaultdict
 import os
 import random
+import shutil
 import subprocess
 
 
@@ -674,6 +675,8 @@ class LLVMMCCoder(core.ASMCoder):
 
     def __init__(self, llvm_mc_path):
         self.llvm_mc_path = llvm_mc_path
+        if shutil.which(self.llvm_mc_path) is None:
+            raise ASMCoderError(f"Could not find llvm-mc binary '{self.llvm_mc_path}'. Make sure it is on the PATH.")
 
     def asm2hex(self, asm_str) -> str:
         if not isinstance(asm_str, str):
