@@ -1087,15 +1087,17 @@ class InsnInstance:
     def get_operand(self, op_key) -> OperandInstance:
         """ Obtain the Operand associated with the given operand key (which
         should be obtained from `get_operands()` or the `operand_keys` of the
-        InsnScheme).
+        InsnScheme) or `None`, if there is no such operand.
         """
         kind, ref = op_key
         if kind == InsnScheme.OperandKind.EXPLICIT:
             # it is an explicit operand
-            return self._operands[ref]
+            return self._operands.get(ref, None)
         else:
             assert kind == InsnScheme.OperandKind.IMPLICIT
             # it is an implicit operand
+            if ref >= len(self._scheme.implicit_operands):
+                return None
             return self._scheme.implicit_operands[ref].fixed_operand
 
     def get_operands(self):
