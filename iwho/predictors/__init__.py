@@ -12,8 +12,9 @@ def _add_available_classes():
     global available_classes
     from .llvmmca_predictor import LLVMMCAPredictor
     from .iaca_predictor import IACAPredictor
+    from .osaca_predictor import OSACAPredictor
     from .test_predictor import TestPredictor
-    available_classes = [LLVMMCAPredictor, IACAPredictor, TestPredictor]
+    available_classes = [LLVMMCAPredictor, IACAPredictor, OSACAPredictor, TestPredictor]
 
 
 @export
