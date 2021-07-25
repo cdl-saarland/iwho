@@ -49,13 +49,16 @@ def init_logging(loglevel, logfile=None):
     numeric_level = getattr(logging, loglevel.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: {}'.format(loglevel))
+
+    handlers = [logging.StreamHandler()]
+    if logfile is not None:
+        handlers.append(logging.FileHandler(logfile))
+
     kwargs = {
             "format": '%(asctime)s - %(levelname)s:%(name)s: %(message)s',
             "level": numeric_level,
+            "handlers": handlers,
         }
-
-    if logfile is not None:
-        kwargs["filename"] = logfile
 
     logging.basicConfig(**kwargs)
 
