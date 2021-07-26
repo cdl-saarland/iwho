@@ -3,6 +3,7 @@ from . import Predictor, PredictorConfigError
 import binascii
 import os
 import re
+import shutil
 import subprocess
 import textwrap
 from timeit import default_timer as timer
@@ -35,7 +36,7 @@ class OSACAPredictor(Predictor):
         osaca_path = config["osaca_path"]
         llvmmc_path = config["llvmmc_path"]
         timeout = config["timeout"]
-        if not os.path.isfile(osaca_path):
+        if shutil.which(osaca_path) is None:
             err_str = "no osaca binary found at specified path '{}'".format(osaca_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
