@@ -12,6 +12,9 @@ from collections import defaultdict
 
 import pyparsing as pp
 
+import_path = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(import_path)
+
 import iwho
 import iwho.x86 as x86
 
@@ -27,8 +30,6 @@ class UnsupportedFeatureError(Exception):
 
 def main():
     from iwho.utils import parse_args_with_logging
-
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "..", "inputs", "uops_info", "instructions.xml")
 
     import argparse
     argparser = argparse.ArgumentParser(

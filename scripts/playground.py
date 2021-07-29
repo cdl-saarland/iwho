@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
+import os
 import sys
+
+import_path = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(import_path)
 
 import iwho
 import iwho.x86 as x86
