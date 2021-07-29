@@ -20,6 +20,7 @@ from enum import Enum
 from functools import cached_property, partial
 import string
 from collections import defaultdict
+import os
 
 from .utils import DedupStore, export
 
@@ -81,6 +82,30 @@ class Filters:
     def only_mnemonics(allowed_mnemonics):
         """ Exclude all InsnSchmes with a mnemonic not in the set. """
         return partial(Filters._only_mnemonics_impl, allowed_mnemonics=allowed_mnemonics)
+
+    @staticmethod
+    def _whitelist_impl(insn_scheme, ctx, scheme_strs):
+        return str(insn_scheme) in scheme_strs
+
+    @staticmethod
+    def whitelist(scheme_strs):
+        """ Exclude all InsnSchmes whose str is not in the set. If the argument
+        is a single string, it is interpreted as the name of a file containing
+        the scheme_strs, one per line.
+        """
+
+        if isinstance(scheme_strs, str):
+            if not os.path.isfile(scheme_strs):
+                scheme_strs = os.path.join(os.path.dirname(__file__), '..', 'inputs', scheme_strs)
+            res = set()
+            with open(scheme_strs, "r") as f:
+                for line in f:
+                    res.add(line.strip())
+            scheme_strs = res
+        else:
+            scheme_strs = set(scheme_strs)
+
+        return partial(Filters._whitelist_impl, scheme_strs=scheme_strs)
 
 
 @export
