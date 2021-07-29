@@ -1003,8 +1003,16 @@ class InsnScheme:
         return self._implicit_operands
 
     def __str__(self):
+        """ This is cached, which is somewhat necessary, because it is used for
+        equality and hashing.
+        """
+        cached = getattr(self, '_cached_str', None)
+        if cached is not None:
+            return cached
         mapping = { k: str(v) for k, v in self._explicit_operands.items()}
-        return self.str_template.substitute(mapping)
+        res = self.str_template.substitute(mapping)
+        self._cached_str = res
+        return res
 
     def __repr__(self):
         return str(self.to_json_dict())
