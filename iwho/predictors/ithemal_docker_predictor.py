@@ -49,14 +49,10 @@ class RemoteLink:
         self.conn = None
         return
 
-    def set_model_path(self, model_path):
-        assert self.conn is not None, "Connection must be open!"
-        return unwrap_netref(self.conn.root.set_model_path(model_path))
-
-    def run_ithemal(self, byte_str):
+    def run_ithemal(self, model_path, byte_str):
         assert self.conn is not None, "Connection must be open!"
         try:
-            return unwrap_netref(self.conn.root.run_ithemal(byte_str))
+            return unwrap_netref(self.conn.root.run_ithemal(model_path, byte_str))
         except rpyc.AsyncResultTimeout:
             return {'TP': -1.0, 'error': 'RPyC request timeout'}
 
@@ -83,9 +79,6 @@ class IthemalDockerPredictor(Predictor):
         self.timeout = timeout
         self.remote_link = RemoteLink(host, port, ssl_path, request_timeout=timeout)
 
-        with self.remote_link as rl:
-            rl.set_model_path(self.model)
-
     @staticmethod
     def from_config(config):
         host = config["host"]
@@ -106,7 +99,7 @@ class IthemalDockerPredictor(Predictor):
         timeout = self.timeout
 
         with self.remote_link as rl:
-            res = rl.run_ithemal(byte_str)
+            res = rl.run_ithemal(model_path=self.model, byte_str=byte_str)
 
         return res
 
