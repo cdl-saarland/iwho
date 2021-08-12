@@ -36,10 +36,14 @@ class RemoteLink:
         self.conn = None
 
     def __enter__(self):
-        self.conn = rpyc.ssl_connect(self.hostname,
+        # self.conn = rpyc.ssl_connect(self.hostname,
+        #         port=self.port,
+        #         keyfile=self.keyfile,
+        #         certfile=self.certfile,
+        #         config={'sync_request_timeout': self.request_timeout},
+        #         )
+        self.conn = rpyc.connect(self.hostname,
                 port=self.port,
-                keyfile=self.keyfile,
-                certfile=self.certfile,
                 config={'sync_request_timeout': self.request_timeout},
                 )
         return self
