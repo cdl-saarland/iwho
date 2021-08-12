@@ -16,6 +16,12 @@ def _add_available_classes():
     from .test_predictor import TestPredictor
     available_classes = [LLVMMCAPredictor, IACAPredictor, OSACAPredictor, TestPredictor]
 
+    try:
+        from .ithemal_docker_predictor import IthemalDockerPredictor
+        available_classes.append(IthemalDockerPredictor)
+    except ImportError as e:
+        logger.info(f"Import of IthemalDockerPredictor failed, skipping:\n{e}")
+
 
 @export
 class PredictorConfigError(IWHOError):
