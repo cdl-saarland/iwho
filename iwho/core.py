@@ -89,7 +89,7 @@ class Filters:
 
     @staticmethod
     def whitelist(scheme_strs):
-        """ Exclude all InsnSchmes whose str is not in the set. If the argument
+        """ Exclude all InsnSchmes whose str is NOT IN the set. If the argument
         is a single string, it is interpreted as the name of a file containing
         the scheme_strs, one per line.
         """
@@ -106,6 +106,30 @@ class Filters:
             scheme_strs = set(scheme_strs)
 
         return partial(Filters._whitelist_impl, scheme_strs=scheme_strs)
+
+    @staticmethod
+    def _blacklist_impl(insn_scheme, ctx, scheme_strs):
+        return str(insn_scheme) not in scheme_strs
+
+    @staticmethod
+    def blacklist(scheme_strs):
+        """ Exclude all InsnSchmes whose str is IN the set. If the argument is
+        a single string, it is interpreted as the name of a file containing the
+        scheme_strs, one per line.
+        """
+
+        if isinstance(scheme_strs, str):
+            if not os.path.isfile(scheme_strs):
+                scheme_strs = os.path.join(os.path.dirname(__file__), '..', 'inputs', scheme_strs)
+            res = set()
+            with open(scheme_strs, "r") as f:
+                for line in f:
+                    res.add(line.strip())
+            scheme_strs = res
+        else:
+            scheme_strs = set(scheme_strs)
+
+        return partial(Filters._blacklist_impl, scheme_strs=scheme_strs)
 
 
 @export
