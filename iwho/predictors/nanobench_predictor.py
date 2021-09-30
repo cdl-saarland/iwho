@@ -25,7 +25,8 @@ class NanoBenchPredictor(Predictor):
 
     def __init__(self, nanobench_path, nanobench_opts, timeout):
         self.nanobench_path = nanobench_path
-        self.nanobench_opts = nanobench_opts
+        base_path = os.path.dirname(nanobench_path)
+        self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", base_path), nanobench_opts))
         self.timeout = timeout
 
     @staticmethod
