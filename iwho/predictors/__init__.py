@@ -1,10 +1,28 @@
 from abc import ABC, abstractmethod
+import subprocess
 
 import logging
 logger = logging.getLogger(__name__)
 
 from ..core import IWHOError
 from ..utils import export
+
+# some predictors, e.g. nanoBench, require execution as root, so we might have
+# to ask for the root password
+from getpass import getpass
+
+class PWManager:
+    password = None
+
+def get_sudo():
+    """ This function should be called before a predictor that requires root is
+    used.
+    """
+    if PWManager.password is not None:
+        return
+    PWManager.password = getpass("Please enter your sudo password to run predictors with: ")
+    subprocess.run(['sudo', '-S', 'ls', '/'], check=True, capture_output=True, encoding="latin1", timeout=2, input=PWManager.password)
+
 
 available_classes = []
 
@@ -42,6 +60,9 @@ class PredictorConfigError(IWHOError):
 
 @export
 class Predictor(ABC):
+
+    def requires_sudo(self):
+        return False
 
     @abstractmethod
     def evaluate(self, basic_block):

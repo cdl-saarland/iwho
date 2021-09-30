@@ -1,4 +1,4 @@
-from . import Predictor, PredictorConfigError
+from . import Predictor, PredictorConfigError, PWManager
 
 import binascii
 import os
@@ -24,10 +24,13 @@ class NanoBenchPredictor(Predictor):
     parsing_re = re.compile(r"Core cycles: (\d+\.\d+)")
 
     def __init__(self, nanobench_path, nanobench_opts, timeout):
-        self.nanobench_path = nanobench_path
-        base_path = os.path.dirname(nanobench_path)
-        self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", base_path), nanobench_opts))
+        self.base_path = os.path.dirname(nanobench_path)
+        self.nanobench_path = os.path.basename(nanobench_path)
+        self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", self.base_path), nanobench_opts))
         self.timeout = timeout
+
+    def requires_sudo(self):
+        return True
 
     @staticmethod
     def from_config(config):
@@ -39,7 +42,7 @@ class NanoBenchPredictor(Predictor):
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return NanoBench(nanobench_path, nanobench_opts, timeout)
+        return NanoBenchPredictor(nanobench_path, nanobench_opts, timeout)
 
     def evaluate(self, basic_block, disable_logging=False):
         """
@@ -47,17 +50,20 @@ class NanoBenchPredictor(Predictor):
             the basic block.
         """
 
+        if PWManager.password is None:
+            raise PredictorConfigError("Trying to run nanoBench without sudo password!")
+
         asm_str = '; '.join(basic_block.get_asm().split('\n'))
 
         timeout = self.timeout
 
         try:
-            cmd = [self.nanobench_path]
+            cmd = ['sudo', '-S', self.nanobench_path]
             cmd.extend(('-asm', asm_str))
             cmd.extend(self.nanobench_opts)
 
             start = timer()
-            res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)
+            res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout, cwd=self.base_path, input=PWManager.password)
             end = timer()
             rt = end - start
 
