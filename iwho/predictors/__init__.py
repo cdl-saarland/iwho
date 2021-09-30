@@ -13,9 +13,17 @@ def _add_available_classes():
     from .llvmmca_predictor import LLVMMCAPredictor
     from .iaca_predictor import IACAPredictor
     from .uica_predictor import UICAPredictor
+    from .nanobench_predictor import NanoBenchPredictor
     from .osaca_predictor import OSACAPredictor
     from .test_predictor import TestPredictor
-    available_classes = [LLVMMCAPredictor, IACAPredictor, UICAPredictor, OSACAPredictor, TestPredictor]
+    available_classes = [
+            LLVMMCAPredictor,
+            IACAPredictor,
+            UICAPredictor,
+            NanoBenchPredictor,
+            OSACAPredictor,
+            TestPredictor,
+        ]
 
     try:
         from .ithemal_docker_predictor import IthemalDockerPredictor
