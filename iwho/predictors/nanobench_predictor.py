@@ -25,7 +25,7 @@ class NanoBenchPredictor(Predictor):
 
     def __init__(self, nanobench_path, nanobench_opts, timeout):
         self.base_path = os.path.dirname(nanobench_path)
-        self.nanobench_path = os.path.basename(nanobench_path)
+        self.nanobench_script = os.path.basename(nanobench_path)
         self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", self.base_path), nanobench_opts))
         self.timeout = timeout
 
@@ -58,7 +58,7 @@ class NanoBenchPredictor(Predictor):
         timeout = self.timeout
 
         try:
-            cmd = ['sudo', '-S', self.nanobench_path]
+            cmd = ['sudo', '-S', './' + self.nanobench_script]
             cmd.extend(('-asm', asm_str))
             cmd.extend(self.nanobench_opts)
 
