@@ -18,16 +18,18 @@ class NanoBenchPredictor(Predictor):
             "nanobench_path", # path to the nanobench.sh script
             "nanobench_opts", # list of options to nanobench, e.g. ["-config", "${BASE}/configs/cfg_Skylake_common.txt"]
             "timeout", # a timeout for subprocess calls in seconds
+            "num_samples", # take the minimum of this many runs of nanoBench
         ]
 
     # regular expression for extracting the number of cycles from nanobench's output
     parsing_re = re.compile(r"Core cycles: (\d+\.\d+)")
 
-    def __init__(self, nanobench_path, nanobench_opts, timeout):
+    def __init__(self, nanobench_path, nanobench_opts, timeout, num_samples):
         self.base_path = os.path.dirname(nanobench_path)
         self.nanobench_script = os.path.basename(nanobench_path)
         self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", self.base_path), nanobench_opts))
         self.timeout = timeout
+        self.num_samples = num_samples
 
     def requires_sudo(self):
         return True
@@ -40,12 +42,13 @@ class NanoBenchPredictor(Predictor):
         nanobench_opts = config["nanobench_opts"]
         nanobench_path = config["nanobench_path"]
         timeout = config["timeout"]
+        num_samples = config["num_samples"]
         if not os.path.isfile(nanobench_path):
             err_str = "no nanobench.sh script found at specified path '{}'".format(nanobench_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return NanoBenchPredictor(nanobench_path, nanobench_opts, timeout)
+        return NanoBenchPredictor(nanobench_path, nanobench_opts, timeout, num_samples)
 
     def evaluate(self, basic_block, disable_logging=False):
         """
@@ -60,37 +63,44 @@ class NanoBenchPredictor(Predictor):
 
         timeout = self.timeout
 
-        try:
-            cmd = ['sudo', '-S', './' + self.nanobench_script]
-            cmd.extend(('-asm', asm_str))
-            cmd.extend(self.nanobench_opts)
+        cmd = ['sudo', '-S', './' + self.nanobench_script]
+        cmd.extend(('-asm', asm_str))
+        cmd.extend(self.nanobench_opts)
 
-            start = timer()
-            res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout, cwd=self.base_path, input=PWManager.password)
-            end = timer()
-            rt = end - start
+        rt = 0
 
-            if res.returncode != 0:
-                err_str = "nanoBench call failed:\n  stdout:\n"
-                err_str += textwrap.indent(res.stdout, 4*' ')
-                err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                if not disable_logging:
-                    logger.error(err_str)
-                return { 'TP': -1.0, 'error': err_str, 'rt': rt }
-        except subprocess.TimeoutExpired:
-                err_str = f"nanoBench call hit the timeout of {timeout} seconds"
-                if not disable_logging:
-                    logger.error(err_str)
-                return { 'TP': -1.0, 'error': err_str}
+        tps = []
 
-        str_res = res.stdout
+        for it in range(self.num_samples):
+            try:
+                start = timer()
+                res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout, cwd=self.base_path, input=PWManager.password)
+                end = timer()
+                rt += end - start
 
-        # parse nanoBenchs's results
-        m = self.parsing_re.search(str_res)
-        if m is None:
-            return { 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt }
+                if res.returncode != 0:
+                    err_str = "nanoBench call failed:\n  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    return { 'TP': -1.0, 'error': err_str, 'rt': rt }
+            except subprocess.TimeoutExpired:
+                    err_str = f"nanoBench call hit the timeout of {timeout} seconds"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    return { 'TP': -1.0, 'error': err_str}
 
-        tp = float(m.group(1))
+            str_res = res.stdout
+
+            # parse nanoBenchs's results
+            m = self.parsing_re.search(str_res)
+            if m is None:
+                return { 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt }
+
+            tps.append(float(m.group(1)))
+
+        tp = min(tps)
         return {"TP": tp, 'rt': rt}
 
 
