@@ -32,6 +32,9 @@ class NanoBenchPredictor(Predictor):
     def requires_sudo(self):
         return True
 
+    def needs_to_run_alone(self):
+        return True
+
     @staticmethod
     def from_config(config):
         nanobench_opts = config["nanobench_opts"]

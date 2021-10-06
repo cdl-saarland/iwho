@@ -17,6 +17,11 @@ class PWManager:
 def get_sudo():
     """ This function should be called before a predictor that requires root is
     used.
+    Currently, the sudo access is not shared among processes. Therefore, if you
+    have a predictor that requires root privileges but does not require to be
+    run sequentially, it will not have the right privileges.
+
+    This could be fixed by sharing the password with subprocesses if necessary.
     """
     if PWManager.password is not None:
         return
@@ -62,6 +67,13 @@ class PredictorConfigError(IWHOError):
 class Predictor(ABC):
 
     def requires_sudo(self):
+        return False
+
+    def needs_to_run_alone(self):
+        """ Subclasses should override this method if they require to be
+        executed in a sequential fashion, e.g. because they are actually
+        running benchmarks on the machine.
+        """
         return False
 
     @abstractmethod
