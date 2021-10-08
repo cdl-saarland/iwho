@@ -39,6 +39,8 @@ def extract_mnemonic(insn: Union[str, core.InsnScheme, core.InsnInstance]) -> st
     for t in tokens:
         if t.startswith("{"):
             continue
+        if t == 'lock':
+            continue
         return t
     return None
 
