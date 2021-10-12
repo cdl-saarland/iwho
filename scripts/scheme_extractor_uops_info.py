@@ -212,7 +212,9 @@ def add_uops_info_xml(ctx, xml_path, validate):
     cmp_versions = ["eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord"]
 
 
-    def make_scheme(str_template, explicit_operands, implicit_operands=[], affects_control_flow=False):
+    def make_scheme(str_template, explicit_operands, implicit_operands=None, affects_control_flow=False):
+        if implicit_operands is None:
+            implicit_operands = []
         scheme = iwho.InsnScheme(
                 str_template=str_template,
                 explicit_operands=explicit_operands,
