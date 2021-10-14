@@ -39,7 +39,9 @@ def extract_mnemonic(insn: Union[str, core.InsnScheme, core.InsnInstance]) -> st
     for t in tokens:
         if t.startswith("{"):
             continue
-        if t == 'lock':
+        if t == 'lock': # lock prefixes are not the mnemonic
+            continue
+        if t.startswith('rep'): # rep prefixes are not the mnemonic
             continue
         return t
     return None
