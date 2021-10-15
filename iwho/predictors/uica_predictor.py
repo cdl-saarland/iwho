@@ -18,33 +18,33 @@ class UICAPredictor(Predictor):
             "uica_path", # path to the uiCA binary
             "uica_opts", # list of options to uiCA, e.g. ["-arch", "SKL"]
             "timeout", # a timeout for subprocess calls in seconds
+            "wrap_in_loop", # if true, add a loop around each benchmark
         ]
 
     # regular expression for extracting the number of cycles from uiCA's output
     parsing_re = re.compile(r"(\d+\.\d+)")
 
-    def __init__(self, uica_path, uica_opts, timeout):
-        self.uica_path = uica_path
-        self.uica_opts = uica_opts
-        self.timeout = timeout
+    def __init__(self, config):
+        for opt in self.predictor_options:
+            setattr(self, opt, config[opt])
 
-    @staticmethod
-    def from_config(config):
-        uica_opts = config["uica_opts"]
-        uica_path = config["uica_path"]
-        timeout = config["timeout"]
-        if not os.path.isfile(uica_path):
+        if not os.path.isfile(self.uica_path):
             err_str = "no uica.py script found at specified path '{}'".format(uica_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return UICAPredictor(uica_path, uica_opts, timeout)
+    @staticmethod
+    def from_config(config):
+        return UICAPredictor(config)
 
     def evaluate(self, basic_block, disable_logging=False):
         """
             Use uiCA to estimate the number of cycles required to execute the
             basic block.
         """
+
+        assert not self.wrap_in_loop, "not yet implemented!"
+        # TODO implement this
 
         hex_str = basic_block.get_hex()
 
