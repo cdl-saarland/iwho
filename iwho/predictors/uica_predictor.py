@@ -18,7 +18,6 @@ class UICAPredictor(Predictor):
             "uica_path", # path to the uiCA binary
             "uica_opts", # list of options to uiCA, e.g. ["-arch", "SKL"]
             "timeout", # a timeout for subprocess calls in seconds
-            "wrap_in_loop", # if true, add a loop around each benchmark
         ]
 
     # regular expression for extracting the number of cycles from uiCA's output
@@ -42,9 +41,6 @@ class UICAPredictor(Predictor):
             Use uiCA to estimate the number of cycles required to execute the
             basic block.
         """
-
-        assert not self.wrap_in_loop, "not yet implemented!"
-        # TODO implement this
 
         hex_str = basic_block.get_hex()
 

@@ -59,7 +59,8 @@ class NanoBenchPredictor(Predictor):
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run nanoBench without sudo password!")
 
-        asm_str = '; '.join(basic_block.get_asm().split('\n'))
+        # we do not want the block to be wrapped in a loop, since nanoBench adds its own loop
+        asm_str = '; '.join(basic_block.get_asm(unwrapped=True).split('\n'))
 
         timeout = self.timeout
 

@@ -367,9 +367,7 @@ class Context(ABC):
         if isinstance(insn_instances, BasicBlock):
             asm_str = insn_instances.get_asm()
         else:
-            asm_str = ""
-            for ii in insn_instances:
-                asm_str += str(ii)
+            asm_str = "\n".join(map(str, filter(lambda x: x is not None, insn_instances)))
 
         res = self.coder.asm2hex(asm_str)
 
@@ -1257,6 +1255,7 @@ class BasicBlock:
         """
         self.context = context
         self.insns = []
+        self.wrap_in_loop = False  # wrap the block in a loop before returning it as string or hex
         if insns is not None:
             self.append(insns)
 
@@ -1269,22 +1268,36 @@ class BasicBlock:
         else:
             self.insns += insn
 
-    def get_hex(self) -> str:
+    def get_hex(self, unwrapped=False) -> str:
         """ Return a string of hex numbers (the ascii characters, not actual
         bytes) that encode this basic block.
 
         This might be slow since it may use an external encoder.
-        """
-        return self.context.encode_insns(self)
 
-    def get_asm(self) -> str:
+        If unwrapped is True, the result will not be wrapped in a loop, even if
+        the basic block is configured to be wrapped.
+        """
+        asm_str = self.get_asm(unwrapped=unwrapped)
+        res = self.context.coder.asm2hex(asm_str)
+        return res
+
+    def get_asm(self, unwrapped=False) -> str:
         """ Return a string representation of the assembly instructions for
         this BasicBlock.
 
         This should be rather fast since it does not use an external
         en/decoder.
+
+        If unwrapped is True, the result will not be wrapped in a loop, even if
+        the basic block is configured to be wrapped.
         """
-        return "\n".join(map(str, filter(lambda x: x is not None, self.insns)))
+        asm_str = "\n".join(map(str, filter(lambda x: x is not None, self.insns)))
+
+        if self.wrap_in_loop and not unwrapped:
+            asm_str = "loop:\n" + asm_str + "\ndec r15\n jnz loop\n"
+            # TODO we should probably check whether r15 is unused
+
+        return asm_str
 
     def __iter__(self):
         # this does not include the None entries
