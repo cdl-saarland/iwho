@@ -28,7 +28,7 @@ class UICAPredictor(Predictor):
             setattr(self, opt, config[opt])
 
         if not os.path.isfile(self.uica_path):
-            err_str = "no uica.py script found at specified path '{}'".format(uica_path)
+            err_str = "no uica.py script found at specified path '{}'".format(self.uica_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
@@ -51,7 +51,7 @@ class UICAPredictor(Predictor):
         # Write the prepared byte string into a temporary file and run uiCA on
         # it.
         # Using a temporary file like this only works on Unix. Windows would
-        # not allow IACA to concurrently open the temporary file.
+        # not allow the tool to concurrently open the temporary file.
         # The temporary file is deleted when it's closed.
         with tempfile.NamedTemporaryFile("wb") as tmp_file:
             tmp_file.write(byte_str)

@@ -36,6 +36,7 @@ def _add_available_classes():
     from .llvmmca_predictor import LLVMMCAPredictor
     from .iaca_predictor import IACAPredictor
     from .uica_predictor import UICAPredictor
+    from .maqao_predictor import MAQAOPredictor
     from .nanobench_predictor import NanoBenchPredictor
     from .osaca_predictor import OSACAPredictor
     from .test_predictor import TestPredictor
@@ -43,6 +44,7 @@ def _add_available_classes():
             LLVMMCAPredictor,
             IACAPredictor,
             UICAPredictor,
+            MAQAOPredictor,
             NanoBenchPredictor,
             OSACAPredictor,
             TestPredictor,
