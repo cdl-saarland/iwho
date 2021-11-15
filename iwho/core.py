@@ -287,7 +287,7 @@ class Context(ABC):
         hex_str = self.coder.asm2hex(asm_str)
         return self.decode_insns(hex_str)
 
-    def decode_insns(self, hex_str: str) -> Sequence["InsnInstance"]:
+    def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of instruction instances.
 
@@ -300,7 +300,13 @@ class Context(ABC):
 
         insns = []
         for l in asm_lines:
-            insn_instance = self.match_insn_str(l)
+            try:
+                insn_instance = self.match_insn_str(l)
+            except InstantiationError:
+                if not skip_instantiation_errors:
+                    raise
+                insn_instance = None
+
             insns.append(insn_instance)
 
         return insns
