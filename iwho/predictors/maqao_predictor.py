@@ -43,7 +43,7 @@ class MAQAOPredictor(Predictor):
             basic block.
         """
 
-        basic_block.wrap_in_loop = True
+        # basic_block.wrap_in_loop = True
 
         assert basic_block.wrap_in_loop, "MAQAO CQA can only handle loops!"
 
