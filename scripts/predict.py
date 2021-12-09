@@ -75,7 +75,7 @@ def main():
                 asm_str = f.read()
             bbs.append(ctx.parse_asm_bb(asm_str))
 
-    results = list(pm.eval_with_all(bbs))
+    results, series_id = pm.eval_with_all_and_report(bbs)
 
     errors = Counter()
 
