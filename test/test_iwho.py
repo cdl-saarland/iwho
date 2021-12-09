@@ -513,7 +513,7 @@ def test_assemble_then_disassemble_all(x86_ctx):
 
 
 def test_scheme_filters():
-    ctx = iwho.get_context('x86_uops_info')
+    ctx = iwho.get_context_by_name('x86_uops_info')
 
     assert len(ctx.insn_schemes) > 0
     assert len(ctx.filtered_insn_schemes) > 0

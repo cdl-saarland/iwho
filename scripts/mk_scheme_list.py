@@ -31,7 +31,7 @@ def main():
 
     args = parse_args_with_logging(argparser, "info")
 
-    ctx = iwho.get_context(args.isa)
+    ctx = iwho.get_context_by_name(args.isa)
 
     all_insn_schemes = set()
     for fn in args.infiles:

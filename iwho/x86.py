@@ -546,6 +546,8 @@ class Context(core.Context):
         # Without further information MemoryOperands may alias.
         return True
 
+    def make_example_bb(self) -> Optional["BasicBlock"]:
+        return self.parse_asm_bb("add qword ptr [rcx + 0x42], rdx\nvaddpd ymm1, ymm2, ymm3")
 
     def adjust_operand(self, operand: core.OperandInstance, op_scheme: core.OperandScheme) -> core.OperandInstance:
         # if the operand is already valid: nothing to be done

@@ -2,12 +2,73 @@
 IWHo: Instructions With Holes
 """
 
+from functools import partial
+
+from .configurable import ConfigMeta
 from .core import *
 
 import logging
 logger = logging.getLogger(__name__)
 
-def get_context(ctx_id: str) -> Context:
+def _filter_uarch(scheme, ctx, uarch_name):
+    return (ctx.get_features(scheme) is not None
+        and uarch_name in ctx.get_features(scheme)[0]["measurements"])
+
+
+class Config(metaclass=ConfigMeta):
+    """ Helper class to configure iwho contexts.
+
+    Since the Context is an abstract base class from which any actual context
+    is derived, ConfigMeta hits its limits: Ideally, one would want to specify
+    some general options in Context and some specific ones in the subclasses.
+    While this might be possible with more metaclass hacking, it's not in the
+    current focus.
+    """
+    config_options = dict(
+        context_specifier = ('x86_uops_info',
+            'identifier for the IWHO context to use'
+            ),
+        filters = (['no_cf'],
+            'a list of filters to restrict the InsnSchemes used for sampling'
+            ),
+    )
+
+    def __init__(self, config):
+        self.configure(config)
+        self._context = None
+
+    @property
+    def context(self):
+        if self._context is None:
+            self._context = self._create_context()
+        return self._context
+
+    def _create_context(self):
+        iwho_ctx = get_context_by_name(self.context_specifier)
+        for f in self.filters:
+            key, *args = f.split(':')
+            if key == 'no_cf':
+                iwho_ctx.push_filter(Filters.no_control_flow)
+                continue
+            if key == 'with_measurements':
+                for uarch in args:
+                    uarch_filter = partial(_filter_uarch, uarch_name=uarch)
+                    iwho_ctx.push_filter(uarch_filter)
+                continue
+            if key == 'only_mnemonics':
+                iwho_ctx.push_filter(Filters.only_mnemonics(args))
+                continue
+            if key == 'whitelist':
+                iwho_ctx.push_filter(Filters.whitelist(args[0]))
+                continue
+            if key == 'blacklist':
+                iwho_ctx.push_filter(Filters.blacklist(args[0]))
+                continue
+
+        return iwho_ctx
+
+
+def get_context_by_name(ctx_id: str) -> Context:
     """ Try to create an IWHo Context that corresponds to the given identifier.
 
     If the identifier matches the filename (without extension) of a json file

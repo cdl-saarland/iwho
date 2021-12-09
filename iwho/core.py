@@ -270,6 +270,14 @@ class Context(ABC):
         """
         return BasicBlock(self, insns=insns)
 
+    def make_example_bb(self) -> Optional["BasicBlock"]:
+        """ Create a simple example basic block.
+
+        If overridden, this can be used for a very basic throughput predictor
+        test.
+        """
+        return None
+
     def parse_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
         """ Parse a sequence of InsnInstances from an assembly string.
 
@@ -286,6 +294,9 @@ class Context(ABC):
         # direct asm2asm method (which llvm-mc could do)
         hex_str = self.coder.asm2hex(asm_str)
         return self.decode_insns(hex_str)
+
+    def parse_asm_bb(self, asm_str: str) -> "BasicBlock":
+        return self.make_bb(self.parse_asm(asm_str))
 
     def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
@@ -311,6 +322,8 @@ class Context(ABC):
 
         return insns
 
+    def decode_insns_bb(self, hex_str: str) -> "BasicBlock":
+        return self.make_bb(self.decode_insns(hex_str))
 
     def match_insn_str(self, insn_str: str) -> "InsnInstance":
         """ Match the assembly string representing an instruction to the

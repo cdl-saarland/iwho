@@ -15,7 +15,7 @@ import iwho.x86 as x86
 
 @pytest.fixture(scope="module")
 def ctx():
-    return iwho.get_context("x86")
+    return iwho.get_context_by_name("x86")
 
 start_idx = 0
 # num = 200
