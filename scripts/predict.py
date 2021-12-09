@@ -25,6 +25,8 @@ from iwho.utils import parse_args_with_logging
 from iwho import Config
 
 def main():
+    default_seed = 424242
+
     argparser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     argparser.add_argument('--iwhoconfig', metavar="CONFIG", default=None,
@@ -45,6 +47,9 @@ def main():
     input_group.add_argument('--testallinsns', action='store_true',
             help='run the predictors on all supported instructions')
 
+    argparser.add_argument('-s', '--seed', type=int, default=default_seed, metavar="N",
+            help='seed for the rng')
+
     args = parse_args_with_logging(argparser, "info")
 
     iwhoconfig = load_json_config(args.iwhoconfig)
@@ -56,14 +61,11 @@ def main():
     pm.set_predictors(args.predictors)
 
     if args.testbasic:
-        # TODO
-        return
-
-    if args.testallinsns:
-        # TODO
-        return
-
-    if args.hex is not None:
+        bbs = [ ctx.make_example_bb() ]
+    elif args.testallinsns:
+        bbs = []
+        # TODO implement this!
+    elif args.hex is not None:
         bbs = [ctx.decode_insns_bb(args.hex)]
     else:
         assert args.asm is not None

@@ -270,6 +270,14 @@ class Context(ABC):
         """
         return BasicBlock(self, insns=insns)
 
+    def make_example_bb(self) -> Optional["BasicBlock"]:
+        """ Create a simple example basic block.
+
+        If overridden, this can be used for a very basic throughput predictor
+        test.
+        """
+        return None
+
     def parse_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
         """ Parse a sequence of InsnInstances from an assembly string.
 
