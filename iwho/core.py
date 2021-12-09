@@ -287,6 +287,9 @@ class Context(ABC):
         hex_str = self.coder.asm2hex(asm_str)
         return self.decode_insns(hex_str)
 
+    def parse_asm_bb(self, asm_str: str) -> "BasicBlock":
+        return self.make_bb(self.parse_asm(asm_str))
+
     def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of instruction instances.
@@ -311,6 +314,8 @@ class Context(ABC):
 
         return insns
 
+    def decode_insns_bb(self, hex_str: str) -> "BasicBlock":
+        return self.make_bb(self.decode_insns(hex_str))
 
     def match_insn_str(self, insn_str: str) -> "InsnInstance":
         """ Match the assembly string representing an instruction to the

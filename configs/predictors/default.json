@@ -1,0 +1,6 @@
+{
+    "registry_path": "./pred_registry.json",
+    "registry_path.doc": "path to a predictor registry in json format",
+    "num_processes": 0,
+    "num_processes.doc": "number of predictor processes to use. A value <= 0 uses the number of available cores, None/null runs everything in the main process."
+}

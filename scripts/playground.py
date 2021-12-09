@@ -34,7 +34,7 @@ def main():
         ctx = x86.Context()
         ctx.fill_from_json_dict(scheme_data)
     else:
-        ctx = iwho.get_context("x86")
+        ctx = iwho.get_context_by_name("x86")
         # TODO this should be an argument
 
 
