@@ -4,6 +4,7 @@
 """
 
 import argparse
+from collections import Counter
 import os
 import sys
 import textwrap
@@ -74,12 +75,21 @@ def main():
 
     results = list(pm.eval_with_all(bbs))
 
+    errors = Counter()
+
     for bb, res in results:
         print("Basic Block:")
         print(textwrap.indent(str(bb), "    "))
         print("  Result:")
         print(textwrap.indent(pretty_print(res), "    "))
+        for k, v in res.items():
+            if v['TP'] is None or v['TP'] < 0.0:
+                errors[k] += 1
 
+    if len(errors) > 0:
+        print("there were prediction errors:")
+        for k, n in errors.most_common():
+            print(f"  {k}: {n} error{'s' if n != 1 else ''}")
 
 if __name__ == "__main__":
     main()
