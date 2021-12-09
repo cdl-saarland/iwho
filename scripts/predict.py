@@ -21,7 +21,7 @@ from iwho.configurable import load_json_config, pretty_print
 from iwho.predictors.predictor_manager import PredictorManager
 from iwho.utils import parse_args_with_logging
 
-from iwho import IWHOConfig
+from iwho import Config
 
 def main():
     argparser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -47,7 +47,7 @@ def main():
     args = parse_args_with_logging(argparser, "info")
 
     iwhoconfig = load_json_config(args.iwhoconfig)
-    ctx = IWHOConfig(config=iwhoconfig).context
+    ctx = Config(config=iwhoconfig).context
 
     predconfig = load_json_config(args.predconfig)
     pm = PredictorManager(config=predconfig)

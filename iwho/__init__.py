@@ -15,7 +15,7 @@ def _filter_uarch(scheme, ctx, uarch_name):
         and uarch_name in ctx.get_features(scheme)[0]["measurements"])
 
 
-class IWHOConfig(metaclass=ConfigMeta):
+class Config(metaclass=ConfigMeta):
     """ Helper class to configure iwho contexts.
 
     Since the Context is an abstract base class from which any actual context

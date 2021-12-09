@@ -9,34 +9,29 @@ sys.path.append(import_path)
 import iwho
 import iwho.x86 as x86
 
+from iwho.configurable import load_json_config
+
 
 def main():
     from iwho.utils import parse_args_with_logging
     import argparse
     argparser = argparse.ArgumentParser(description="Interactive playground for using instructions with holes (iwho)")
+
+    argparser.add_argument('-c', '--iwhoconfig', metavar="CONFIG", default=None,
+            help='path to an iwho config in json format')
+
     argparser.add_argument("-b", "--bytes", metavar="HEXSTR", default=None, help="decode instructions from the bytes represented by the specified hex string")
 
     argparser.add_argument("-a", "--asm", metavar="ASMSTR", default=None, help="load instructions from the specified asm string")
 
     argparser.add_argument("-i", "--interactive", action="store_true", help="after loading instructions, open an interactive mode (IPython if available)")
 
-    argparser.add_argument("-s", "--insnschemes", metavar="JSON", default=None, help="use instruction schemes from this json file")
-
     args = parse_args_with_logging(argparser, "warning")
     # TODO stdin
 
 
-    if args.insnschemes is not None:
-        import json
-        with open(args.insnschemes, 'r') as infile:
-            scheme_data = json.load(infile)
-
-        ctx = x86.Context()
-        ctx.fill_from_json_dict(scheme_data)
-    else:
-        ctx = iwho.get_context_by_name("x86")
-        # TODO this should be an argument
-
+    iwhoconfig = load_json_config(args.iwhoconfig)
+    ctx = iwho.Config(config=iwhoconfig).context
 
     insns = []
     if args.bytes is not None:
