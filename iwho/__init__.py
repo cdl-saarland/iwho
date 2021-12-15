@@ -28,10 +28,18 @@ class Config(metaclass=ConfigMeta):
         context_specifier = ('x86_uops_info',
             'identifier for the IWHO context to use'
             ),
-        filters = (['no_cf'],
-            'a list of filters to restrict the InsnSchemes used for sampling'
+        filters = ([{'kind': 'no_cf'}],
+            'a list of filters to restrict the InsnSchemes used for sampling.\n' +
+            'Possible entries (duplicates are allowed):\n' +
+            '  - {"kind": "no_cf"} (only instructions that do not affect control flow)' +
+            '  - {"kind": "with_measurements", "archs": ["SKL", ...]} (only instructions for which measurements are available for all of the given microarchitectures)' +
+            '  - {"kind": "only_mnemonics", "mnemonics": ["add", ...]} (only instructions with one of the specified mnemonics)' +
+            '  - {"kind": "blacklist", "file_path": "./path/to/schemes.csv"} (only instructions that are not in the specified file)' +
+            '  - {"kind": "whitelist", "file_path": "./path/to/schemes.csv"} (only instructions that are in the specified file)'
             ),
     )
+    # as the file_path keys end in '_path', storing and loading them as json
+    # makes their values absolute and relative as necessary
 
     def __init__(self, config):
         self.configure(config)
@@ -46,23 +54,22 @@ class Config(metaclass=ConfigMeta):
     def _create_context(self):
         iwho_ctx = get_context_by_name(self.context_specifier)
         for f in self.filters:
-            key, *args = f.split(':')
-            if key == 'no_cf':
+            if f['kind'] == 'no_cf':
                 iwho_ctx.push_filter(Filters.no_control_flow)
                 continue
-            if key == 'with_measurements':
-                for uarch in args:
+            if f['kind'] == 'with_measurements':
+                for uarch in f['archs']:
                     uarch_filter = partial(_filter_uarch, uarch_name=uarch)
                     iwho_ctx.push_filter(uarch_filter)
                 continue
-            if key == 'only_mnemonics':
-                iwho_ctx.push_filter(Filters.only_mnemonics(args))
+            if f['kind'] == 'only_mnemonics':
+                iwho_ctx.push_filter(Filters.only_mnemonics(f['mnemonics']))
                 continue
-            if key == 'whitelist':
-                iwho_ctx.push_filter(Filters.whitelist(args[0]))
+            if f['kind'] == 'whitelist':
+                iwho_ctx.push_filter(Filters.whitelist(f['file_path']))
                 continue
-            if key == 'blacklist':
-                iwho_ctx.push_filter(Filters.blacklist(args[0]))
+            if f['kind'] == 'blacklist':
+                iwho_ctx.push_filter(Filters.blacklist(f['file_path']))
                 continue
 
         return iwho_ctx
