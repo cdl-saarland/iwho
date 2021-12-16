@@ -29,13 +29,7 @@ class Config(metaclass=ConfigMeta):
             'identifier for the IWHO context to use'
             ),
         filters = ([{'kind': 'no_cf'}],
-            'a list of filters to restrict the InsnSchemes used for sampling.\n' +
-            'Possible entries (duplicates are allowed):\n' +
-            '  - {"kind": "no_cf"} (only instructions that do not affect control flow)' +
-            '  - {"kind": "with_measurements", "archs": ["SKL", ...]} (only instructions for which measurements are available for all of the given microarchitectures)' +
-            '  - {"kind": "only_mnemonics", "mnemonics": ["add", ...]} (only instructions with one of the specified mnemonics)' +
-            '  - {"kind": "blacklist", "file_path": "./path/to/schemes.csv"} (only instructions that are not in the specified file)' +
-            '  - {"kind": "whitelist", "file_path": "./path/to/schemes.csv"} (only instructions that are in the specified file)'
+            'a list of filters to restrict the InsnSchemes used for sampling.'
             ),
     )
     # as the file_path keys end in '_path', storing and loading them as json

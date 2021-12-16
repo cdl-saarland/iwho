@@ -5,6 +5,7 @@ through json config files.
 import json
 import os
 from pathlib import Path
+import re
 import textwrap
 
 def load_json_config(path):
@@ -228,6 +229,24 @@ class ConfigurableImpl:
 def tuplify(ls):
     if isinstance(ls, list) or isinstance(ls, tuple):
         return tuple(map(tuplify, ls))
+    elif isinstance(ls, dict):
+        kind = ls.get('kind', None)
+        if kind is not None:
+            # hardcoded prettification of iwho filters
+            res_str = kind
+            if kind == 'with_measurements':
+                res_str +=  ':' + ",".join(ls['archs'])
+            elif kind == 'only_mnemonics':
+                res_str +=  ':' + ",".join(ls['mnemonics'])
+            elif kind in ['blacklist', 'whitelist']:
+                listpath = Path(ls['file_path'])
+                displayed = listpath.name
+                m = re.fullmatch(r"filter_\d+_(.*)\.csv", displayed)
+                if m is not None:
+                    displayed = m[1]
+                res_str += ':' + displayed
+            return res_str
+        return tuple(map(lambda x: (tuplify(x[0]), tuplify(x[1])), ls.items()))
     else:
         return ls
 
