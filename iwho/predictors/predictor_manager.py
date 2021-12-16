@@ -141,16 +141,27 @@ class PredictorManager(metaclass=ConfigMeta):
 
         num_processes = self.num_processes
 
-        if num_processes is not None:
-            if num_processes <= 0:
-                num_processes = multiprocessing.cpu_count()
-            self.pool = Pool(num_processes)
+        # created lazily when/if needed
+        self._pool = None
 
         self.predictor_map = dict()
 
         self.source_computer = socket.gethostname()
 
         self.next_result_ref = 0
+
+    @property
+    def pool(self):
+        num_processes = self.num_processes
+        if self._pool is None and num_processes is not None:
+            if num_processes <= 0:
+                num_processes = multiprocessing.cpu_count()
+            self._pool = Pool(num_processes)
+        return self._pool
+
+    @pool.setter
+    def pool(self, value):
+        self._pool = value
 
     def __enter__(self):
         return self
@@ -165,9 +176,9 @@ class PredictorManager(metaclass=ConfigMeta):
         """ This method should be called at the end of the lifetime of the
         PredictorManager.
         """
-        if getattr(self, 'pool', None) is not None:
-            self.pool.close()
-            self.pool = None
+        if getattr(self, '_pool', None) is not None:
+            self._pool.close()
+            self._pool = None
 
     def set_measurement_db(self, dbmanager):
         """ Set a database manager to be used for storing measurements.

@@ -3,6 +3,7 @@ IWHo: Instructions With Holes
 """
 
 from functools import partial
+import pickle
 
 from .configurable import ConfigMeta
 from .core import *
@@ -107,6 +108,13 @@ def get_context_by_name(ctx_id: str) -> Context:
     if selected_file_name is None:
         raise IWHOError(f"No scheme data for id '{ctx_id}' found")
 
+    pickle_name = os.path.splitext(selected_file_name)[0] + "_cached.pickle"
+    pickle_file = schemes_dir / pickle_name
+
+    if pickle_file.exists():
+        with open(pickle_file, "rb") as f:
+            return pickle.load(f)
+
     selected_file = schemes_dir / selected_file_name
 
     try:
@@ -142,6 +150,8 @@ def get_context_by_name(ctx_id: str) -> Context:
             res.fill_from_json_dict(schemes_data)
             if features is not None:
                 res.set_features(features)
+            with open(pickle_file, 'wb') as f:
+                pickle.dump(res, f)
             return res
 
     raise IWHOError(f"Found no IWHo Context for the isa '{isa}'")
