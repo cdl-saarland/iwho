@@ -1,4 +1,4 @@
 {
     "context_specifier": "x86_uops_info",
-    "filters": ["no_cf"]
+    "filters": [{"kind": "no_cf"}]
 }
