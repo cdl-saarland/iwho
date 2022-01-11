@@ -1278,6 +1278,9 @@ class BasicBlock:
         if insns is not None:
             self.append(insns)
 
+    def __getitem__(self, k):
+        return self.insns[k]
+
     def append(self, insn: Union[Union[InsnInstance, None], Sequence[Union[InsnInstance, None]]]):
         """ Add a single Instruction Instance or a list thereof to the end of
         this BasicBlock.
