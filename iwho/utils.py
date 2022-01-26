@@ -2,11 +2,27 @@
 """
 
 
+from datetime import datetime
 from collections import defaultdict
 
 import logging
 import sys
 
+def timestamped_filename(specifier, ending, *, modifier=None, microsecs=False):
+    """ Produce a timestamped file name, e.g. for producing logging results.
+    The specifier should describe what is written to the file, the ending is
+    the file ending (without dot), and the optional modifier can be used to add
+    more context to the file name after the timestamp.
+    """
+    fmt = "%Y-%m-%d_%H-%M-%S"
+    if microsecs:
+        fmt += ".%f"
+    timestamp = datetime.now().strftime(fmt)
+    if modifier is None:
+        outfilename = f'{specifier}_{timestamp}.{ending}'
+    else:
+        outfilename = f'{specifier}_{timestamp}_{modifier}.{ending}'
+    return outfilename
 
 def export(fn):
     """ A decorator to automatically add the decorated object to the __all__
