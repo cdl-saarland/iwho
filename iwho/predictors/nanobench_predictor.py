@@ -1,6 +1,5 @@
 from . import Predictor, PredictorConfigError, PWManager
 
-import binascii
 import os
 import re
 import subprocess
