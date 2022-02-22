@@ -21,5 +21,8 @@ setuptools.setup(
     # ],
     packages=setuptools.find_packages(),
     python_requires=">=3",
-    install_requires=["pyparsing"],
+    install_requires=[
+        "pyparsing",
+        "rpyc",
+    ]
 )
