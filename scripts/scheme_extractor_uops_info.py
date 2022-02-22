@@ -22,7 +22,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class UnsupportedFeatureError(Exception):
+class UnsupportedFeature(Exception):
     def __init__(self, message):
         super().__init__(message)
 
@@ -173,10 +173,10 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
     import xml.etree.ElementTree as ET
 
-    logger.debug("start parsing uops.info xml")
+    logger.info("start parsing uops.info xml")
     with open(xml_path, 'r') as xml_file:
         xml_root = ET.parse(xml_file)
-    logger.debug("done parsing uops.info xml")
+    logger.info("done parsing uops.info xml")
 
     num_errors = 0
 
@@ -534,11 +534,10 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
             per_uarch_features = extract_features(instrNode)
             feature_mapping[key].append(per_uarch_features)
-            # TODO if multiple are in the list, check for differences?
             # we could add more features here
 
             if key in all_schemes:
-                print(f"Duplicate scheme key: {key}")
+                logger.debug(f"Duplicate scheme key: {key}")
                 continue
             else:
                 all_schemes[key] = scheme
@@ -555,14 +554,14 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
             if writes_ip and not scheme.affects_control_flow:
                 # This could be an equals, except for XEND and XABORT
-                raise UnsupportedFeatureError("inconsistent control flow info")
+                raise UnsupportedFeature("inconsistent control flow info")
 
-        except UnsupportedFeatureError as e:
-            logger.info("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
+        except UnsupportedFeature as e:
+            logger.debug("Unsupported uops.info entry: {}\n  Exception: {}".format(ET.tostring(instrNode, encoding='utf-8')[:50], repr(e)))
             num_errors += 1
 
     if num_errors > 0:
-        logger.info(f"Encountered {num_errors} error(s) while processing uops.info xml.")
+        logger.debug(f"Encountered {num_errors} unsupported instruction entries while processing uops.info xml.")
 
     logger.info(f"{len(ctx.insn_schemes)} instruction schemes after processing uops.info xml.")
 
@@ -630,7 +629,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
         try:
             allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
         except KeyError as e:
-            raise UnsupportedFeatureError(f"Unsupported register: {e}")
+            raise UnsupportedFeature(f"Unsupported register: {e}")
 
         if len(allowed_registers) == 1:
             fixed_op = next(iter(allowed_registers))
@@ -651,7 +650,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             str_template += memoryPrefix + ' '
 
         if operandNode.attrib.get('VSIB', '0') != '0':
-            raise UnsupportedFeatureError("instruction with VSIB: {}".format(instrNode))
+            raise UnsupportedFeature("instruction with VSIB: {}".format(instrNode))
             # TODO
             str_template += '[' + operandNode.attrib.get('VSIB') + '0]'
         else:
@@ -722,7 +721,7 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             op_schemes.append(iwho.OperandScheme(fixed_operand=reg, read=read, written=written))
 
     else:
-        raise UnsupportedFeatureError("unsupported operand type: {}".format(operandNode.attrib['type']))
+        raise UnsupportedFeature("unsupported operand type: {}".format(operandNode.attrib['type']))
 
     return op_schemes, op_name.lower(), str_template
 
