@@ -15,5 +15,8 @@ git clone https://github.com/andreas-abel/uiCA.git repo
 
 cd repo
 
+# check out the version from the paper
+git checkout 71f2eb6
+
 ./setup.sh
 
