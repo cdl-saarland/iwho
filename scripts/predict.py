@@ -78,8 +78,19 @@ def main():
         bbs = []
         for path in args.asm:
             with open(path, 'r') as f:
-                asm_str = f.read()
-            bbs.append(ctx.parse_asm_bb(asm_str))
+                asm_strs = []
+                asm_str = ""
+                for line in f:
+                    if len(line.strip()) == 0:
+                        if len(asm_str) > 0:
+                            asm_strs.append(asm_str)
+                            asm_str = ""
+                    else:
+                        asm_str += line
+                if len(asm_str) > 0:
+                    asm_strs.append(asm_str)
+            for asm_str in asm_strs:
+                bbs.append(ctx.parse_asm_bb(asm_str))
 
     results, series_id = pm.eval_with_all_and_report(bbs)
 
