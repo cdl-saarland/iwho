@@ -210,6 +210,20 @@ class Context(ABC):
         res = self._features.get(key, None)
         return res
 
+    def get_default_instantiator(self):
+        """ Return an instantiator that can instantiate the instruction schemes
+        of this context.
+        """
+        return self.get_default_instantiator_cls()(self)
+
+    @classmethod
+    @abstractmethod
+    def get_default_instantiator_cls(cls):
+        """ Return the class of an instantiator that can instantiate the
+        instruction schemes of this context.
+        """
+        pass
+
     @classmethod
     @abstractmethod
     def get_ISA_id(cls) -> str:

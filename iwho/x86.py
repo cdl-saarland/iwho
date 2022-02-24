@@ -520,6 +520,10 @@ class Context(core.Context):
 
         return it
 
+    @classmethod
+    def get_default_instantiator_cls(cls):
+        return DefaultInstantiator
+
 
     def must_alias(self, op1: core.OperandInstance, op2: core.OperandInstance):
         if isinstance(op1, RegisterOperand) and isinstance(op2, RegisterOperand):

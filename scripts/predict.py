@@ -5,6 +5,7 @@
 
 import argparse
 from collections import Counter
+import csv
 import os
 import sys
 import textwrap
@@ -50,6 +51,9 @@ def main():
     argparser.add_argument('-s', '--seed', type=int, default=default_seed, metavar="N",
             help='seed for the rng')
 
+    argparser.add_argument('--diffable', default=None, metavar="FILE",
+            help='if a filename is provided, the results are printed in a compact, diffable csv format there')
+
     args = parse_args_with_logging(argparser, "info")
 
     iwhoconfig = load_json_config(args.iwhoconfig)
@@ -64,7 +68,9 @@ def main():
         bbs = [ ctx.make_example_bb() ]
     elif args.testallinsns:
         bbs = []
-        # TODO implement this!
+        instor = ctx.get_default_instantiator()
+        for scheme in ctx.filtered_insn_schemes:
+            bbs.append(ctx.make_bb([instor(scheme)]))
     elif args.hex is not None:
         bbs = [ctx.decode_insns_bb(args.hex)]
     else:
@@ -88,10 +94,33 @@ def main():
             if v['TP'] is None or v['TP'] < 0.0:
                 errors[k] += 1
 
+    if args.diffable is not None:
+        entries = []
+        keys = set()
+        for bb, res in results:
+            entry = dict()
+            entry['bb'] = bb.get_asm()
+            # entry['bb'] = bb.get_hex()
+            for k, v in res.items():
+                keys.add(k)
+                if v['TP'] is None or v['TP'] < 0.0:
+                    entry[k] = -1.0
+                else:
+                    entry[k] = v['TP']
+            entries.append(entry)
+        entries.sort(key=lambda x: x['bb'])
+        keys = ['bb'] + sorted(keys)
+        with open(args.diffable, 'w') as f:
+            w = csv.DictWriter(f, keys)
+            w.writeheader()
+            w.writerows(entries)
+
     if len(errors) > 0:
         print("there were prediction errors:")
         for k, n in errors.most_common():
             print(f"  {k}: {n} error{'s' if n != 1 else ''}")
+        return 1
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
