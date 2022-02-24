@@ -300,7 +300,7 @@ class Context(ABC):
         overhead for certain inputs, it uses the encoder for input validation,
         rather than the rather fragile pyparsing parser.
 
-        Raises an ASMCoderError en/decoding the input fails, or an
+        Raises an ASMCoderError if en/decoding the input fails, or an
         InstantiationError if there is no fitting scheme for a decoded
         instruction.
         """
