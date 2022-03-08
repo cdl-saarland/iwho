@@ -91,7 +91,7 @@ def get_context_by_name(ctx_id: str) -> Context:
     from pathlib import Path
 
     script_location = Path(__file__).parent
-    schemes_dir = script_location.parent / "schemes"
+    schemes_dir = script_location / "inputfiles" / "schemes"
 
     scheme_files = os.listdir(schemes_dir)
     scheme_files = set(filter(lambda x: os.path.isfile(schemes_dir / x) and x.endswith(".json"), scheme_files))

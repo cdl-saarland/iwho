@@ -121,7 +121,7 @@ class PredictorManager(metaclass=ConfigMeta):
 
     config_options = dict(
             registry_path=(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                    '..', '..', 'configs', 'predictors', 'pred_registry.json'),
+                    '..', 'inputfiles', 'default_pred_registry.json'),
                 'path to a predictor registry in json format'),
             num_processes=(0,
                 'number of predictor processes to use. A value <= 0 uses the number of available cores, None/null runs everything in the main process.')

@@ -36,5 +36,5 @@ error_log.txt
 .python-version
 
 *.egg-info
-schemes/*.json
-schemes/*.pickle
+iwho/inputfiles/schemes/*.json
+iwho/inputfiles/schemes/*.pickle
