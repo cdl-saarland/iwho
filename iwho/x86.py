@@ -69,7 +69,7 @@ def _find_registers():
         width = 'width'
 
     # read the registers from the specification in csv format
-    csv_path = os.path.join(os.path.dirname(__file__), "x86_registers.csv")
+    csv_path = os.path.join(os.path.dirname(__file__), "inputfiles", "x86_registers.csv")
     with open(csv_path, "r") as csv_file:
         reader = DictReader(csv_file)
         data = [row for row in reader]
