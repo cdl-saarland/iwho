@@ -10,11 +10,6 @@ import os
 import sys
 import textwrap
 
-
-import_path = os.path.join(os.path.dirname(__file__), "..")
-sys.path.append(import_path)
-
-
 import logging
 logger = logging.getLogger(__name__)
 
