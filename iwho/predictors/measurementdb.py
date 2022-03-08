@@ -14,7 +14,7 @@ class MeasurementDB(metaclass=ConfigMeta):
     """
 
     config_options = dict(
-        db_path = ('measurements.db',
+        db_path = (None,
             'path and file name of the sqlite3 database to use'),
     )
 
