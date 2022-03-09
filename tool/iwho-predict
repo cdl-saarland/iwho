@@ -55,6 +55,8 @@ def main():
     ctx = Config(config=iwhoconfig).context
 
     predconfig = load_json_config(args.predconfig)
+    if "predmanager" in predconfig:
+        predconfig = predconfig["predmanager"]
     pm = PredictorManager(config=predconfig)
 
     pm.set_predictors(args.predictors)
