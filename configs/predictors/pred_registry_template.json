@@ -163,9 +163,10 @@
     "unsupported_insns_path": "./filters/error_schemes_{KEY}.csv",
     "config": {
             "kind": "nanobench",
+            "result_key": "CORE_CYCLES",
             "nanobench_path": "${BASE_DIR}/predictors/nanobench/repo/nanoBench.sh",
             "nanobench_opts": [
-                "-config", "${BASE}/configs/cfg_Skylake_common.txt",
+                "-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt",
                 "-unroll", "20",
                 "-warm_up_count", "10",
                 "-loop", "100"

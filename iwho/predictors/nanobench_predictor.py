@@ -14,21 +14,23 @@ logger = logging.getLogger(__name__)
 class NanoBenchPredictor(Predictor):
     predictor_name = "nanobench"
     predictor_options = [
+            "result_key", # key of the performance counter in nanoBench's output to use
             "nanobench_path", # path to the nanobench.sh script
-            "nanobench_opts", # list of options to nanobench, e.g. ["-config", "${BASE}/configs/cfg_Skylake_common.txt"]
+            "nanobench_opts", # list of options to nanobench, e.g. ["-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt"]
             "timeout", # a timeout for subprocess calls in seconds
             "num_samples", # take the minimum of this many runs of nanoBench
         ]
 
-    # regular expression for extracting the number of cycles from nanobench's output
-    parsing_re = re.compile(r"Core cycles: (\d+\.\d+)")
-
-    def __init__(self, nanobench_path, nanobench_opts, timeout, num_samples):
+    def __init__(self, result_key, nanobench_path, nanobench_opts, timeout, num_samples):
+        self.result_key = result_key
         self.base_path = os.path.dirname(nanobench_path)
         self.nanobench_script = os.path.basename(nanobench_path)
-        self.nanobench_opts = list(map(lambda x: x.replace("${BASE}", self.base_path), nanobench_opts))
+        self.nanobench_opts = list(map(lambda x: x.replace("${NANOBENCH_BASE}", self.base_path), nanobench_opts))
         self.timeout = timeout
         self.num_samples = num_samples
+
+        # regular expression for extracting the number of cycles from nanobench's output
+        self.parsing_re = re.compile(f"{self.result_key}" + r": (\d+\.\d+)")
 
     def requires_sudo(self):
         return True
@@ -40,6 +42,7 @@ class NanoBenchPredictor(Predictor):
     def from_config(config):
         nanobench_opts = config["nanobench_opts"]
         nanobench_path = config["nanobench_path"]
+        result_key = config["result_key"]
         timeout = config["timeout"]
         num_samples = config["num_samples"]
         if not os.path.isfile(nanobench_path):
@@ -47,7 +50,7 @@ class NanoBenchPredictor(Predictor):
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return NanoBenchPredictor(nanobench_path, nanobench_opts, timeout, num_samples)
+        return NanoBenchPredictor(result_key, nanobench_path, nanobench_opts, timeout, num_samples)
 
     def evaluate(self, basic_block, disable_logging=False):
         """
