@@ -667,7 +667,7 @@ class SetConstraint(OperandConstraint):
         if self.name is not None:
             return self.name
         else:
-            return ",".join(map(str, self.acceptable_operands))
+            return ",".join(sorted(map(str, self.acceptable_operands)))
 
     def is_valid(self, operand: OperandInstance) -> bool:
         return operand in self.acceptable_operands
