@@ -266,7 +266,7 @@ def config_diff(base, comp_obj):
     for k, v in base_cfg.items():
         if ConfigurableImpl.is_doc_key(k):
             continue
-        other_v = comp_cfg[k]
+        other_v = comp_cfg.get(k, None)
         if isinstance(v, dict):
             inner_res = config_diff(v, other_v)
             for (inner_ks, x) in inner_res:
