@@ -319,14 +319,12 @@ class PredictorManager(metaclass=ConfigMeta):
         for bb, result in eval_res:
             predictor_runs = []
             for predkey, res in result.items():
-                predmap_entry = self.predictor_map[predkey]
                 tp = res.get('TP', -1.0)
                 if tp is not None and tp < 0:
                     tp = None
                 remark = json.dumps(res)
                 predictor_runs.append({
-                        "predictor": (predmap_entry["toolname"], predmap_entry["version"]),
-                        "uarch": predmap_entry["uarch"],
+                        "predictor": predkey,
                         "result": tp,
                         "remark": remark
                     })
