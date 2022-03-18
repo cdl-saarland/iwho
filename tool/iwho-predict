@@ -42,6 +42,8 @@ def main():
             help='run the predictors on a simple default test')
     input_group.add_argument('--testallinsns', action='store_true',
             help='run the predictors on all supported instructions')
+    input_group.add_argument('--csv', default=None, metavar='CSV file',
+            help='path to a csv file containing hex strings of basic blocks as their first column')
 
     argparser.add_argument('-s', '--seed', type=int, default=default_seed, metavar="N",
             help='seed for the rng')
@@ -61,6 +63,8 @@ def main():
 
     pm.set_predictors(args.predictors)
 
+    all_keys = pm.resolve_key_patterns(args.predictors)
+
     if args.testbasic:
         bbs = [ ctx.make_example_bb() ]
     elif args.testallinsns:
@@ -70,6 +74,21 @@ def main():
             bbs.append(ctx.make_bb([instor(scheme)]))
     elif args.hex is not None:
         bbs = [ctx.decode_insns_bb(args.hex)]
+    elif args.csv is not None:
+        csv_entries = []
+        bbs = []
+        prev_keys = []
+        with open(args.csv, 'r') as f:
+            r = csv.DictReader(f, fieldnames=['bb'], restkey='rest')
+            for row in r:
+                bb_hex = row['bb']
+                if bb_hex == 'bb':
+                    prev_keys = row.get('rest', [])
+                    continue
+                bb = ctx.decode_insns_bb(bb_hex)
+                bbs.append(bb)
+                csv_entries.append((bb_hex, row.get('rest', [])))
+
     else:
         assert args.asm is not None
         bbs = []
@@ -90,6 +109,24 @@ def main():
                 bbs.append(ctx.parse_asm_bb(asm_str))
 
     results, series_id = pm.eval_with_all_and_report(bbs)
+
+    if args.csv is not None:
+        outfile = os.path.splitext(args.csv)[0] + "_ann.csv"
+        with open(outfile, 'w') as f:
+            w = csv.DictWriter(f, fieldnames=['bb', *prev_keys, *all_keys]) # TODO rest
+            w.writeheader()
+            for (bb, res), (bb_hex, rest) in zip(results, csv_entries):
+                entry = {
+                    'bb': bb_hex,
+                }
+                for k, v in zip(prev_keys, rest):
+                    entry[k] = v
+                for k in all_keys:
+                    entry[k] = res[k].get('TP', -1.0)
+                w.writerow(entry)
+
+        print(f"results written to {outfile}")
+        sys.exit(0)
 
     errors = Counter()
 
