@@ -37,6 +37,8 @@ class Config(metaclass=ConfigMeta):
     # makes their values absolute and relative as necessary
 
     def __init__(self, config):
+        if 'iwho' in config:
+            config = config['iwho']
         self.configure(config)
         self._context = None
 
