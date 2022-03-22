@@ -30,6 +30,9 @@ def main():
     argparser.add_argument('-g', '--groundtruth', metavar="COLNAME", default="nanobench",
         help='column name that is used as ground truth for the metrics. If no column matches exactly, one that includes the default is used.')
 
+    argparser.add_argument('-f', '--filter-invalid', action="store_true",
+        help='if provided, omit invalid runs (with <= 0.0 cycles) from consideration without crashing.')
+
     argparser.add_argument('input', metavar="INFILE",
         help='the input csv file')
 
@@ -66,16 +69,24 @@ def main():
     for k in keys:
         print(f"  - {k}")
 
-
-    ref_cycles_list = []
-    sim_cycles_list = []
-    rel_errors = []
     for k in keys:
+        ref_cycles_list = []
+        sim_cycles_list = []
+        rel_errors = []
+        num_invalid = 0
+
         print(f"metrics for '{k}':")
         for d in data:
             ref = float(d[groundtruth_key])
-            assert ref > 0.0
             sim = float(d[k])
+
+            if ref <= 0.0 or sim <= 0.0:
+                if args.filter_invalid:
+                    num_invalid += 1
+                    continue
+                else:
+                    raise RuntimeError(f'Invalid measurement encountered: {ref=}; {sim=}')
+
             rel_error = abs(sim - ref) / ref
             rel_errors.append(rel_error)
             ref_cycles_list.append(ref)
@@ -91,6 +102,7 @@ def main():
                 pearson_corr = pearsonr(ref_cycles_list, sim_cycles_list)[0],
                 spearman_corr = spearmanr(ref_cycles_list, sim_cycles_list)[0],
             )
+        print(f"encountered {num_invalid} invalid run(s)")
         print(json.dumps(metrics, indent='  '))
 
 
