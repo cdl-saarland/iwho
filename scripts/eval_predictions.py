@@ -33,6 +33,10 @@ def main():
     argparser.add_argument('-f', '--filter-invalid', action="store_true",
         help='if provided, omit invalid runs (with <= 0.0 cycles) from consideration without crashing.')
 
+    argparser.add_argument('-d', '--diff', action="store_true",
+        help='print differences in the metrics between the different predictors')
+
+
     argparser.add_argument('input', metavar="INFILE",
         help='the input csv file')
 
@@ -69,10 +73,13 @@ def main():
     for k in keys:
         print(f"  - {k}")
 
+    diff_metrics = None
+
     for k in keys:
         ref_cycles_list = []
         sim_cycles_list = []
         rel_errors = []
+        rel_differences = []
         num_invalid = 0
 
         print(f"metrics for '{k}':")
@@ -92,19 +99,34 @@ def main():
             ref_cycles_list.append(ref)
             sim_cycles_list.append(sim)
 
+            rel_diff = (abs(sim - ref) * 2) / (sim + ref)
+            rel_differences.append(rel_diff)
+
+        thresholds = [0.1, 0.2, 0.3, 0.5, 1.0]
         metrics = dict(
-                min_error = min(rel_errors),
-                max_error = max(rel_errors),
                 gm_error = gmean(rel_errors),
                 gm1_error = gmean([r + 1 for r in rel_errors]) - 1,
-                am_error = mean(rel_errors),
                 median_error = median(rel_errors),
+                mape = mean(rel_errors) * 100,
                 pearson_corr = pearsonr(ref_cycles_list, sim_cycles_list)[0],
                 spearman_corr = spearmanr(ref_cycles_list, sim_cycles_list)[0],
+                **{ f'num_error_over_{t}': len(list(filter(lambda x: x >= t, rel_errors))) for t in thresholds },
+                **{ f'num_difference_over_{t}': len(list(filter(lambda x: x >= t, rel_differences))) for t in thresholds },
             )
         print(f"encountered {num_invalid} invalid run(s)")
         print(json.dumps(metrics, indent='  '))
 
+        if args.diff:
+            if diff_metrics is None:
+                diff_metrics = metrics
+            else:
+                print("Differences:")
+                for k in metrics.keys():
+                    base = diff_metrics[k]
+                    curr = metrics[k]
+                    diff = curr - base
+                    if diff != 0.0:
+                        print(f"  {k}: {diff:+}")
 
     return 0
 
