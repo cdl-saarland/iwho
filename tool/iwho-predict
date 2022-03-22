@@ -45,6 +45,9 @@ def main():
     input_group.add_argument('--csv', default=None, metavar='CSV file',
             help='path to a csv file containing hex strings of basic blocks as their first column')
 
+    argparser.add_argument('--csv-prefix', default=None, metavar="STR",
+            help='string that is prepended to newly introduced csv keys, only applies to --csv')
+
     argparser.add_argument('-s', '--seed', type=int, default=default_seed, metavar="N",
             help='seed for the rng')
 
@@ -113,7 +116,10 @@ def main():
     if args.csv is not None:
         outfile = os.path.splitext(args.csv)[0] + "_ann.csv"
         with open(outfile, 'w') as f:
-            w = csv.DictWriter(f, fieldnames=['bb', *prev_keys, *all_keys]) # TODO rest
+            csv_keys = all_keys
+            if args.csv_prefix is not None:
+                csv_keys = [ args.csv_prefix + k for k in csv_keys ]
+            w = csv.DictWriter(f, fieldnames=['bb', *prev_keys, *csv_keys])
             w.writeheader()
             for (bb, res), (bb_hex, rest) in zip(results, csv_entries):
                 entry = {
@@ -122,6 +128,9 @@ def main():
                 for k, v in zip(prev_keys, rest):
                     entry[k] = v
                 for k in all_keys:
+                    csv_key = k
+                    if args.csv_prefix is not None:
+                        csv_key = args.csv_prefix + csv_key
                     entry[k] = res[k].get('TP', -1.0)
                 w.writerow(entry)
 
