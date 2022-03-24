@@ -20,6 +20,15 @@ from scipy.stats import pearsonr, spearmanr
 # import_path = os.path.join(os.path.dirname(__file__), "..")
 # sys.path.append(import_path)
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def main():
     argparser = argparse.ArgumentParser(description=__doc__)
@@ -33,8 +42,11 @@ def main():
     argparser.add_argument('-f', '--filter-invalid', action="store_true",
         help='if provided, omit invalid runs (with <= 0.0 cycles) from consideration without crashing.')
 
-    argparser.add_argument('-d', '--diff', action="store_true",
-        help='print differences in the metrics between the different predictors')
+    argparser.add_argument('-d', '--diff', metavar='baseline', default=None,
+        help="print differences in the metrics between the different predictors with the provided column name's metrics acting as the base line")
+
+    argparser.add_argument('-j', '--json-log', metavar='F', default=None,
+        help="if specified, dump the detailed metrics to the given file in json format and do not print them")
 
 
     argparser.add_argument('input', metavar="INFILE",
@@ -75,6 +87,10 @@ def main():
 
     diff_metrics = None
 
+    other_metrics = []
+
+    all_metrics = dict()
+
     for k in keys:
         ref_cycles_list = []
         sim_cycles_list = []
@@ -108,25 +124,42 @@ def main():
                 gm1_error = gmean([r + 1 for r in rel_errors]) - 1,
                 median_error = median(rel_errors),
                 mape = mean(rel_errors) * 100,
-                pearson_corr = pearsonr(ref_cycles_list, sim_cycles_list)[0],
-                spearman_corr = spearmanr(ref_cycles_list, sim_cycles_list)[0],
+                pearson_R = pearsonr(ref_cycles_list, sim_cycles_list)[0],
+                spearman_R = spearmanr(ref_cycles_list, sim_cycles_list)[0],
                 **{ f'num_error_over_{t}': len(list(filter(lambda x: x >= t, rel_errors))) for t in thresholds },
                 **{ f'num_difference_over_{t}': len(list(filter(lambda x: x >= t, rel_differences))) for t in thresholds },
             )
-        print(f"encountered {num_invalid} invalid run(s)")
-        print(json.dumps(metrics, indent='  '))
+        all_metrics[k] = metrics
 
-        if args.diff:
-            if diff_metrics is None:
-                diff_metrics = metrics
-            else:
-                print("Differences:")
-                for k in metrics.keys():
-                    base = diff_metrics[k]
-                    curr = metrics[k]
-                    diff = curr - base
-                    if diff != 0.0:
-                        print(f"  {k}: {diff:+}")
+        print(f"encountered {num_invalid} invalid run(s)")
+
+        if args.json_log is None:
+            print(json.dumps(metrics, indent='  '))
+
+        if args.diff == k:
+            diff_metrics = metrics
+        else:
+            other_metrics.append((k, metrics))
+
+    if args.json_log is not None:
+        with open(args.json_log, 'w') as f:
+            json.dump(all_metrics, f, indent='  ')
+
+    if args.diff is not None:
+        for k, metrics in other_metrics:
+            print(f"Differences for {k}:")
+            for l in metrics.keys():
+                base = diff_metrics[l]
+                curr = metrics[l]
+                diff = curr - base
+                if diff == 0.0:
+                    col = bcolors.OKBLUE
+                elif diff < 0.0:
+                    # smaller errors are better
+                    col = bcolors.OKGREEN
+                elif diff > 0.0:
+                    col = bcolors.FAIL
+                print(f"  {col}{l+':':14} {diff:+}" + bcolors.ENDC)
 
     return 0
 
