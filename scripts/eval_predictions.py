@@ -8,10 +8,10 @@ import argparse
 import csv
 import json
 import math
+import textwrap
 
 # import os
 import sys
-
 
 from numpy import mean, median
 from scipy.stats.mstats import gmean
@@ -19,6 +19,8 @@ from scipy.stats import pearsonr, spearmanr
 
 # import_path = os.path.join(os.path.dirname(__file__), "..")
 # sys.path.append(import_path)
+
+import iwho
 
 class bcolors:
     HEADER = '\033[95m'
@@ -45,14 +47,24 @@ def main():
     argparser.add_argument('-d', '--diff', metavar='baseline', default=None,
         help="print differences in the metrics between the different predictors with the provided column name's metrics acting as the base line")
 
+    argparser.add_argument('-t', '--top', metavar='N', type=int, default=None,
+        help="print the top N inputs with the largest errors")
+
     argparser.add_argument('-j', '--json-log', metavar='F', default=None,
         help="if specified, dump the detailed metrics to the given file in json format and do not print them")
+
+    argparser.add_argument('-i', '--iwho', metavar='ARCH', default=None,
+        help="use an iwho context with the given isa specifier to print BBs")
 
 
     argparser.add_argument('input', metavar="INFILE",
         help='the input csv file')
 
     args = argparser.parse_args()
+
+    iwho_ctx = None
+    if args.iwho is not None:
+        iwho_ctx = iwho.get_context_by_name(args.iwho)
 
     with open(args.input, 'r') as f:
         r = csv.DictReader(f)
@@ -98,6 +110,8 @@ def main():
         rel_differences = []
         num_invalid = 0
 
+        attributable_errors = []
+
         print(f"metrics for '{k}':")
         for d in data:
             ref = float(d[groundtruth_key])
@@ -112,6 +126,7 @@ def main():
 
             rel_error = abs(sim - ref) / ref
             rel_errors.append(rel_error)
+            attributable_errors.append((rel_error, d))
             ref_cycles_list.append(ref)
             sim_cycles_list.append(sim)
 
@@ -131,7 +146,16 @@ def main():
             )
         all_metrics[k] = metrics
 
+        if args.top is not None:
+            attributable_errors.sort(key=lambda x: x[0], reverse=True)
+            print(f"top {args.top} error BBs:")
+            for err, d in attributable_errors[:args.top]:
+                print(f"  {d}: {err}")
+                if iwho_ctx is not None:
+                    print(textwrap.indent(str(iwho_ctx.decode_insns_bb(d['bb'])), '    '))
+
         print(f"encountered {num_invalid} invalid run(s)")
+
 
         if args.json_log is None:
             print(json.dumps(metrics, indent='  '))
