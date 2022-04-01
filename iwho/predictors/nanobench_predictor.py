@@ -74,6 +74,8 @@ class NanoBenchPredictor(Predictor):
 
         tps = []
 
+        logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
+
         for it in range(self.num_samples):
             try:
                 start = timer()
