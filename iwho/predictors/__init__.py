@@ -26,7 +26,7 @@ def get_sudo():
     if PWManager.password is not None:
         return
     PWManager.password = getpass("Please enter your sudo password to run predictors with: ")
-    subprocess.run(['sudo', '-S', 'ls', '/'], check=True, capture_output=True, encoding="latin1", timeout=2, input=PWManager.password)
+    subprocess.run(['sudo', '-S', 'ls', '/'], check=True, capture_output=True, encoding="latin1", timeout=10, input=PWManager.password)
 
 
 available_classes = []
