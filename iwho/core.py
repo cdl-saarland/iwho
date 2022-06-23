@@ -309,6 +309,27 @@ class Context(ABC):
         hex_str = self.coder.asm2hex(asm_str)
         return self.decode_insns(hex_str)
 
+    def parse_validated_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
+        """ Parse a sequence of InsnInstances from an assembly string without
+        normalization and validation.
+
+        In contrast to parse_asm(), this is faster because the encoding and
+        decoding steps are skipped. The instructions are only matched by the
+        pyparsing parser, which is likely to break if the input to this is not
+        the output of previous decoding steps. Use this method with caution!
+
+        Raises an InstantiationError if there is no fitting scheme for a
+        decoded instruction.
+        """
+
+        asm_lines = asm_str.split("\n")
+        insns = []
+        for l in asm_lines:
+            insn_instance = self.match_insn_str(l)
+            insns.append(insn_instance)
+
+        return insns
+
     def parse_asm_bb(self, asm_str: str) -> "BasicBlock":
         return self.make_bb(self.parse_asm(asm_str))
 
