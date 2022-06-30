@@ -1,5 +1,5 @@
 """
-IWHo: Instructions With Holes
+IWHO: Instructions With Holes
 """
 
 from functools import partial

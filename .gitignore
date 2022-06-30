@@ -35,6 +35,8 @@ error_log.txt
 # pyenv stuff
 .python-version
 
+html
+
 *.egg-info
 iwho/inputfiles/schemes/*.json
 iwho/inputfiles/schemes/*.pickle
