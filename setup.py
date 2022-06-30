@@ -30,7 +30,7 @@ class PostInstallCommand(install):
 setuptools.setup(
     name="iwho",
     version="0.0.1",
-    description="IWHo: Instructions With Holes",
+    description="IWHO: Instructions With Holes",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Fabian Ritter",

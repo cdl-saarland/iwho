@@ -29,6 +29,13 @@ TODO
 
 TODO
 
+## Generating Documentation
+
+The API documentation can be built with [pdoc3](https://pdoc3.github.io/pdoc/).
+After installing pdoc3 (`pip install pdoc3`) in the virtual environment, run the following command to generate html documentation in the `html` directory:
+```
+pdoc --html iwho --force
+```
 
 ## Configuration
 

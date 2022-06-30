@@ -1,14 +1,21 @@
 
 """
-IWHo: Instructions With Holes
+IWHO: Instructions With Holes
 
-This module contains the general, ISA-independent definitions for IWHo.
+This module contains the general, ISA-independent definitions for IWHO.
 
 Notable are:
-    IHWOError: the super class from which all thrown exceptions in IWHo
-        inherit
 
-TODO
+* `Context`: The central manager for available instruction schemes, and everything related.
+* `InsnScheme`: The representation of a group of closely related instructions that only differ in their operands.
+* `InsnInstance`: An instantiation of an `InsnScheme` with fitting `OperandInstance`s
+* `OperandInstance`: An interface that needs to be implemented by classes that represent
+    concrete operand instances.
+* `ASMCoder`: An interface for transforming readable assembly strings into hex strings
+    and vice versa.
+* `Filters`: A namespace for static methods to create filters for InsnSchemes.
+* `IWHOError`: The super class from which all thrown exceptions in IWHO inherit
+
 """
 
 from typing import Sequence, Optional, Dict, Union
@@ -65,22 +72,24 @@ class ASMCoderError(IWHOError):
 @export
 class Filters:
     """ A collection of commonly used filter functions for use in
-    Context.push_filter().
+    `Context.push_filter()`.
+
+    A filter is a function that takes an `InsnScheme` and returns `True` if it
+    should not be filtered away.
     """
 
     @staticmethod
     def no_control_flow(insn_scheme, ctx):
-        """ Exclude all InsnSchmes that may affect control flow. """
+        """ Exclude all `InsnScheme`s that may affect control flow. """
         return not insn_scheme.affects_control_flow
 
     @staticmethod
     def _only_mnemonics_impl(insn_scheme, ctx, allowed_mnemonics):
-        """ Exclude all InsnSchmes that may affect control flow. """
         return ctx.extract_mnemonic(insn_scheme) in allowed_mnemonics
 
     @staticmethod
     def only_mnemonics(allowed_mnemonics):
-        """ Exclude all InsnSchmes with a mnemonic not in the set. """
+        """ Return a filter function that excludes all `InsnScheme`s with a mnemonic not in the set. """
         return partial(Filters._only_mnemonics_impl, allowed_mnemonics=allowed_mnemonics)
 
     @staticmethod
@@ -89,9 +98,10 @@ class Filters:
 
     @staticmethod
     def whitelist(scheme_strs):
-        """ Exclude all InsnSchmes whose str is NOT IN the set. If the argument
-        is a single string, it is interpreted as the name of a file containing
-        the scheme_strs, one per line.
+        """ Return a filter function that excludes all `InsnScheme`s whose str is NOT IN the set.
+
+        If the argument is a single string, it is interpreted as the name of a
+        file containing the scheme_strs, one per line.
         """
 
         if isinstance(scheme_strs, str):
@@ -113,9 +123,10 @@ class Filters:
 
     @staticmethod
     def blacklist(scheme_strs):
-        """ Exclude all InsnSchmes whose str is IN the set. If the argument is
-        a single string, it is interpreted as the name of a file containing the
-        scheme_strs, one per line.
+        """ Return a filter function that excludes all `InsnScheme`s whose str is IN the set.
+
+        If the argument is a single string, it is interpreted as the name of a
+        file containing the scheme_strs, one per line.
         """
 
         if isinstance(scheme_strs, str):
@@ -134,10 +145,10 @@ class Filters:
 
 @export
 class Context(ABC):
-    """ Manager for the instruction schemes of a single instruction set
-    architecture.
-    It provides access to the available instruction schemes, manages and
-    caches related objects and provides functionality to encode and decode
+    """ Manager for the instruction schemes of a single instruction set architecture.
+
+    It provides access to the available `InsnScheme`s, manages and caches
+    related objects and provides functionality to encode and decode
     instructions according to the schemes.
 
     When implementing iwho for a new ISA, an early step will be to create a new
@@ -145,10 +156,13 @@ class Context(ABC):
 
     Most applications using this library will only need one instance of this in
     a program run.
+
+    Use the `filtered_insn_schemes` field to access the `InsnScheme`s, and the
+    `coder` field to access the `ASMCoder` directly.
     """
 
     def __init__(self, coder: "ASMCoder"):
-        """ Super class constructor, requires an ASMCoder that is used for
+        """ Super class constructor, requires an `ASMCoder` that is used for
         encoding and decoding instructions.
         """
         self.coder = coder
@@ -176,17 +190,17 @@ class Context(ABC):
         self._features = None
 
     def push_filter(self, filterfun):
-        """ Register a new filter and compute the filtered_insn_schemes.
+        """ Register a new filter and compute the `filtered_insn_schemes`.
 
-        A filter is a function that takes an InsnScheme and returns true if it
-        should not be filtered away.
+        A filter is a function that takes an `InsnScheme` and returns `True` if
+        it should not be filtered away.
         """
         self.scheme_filters.append(filterfun)
         self.filtered_insn_schemes = list(filter(partial(filterfun, ctx=self), self.filtered_insn_schemes))
 
     def pop_filter(self):
         """ Unregister the most recently added filter and recompute the
-        filtered_insn_schemes.
+        `filtered_insn_schemes`.
         """
         self.scheme_filters.pop()
         res = self.insn_schemes
@@ -195,14 +209,14 @@ class Context(ABC):
         self.filtered_insn_schemes = list(res)
 
     def set_features(self, features):
-        """ Set a feature dictionary, i.e. a dict mapping feature records to
-        InsnScheme strings.
+        """ Set a feature dictionary, i.e., a `dict` mapping feature records to
+        `InsnScheme` strings.
         """
         self._features = features
 
     def get_features(self, insnscheme: "InsnScheme"):
-        """ Try to get a feature record for the given InsnScheme. Returns None
-        if no feature record is found.
+        """ Try to get a feature record for the given `InsnScheme`. Returns
+        `None` if no feature record is found.
         """
         if self._features is None:
             return None
@@ -240,20 +254,20 @@ class Context(ABC):
 
     @abstractmethod
     def operand_constraint_from_json_dict(self, jsondict):
-        """ Produce an OperandConstraint from a jsondict representing one
+        """ Produce an `OperandConstraint` from a jsondict representing one
         """
         pass
 
     @abstractmethod
     def operand_from_json_dict(self, jsondict):
-        """ Produce an OperandInstance from a jsondict representing one
+        """ Produce an `OperandInstance` from a jsondict representing one
         """
         pass
 
 
     @abstractmethod
     def must_alias(self, op1: "OperandInstance", op2: "OperandInstance"):
-        """ Return true iff the two OperandInstances must always alias.
+        """ Return `True` iff the two `OperandInstance`s must always alias.
 
         That would be the case if they refer to the same register or one to a
         sub-register of the other.
@@ -263,24 +277,24 @@ class Context(ABC):
 
     @abstractmethod
     def may_alias(self, op1: "OperandInstance", op2: "OperandInstance"):
-        """ Return true iff the two OperandInstances may or must alias.
+        """ Return `True` iff the two `OperandInstance`s may or must alias.
 
         That would e.g. not be the case if they refer to disjoint registers.
         """
         pass
 
     def adjust_operand(self, operand: "OperandInstance", op_scheme: "OperandScheme") -> "OperandInstance":
-        """ Return an OperandInstance that aliases with `operand` and is valid
-        to instantiate `op_scheme` or `None` if no such operand is found.
+        """ Return an `OperandInstance` that aliases with `operand` and is
+        valid to instantiate `op_scheme` or `None` if no such operand is found.
 
         Only needs to be overwritten if it is needed.
         """
         return None
 
     def make_bb(self, insns: Optional[Sequence["InsnInstance"]]=None) -> "BasicBlock":
-        """ Create a BasicBlock with this context.
+        """ Create a `BasicBlock` with this context.
 
-        Just a convenience shortcut for using the BasicBlock constructor.
+        Just a convenience shortcut for using the `BasicBlock` constructor.
         """
         return BasicBlock(self, insns=insns)
 
@@ -293,32 +307,32 @@ class Context(ABC):
         return None
 
     def parse_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
-        """ Parse a sequence of InsnInstances from an assembly string.
+        """ Parse a sequence of `InsnInstance`s from an assembly string.
 
-        This works be first encoding the asm string into bytes and then
-        decoding the bytes to InsnInstances. While introducing unnecessary
+        This works by first encoding the asm string into bytes and then
+        decoding the bytes to `InsnInstance`s. While introducing unnecessary
         overhead for certain inputs, it uses the encoder for input validation,
         rather than the rather fragile pyparsing parser.
 
-        Raises an ASMCoderError if en/decoding the input fails, or an
-        InstantiationError if there is no fitting scheme for a decoded
+        Raises an `ASMCoderError` if en/decoding the input fails, or an
+        `InstantiationError` if there is no fitting scheme for a decoded
         instruction.
         """
-        # TODO we could avoid one coder step here if the coder would provide a
-        # direct asm2asm method (which llvm-mc could do)
+        # TODO Improvement: We could avoid one coder step here if the coder
+        # would provide a direct asm2asm method (which llvm-mc could do).
         hex_str = self.coder.asm2hex(asm_str)
         return self.decode_insns(hex_str)
 
     def parse_validated_asm(self, asm_str: str) -> Sequence["InsnInstance"]:
-        """ Parse a sequence of InsnInstances from an assembly string without
+        """ Parse a sequence of `InsnInstance`s from an assembly string without
         normalization and validation.
 
-        In contrast to parse_asm(), this is faster because the encoding and
+        In contrast to `parse_asm()`, this is faster because the encoding and
         decoding steps are skipped. The instructions are only matched by the
         pyparsing parser, which is likely to break if the input to this is not
         the output of previous decoding steps. Use this method with caution!
 
-        Raises an InstantiationError if there is no fitting scheme for a
+        Raises an `InstantiationError` if there is no fitting scheme for a
         decoded instruction.
         """
 
@@ -331,14 +345,16 @@ class Context(ABC):
         return insns
 
     def parse_asm_bb(self, asm_str: str) -> "BasicBlock":
+        """ Shorthand for making a `BasicBlock` object from the results of
+        `parse_asm()`."""
         return self.make_bb(self.parse_asm(asm_str))
 
     def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
-        sequence of instruction instances.
+        sequence of `InsnInstance`s.
 
-        Raises an ASMCoderError decoding the hex_str fails, or an
-        InstantiationError if there is no fitting scheme for a decoded
+        Raises an `ASMCoderError` decoding the `hex_str` fails, or an
+        `InstantiationError` if there is no fitting scheme for a decoded
         instruction.
         """
 
@@ -358,14 +374,16 @@ class Context(ABC):
         return insns
 
     def decode_insns_bb(self, hex_str: str) -> "BasicBlock":
+        """ Shorthand for making a `BasicBlock` object from the results of
+        `decode_insns()`."""
         return self.make_bb(self.decode_insns(hex_str))
 
     def match_insn_str(self, insn_str: str) -> "InsnInstance":
         """ Match the assembly string representing an instruction to the
-        InsnScheme that captures it best and return an instance of this scheme
-        with appropriate operands.
+        `InsnScheme` that captures it best and return an instance of this
+        scheme with appropriate operands.
 
-        Raises an InstantiationError if no fitting scheme is found.
+        Raises an `InstantiationError` if no fitting scheme is found.
         """
 
         insn_str = insn_str.strip()
@@ -412,10 +430,10 @@ class Context(ABC):
 
 
     def encode_insns(self, insn_instances: Union["BasicBlock", Sequence["InsnInstance"]]) -> str:
-        """ Encode a basic block or a sequence of instruction instances into a
-        byte stream represented as string of hex characters.
+        """ Encode a `BasicBlock` or a sequence of `InsnInstance`s into a byte
+        stream represented as string of hex characters.
 
-        Raises an ASMCoderError encoding the instances fails.
+        Raises an `ASMCoderError` encoding the instances fails.
         """
 
         if isinstance(insn_instances, BasicBlock):
@@ -429,7 +447,7 @@ class Context(ABC):
 
 
     def add_insn_scheme(self, scheme: "InsnScheme"):
-        """ Add an instruction scheme to the Context and make it known to the
+        """ Add an instruction scheme to the `Context` and make it known to the
         necessary data structures. """
 
         self.insn_schemes.append(scheme)
@@ -442,7 +460,7 @@ class Context(ABC):
 
 
     def fill_from_json_dict(self, jsondict):
-        """ Fill this context from externally stored instruction schemes.
+        """ Fill this `Context` from externally stored instruction schemes.
 
         The jsondict is a nested structure of dicts and lists as it is produced
         by the `to_json_dict` method. This structure can be dumped as and
@@ -450,7 +468,8 @@ class Context(ABC):
         """
 
         assert jsondict["isa"] == self.get_ISA_id()
-        # TODO: add a version check
+        # TODO improvement: we could add a version check to ensure that the
+        # loaded data is compatible to the current iwho version.
 
         scheme_list = jsondict["schemes"]
 
@@ -473,7 +492,8 @@ class Context(ABC):
                 "isa": self.get_ISA_id(),
                 "schemes": scheme_list,
             }
-        # TODO: add a version check
+        # TODO improvement: we could add a version check to ensure that the
+        # loaded data is compatible to the current iwho version.
 
         return res
 
@@ -508,12 +528,12 @@ class OperandInstance(ABC):
     """ Interface that needs to be implemented by classes that represent
     concrete operand instances.
 
-    When implementing an ISA in iwho, there will be several subclasses of this
-    required to represent different operand types, e.g. one for register
-    operands, one for memory operands, and one for immediate operands.
-    Each object that is an instance of a class implementing this interface
-    should represent a single concrete operand, like e.g. the register `rax` in
-    x86-64 or the immediate constant 42.
+    When implementing an ISA in IWHO, there will be several subclasses of this
+    ABC required to represent different operand types, e.g. one for register
+    operands, one for memory operands, and one for immediate operands. Each
+    object that is an instance of a class implementing this interface should
+    represent a single concrete operand, like e.g. the register `rax` in x86-64
+    or the immediate constant `42`.
 
     Implementations need to have reasonable methods for hashing and equality
     checking as well as str and repr implementations.
@@ -552,8 +572,8 @@ class OperandInstance(ABC):
         """ Return a pyparsing grammar fragment that matches this specific
         operand.
 
-        By default, this is just matches the string representation of the
-        operand.
+        By default, this just matches the string representation of the operand.
+        Needs to be overridden where appropriate.
         """
         return pp.Keyword(str(self))
 
@@ -562,7 +582,7 @@ class OperandInstance(ABC):
         """ Generate a nested structure of dicts and lists that represents this
         operand.
 
-        The corresponding method to construct OperandInstances from dicts is
+        The corresponding method to construct `OperandInstance`s from dicts is
         the `operand_from_json_dict` method of the `Context` (since it needs to
         know all possible operand kinds, which are ISA specific).
         """
@@ -583,7 +603,7 @@ class OperandConstraint(ABC):
     constraints on operands.
 
     These constraints describe the set of possible operands that can be used in
-    an InsnScheme for a specific operand. Examples would be "a 64-bit
+    an `InsnScheme` for a specific operand. Examples would be "a 64-bit
     register", "a memory location", or "an 8-bit immediate constant". Since
     these are similarly ISA-specific as OperandInstances, an ISA implementation
     needs to define the necessary constraints.
@@ -605,8 +625,8 @@ class OperandConstraint(ABC):
     @abstractmethod
     def from_match(self, match: pp.ParseResults) -> OperandInstance:
         """ Given a successful pyparsing ParseResults object produced by the
-        `parser_pattern` of this Constraint, return an OperandInstance that is
-        described by the match.
+        `parser_pattern` of this Constraint, return an `OperandInstance` that
+        is described by the match.
         """
         pass
 
@@ -617,7 +637,7 @@ class OperandConstraint(ABC):
         strings that represent an operand that fulfills this constraint.
 
         The resulting match may be given to `from_match` to obtain a
-        corresponding OperandInstance.
+        corresponding `OperandInstance`.
         """
         pass
 
@@ -643,9 +663,10 @@ class OperandConstraint(ABC):
         """ Generate a nested structure of dicts and lists that represents this
         operand constraint.
 
-        The corresponding method to construct OperandConstraints from dicts is
-        the `operand_constraint_from_json_dict` method of the `Context` (since
-        it needs to know all possible operand kinds, which are ISA specific).
+        The corresponding method to construct `OperandConstraint`s from dicts
+        is the `operand_constraint_from_json_dict` method of the `Context`
+        (since it needs to know all possible operand kinds, which are ISA
+        specific).
         """
         pass
 
@@ -660,8 +681,8 @@ class OperandConstraint(ABC):
 
 @export
 class SetConstraint(OperandConstraint):
-    """ A generic Constraint to allow one of a specific set of predetermined
-    Operands.
+    """ A generic `OperandConstraint` to allow one of a specific set of
+    predetermined `Operand`s.
 
     This may be used in ISA implementations for e.g. allowing a fixed set of
     register operands.
@@ -674,9 +695,9 @@ class SetConstraint(OperandConstraint):
         operands for this constraint. Order does not matter, duplicate items
         are removed.
 
-        After creation, a name can also be set for a set constraints, which is
+        After creation, a name can also be set for a `SetConstraint`, which is
         then used for pretty-printing. The name is not relevant for hashing or
-        equality. (This, in combination with the dedup_store, allows
+        equality. (This, in combination with the `dedup_store`, allows
         introducing names for common set constraints).
         """
 
@@ -730,8 +751,8 @@ class OperandScheme:
     operand of an instruction and how they are used (i.e. whether they are read
     and/or written).
 
-    They are subcomponents of InsnSchemes, which may have several explicit and
-    implicit operand schemes.
+    They are subcomponents of `InsnScheme`s, which may have several explicit
+    and implicit operand schemes.
 
     They can either contain a constraint describing the allowed operands or
     only descirbe one fixed (hard-coded) operand.
@@ -740,7 +761,7 @@ class OperandScheme:
     def __init__(self, *, constraint: Optional[OperandConstraint]=None, fixed_operand: Optional[OperandInstance]=None, read: bool=False, written: bool=False):
         """ Constructor
 
-        One of `constraint` or `fixed_operand` should be not None. Every
+        One of `constraint` or `fixed_operand` should be not `None`. Every
         combination of boolean values for `read` and `written` is possible.
         """
         assert (constraint is None) != (fixed_operand is None)
@@ -756,7 +777,7 @@ class OperandScheme:
         return self.fixed_operand is not None
 
     def is_operand_valid(self, operand: OperandInstance) -> bool:
-        """ Check whether an OperandInstance fits this OperandScheme.
+        """ Check whether an `OperandInstance` fits this `OperandScheme`.
         """
         if self.is_fixed():
             return self.fixed_operand == operand
@@ -764,9 +785,10 @@ class OperandScheme:
             return self.operand_constraint.is_valid(operand)
 
     def from_match(self, match) -> OperandInstance:
-        """ Given a pyparsing ParseResults object that describes an acceptable
-        operand for this OperandScheme (i.e. is the result of matching the
-        self.parser_pattern), produce the corresponding OperandInstance object.
+        """ Given a pyparsing `ParseResults` object that describes an
+        acceptable operand for this `OperandScheme` (i.e. is the result of
+        matching the `self.parser_pattern`), produce the corresponding
+        `OperandInstance` object.
         """
         if self.is_fixed():
             return self.fixed_operand
@@ -776,7 +798,7 @@ class OperandScheme:
     @property
     def parser_pattern(self):
         """ Produce a pyparsing pattern that matches the acceptable operands of
-        this OperandScheme. Matches may be given to `from_match`.
+        this `OperandScheme`. Matches may be given to `from_match`.
         """
         if self.is_fixed():
             return self.fixed_operand.parser_pattern
@@ -822,7 +844,7 @@ class OperandScheme:
 
     @staticmethod
     def from_json_dict(ctx, jsondict):
-        """ Create an OperandScheme from externally stored data.
+        """ Create an `OperandScheme` from externally stored data.
 
         The jsondict is a nested structure of dicts and lists as it is produced
         by the `to_json_dict` method. This structure can be dumped as and
@@ -860,24 +882,25 @@ class InsnScheme:
     instructions, (mostly) only differing in the details of their operands
     (e.g. which register of a certain width is used).
 
-    An InsnScheme consists of
-      - A template string (as in string.Template), which specifies the textual
-        representation of the covered instructions. It contains named `${...}`
-        placeholders for operands.
-      - A dictionary mapping placeholder names in the template string to
-        OperandSchemes (fixed or with constraint) for the explicit operands
-        (which are present in the assembly). These schemes describe whether the
-        operands are read and/or written and what instantiations are allowed in
-        the scheme.
-      - A list of further OperandSchemes (fixed only) that are not represented
-        in the assembly, but are used implicitly by the instructions (e.g. flag
-        registers, etc).
-      - Information whether executing this instruction may affect control flow
-        (i.e. if it is some branching instruction).
+    An `InsnScheme` consists of
 
-    InsnSchemes should be used immutably. They can be instantiated with a
-    mapping of placeholders to OperandInstances that are acceptable according
-    to the corresponding OperandSchemes to obtain an InsnInstance.
+    - A template string (as in `string.Template`), which specifies the
+      textual representation of the covered instructions. It contains named
+      `${...}` placeholders for operands.
+    - A dictionary mapping placeholder names in the template string to
+      `OperandScheme`s (fixed or with constraint) for the explicit operands
+      (which are present in the assembly). These schemes describe whether the
+      operands are read and/or written and what instantiations are allowed in
+      the scheme.
+    - A list of further `OperandScheme`s (fixed only) that are not
+      represented in the assembly, but are used implicitly by the
+      instructions (e.g. flag registers, etc).
+    - Information whether executing this instruction may affect control flow
+      (i.e. if it is some branching instruction).
+
+    `InsnScheme`s should be used immutably. They can be instantiated with a
+    mapping of placeholders to `OperandInstance`s that are acceptable according
+    to the corresponding `OperandScheme`s to obtain an `InsnInstance`.
     """
 
     def __init__(self, *, str_template: str, explicit_operands: Dict[str, OperandScheme], implicit_operands: Sequence[OperandScheme], affects_control_flow: bool=False):
@@ -928,7 +951,7 @@ class InsnScheme:
         operand scheme.
 
         This includes an entry with a key for each explicit and implicit
-        OperandScheme.
+        `OperandScheme`.
         """
         res = []
         for ref, op_scheme in self._explicit_operands.items():
@@ -940,8 +963,8 @@ class InsnScheme:
         return res
 
     def get_operand_scheme(self, key):
-        """ Get the (implicit or explicit) OperandScheme associated with the
-        given key or None if no scheme is associated with the key.
+        """ Get the (implicit or explicit) `OperandScheme` associated with the
+        given key or `None` if no scheme is associated with the key.
         """
         kind, ref = key
 
@@ -953,20 +976,20 @@ class InsnScheme:
                 return None
             return self.implicit_operands[ref]
 
-    def instantiate(self, args: Union[Dict[Union[str, "OpKeyType"], OperandInstance], str, pp.ParseResults]) -> "InsnInstance": # TODO adjust type
-        """ Create an InsnInstance for this InsnScheme using the
+    def instantiate(self, args) -> "InsnInstance":
+        """ Create an `InsnInstance` for this `InsnScheme` using the
         OperandInstances specified by `args`.
 
         `args` can either be a dict mapping placeholder names to
-        OperandInstances, a string with the textual assembly representation of
-        an instruction fitting this InsnScheme, or the pyparsing results object
-        of matching such a string with the `parser_pattern`.
+        `OperandInstance`s, a string with the textual assembly representation
+        of an instruction fitting this `InsnScheme`, or the pyparsing results
+        object of matching such a string with the `parser_pattern`.
         Instead of placerholder names, the dict might also use operand keys as
         produced by `operand_keys()`. If a key addresses an implicit operand,
-        (which is fixed), this call will validate that the OperandInstance
-        under this key is indeed the correct fixed OperandInstance.
+        (which is fixed), this call will validate that the `OperandInstance`
+        under this key is indeed the correct fixed `OperandInstance`.
 
-        If the args do not match the scheme, an InstantationError is raised.
+        If the args do not match the scheme, an `InstantationError` is raised.
         """
 
         if isinstance(args, str):
@@ -1005,7 +1028,7 @@ class InsnScheme:
     @cached_property
     def parser_pattern(self):
         """ Produce a pyparsing pattern that matches the acceptable
-        instructions for this InsnScheme. Matches may be given to
+        instructions for this `InsnScheme`. Matches may be given to
         `instantiate`.
         """
 
@@ -1065,22 +1088,22 @@ class InsnScheme:
     @property
     def explicit_operands(self):
         """ Getter (without setter) for the dictionary of explicit
-        OperandSchemes of this scheme.
+        `OperandScheme`s of this scheme.
         """
 
         return self._explicit_operands
 
     @property
     def implicit_operands(self):
-        """ Getter (without setter) for the list of implicit OperandSchemes of
-        this scheme.
+        """ Getter (without setter) for the list of implicit `OperandScheme`s
+        of this scheme.
         """
 
         return self._implicit_operands
 
     def __str__(self):
         """ This is cached, which is somewhat necessary, because it is used for
-        equality and hashing.
+        equality and hashing, i.e., very often.
         """
         cached = getattr(self, '_cached_str', None)
         if cached is not None:
@@ -1110,9 +1133,9 @@ class InsnScheme:
 
     @staticmethod
     def from_json_dict(ctx, jsondict):
-        """ Create an InsnScheme from externally stored data.
+        """ Create an `InsnScheme` from externally stored data.
 
-        The jsondict is a nested structure of dicts and lists as it is produced
+        The `jsondict` is a nested structure of dicts and lists as it is produced
         by the `to_json_dict` method. This structure can be dumped as and
         parsed from a json file.
         """
@@ -1146,21 +1169,24 @@ class InsnScheme:
 class InsnInstance:
     """ An instance of this class represents a single concrete instruction.
 
-    It is a compound of an InsnScheme describing the instruction and a
-    dictionary that provides OperandInstances the explicit operands of the
-    scheme.
+    It is a compound of an `InsnScheme` describing the instruction and a
+    dictionary that provides `OperandInstance`s for the explicit operands of
+    the scheme.
 
-    InsnInstances should be used immutably.
+    `InsnInstance`s should be used immutably.
 
-    They are usually created by instantiating an InsnScheme or by using a
-    method of the Context to decode machine code.
+    They are usually created by instantiating an `InsnScheme` or by using a
+    method of the `Context` to decode machine code.
 
-    Using a method of the Context, InsnInstances can be encoded to machine
+    Using a method of the `Context`, `InsnInstance`s can be encoded to machine
     code.
     """
 
     def __init__(self, scheme: InsnScheme, operands: Dict[str, OperandInstance]):
-        """ TODO document
+        """ Constructor, validates that `OperandInstance`s given in the
+        `operands` dict fit the `scheme`.
+
+        Raises an `InstantiationError` if that is not the case.
         """
 
         self._scheme = scheme
@@ -1169,9 +1195,9 @@ class InsnInstance:
 
     def validate_operands(self):
         """ Check that the operands specified for this instance fit to the
-        OperandSchemes of the InsnScheme.
+        `OperandScheme`s of the `InsnScheme`.
 
-        Raises an InstantiationError if that is not the case.
+        Raises an `InstantiationError` if that is not the case.
         """
 
         for k, opscheme in self.scheme.explicit_operands.items():
@@ -1188,15 +1214,15 @@ class InsnInstance:
 
     @property
     def scheme(self) -> InsnScheme:
-        """ The InsnScheme of this InsnInstance.
+        """ The `InsnScheme` of this `InsnInstance`.
         """
 
         return self._scheme
 
     def get_operand(self, op_key) -> OperandInstance:
-        """ Obtain the Operand associated with the given operand key (which
-        should be obtained from `get_operands()` or the `operand_keys` of the
-        InsnScheme) or `None`, if there is no such operand.
+        """ Obtain the `OperandInstance` associated with the given operand key
+        (which should be obtained from `get_operands()` or the `operand_keys`
+        of the `InsnScheme`) or `None`, if there is no such operand.
         """
         kind, ref = op_key
         if kind == InsnScheme.OperandKind.EXPLICIT:
@@ -1220,7 +1246,9 @@ class InsnInstance:
 
     @cached_property
     def read_operands(self):
-        """ Get all operands that are read when this InsnInstance is executed.
+        """ Get all operands that are read when this `InsnInstance` is
+        executed.
+
         This includes additionally read operands, e.g. for computing the
         location of a memory access.
         """
@@ -1249,8 +1277,10 @@ class InsnInstance:
 
     @cached_property
     def written_operands(self):
-        """ Get all operands that are written when this InsnInstance is
-        executed. This includes additionally written operands.
+        """ Get all operands that are written when this `InsnInstance` is
+        executed.
+
+        This includes additionally written operands.
         """
 
         res = []
@@ -1293,17 +1323,17 @@ class InsnInstance:
 
 @export
 class BasicBlock:
-    """ Container for a list of InsnInstances with different encoding methods.
+    """ Container for a list of `InsnInstance`s with different encoding methods.
 
-    Entries may also be None, these are skipped for encoding. Use the insns
+    Entries may also be `None`, these are skipped for encoding. Use the `insns`
     property if you are interested in the None entries as those are not
-    considered for the len and iter methods of the BasicBlock class.
+    considered for the `len` and `iter` methods of the `BasicBlock` class.
 
-    BasicBlock structure (i.e. no non-terminator jumps) is not enforced.
+    Basic block structure (i.e. no non-terminator jumps) is not enforced.
     """
 
     def __init__(self, context: Context, insns: Optional[Sequence[Union[InsnInstance, None]]]=None):
-        """ Create an empty BasicBlock and insert insns (if given).
+        """ Create an empty `BasicBlock` and insert `insns` (if given).
 
         The context is necessary to provide encoding options.
         """
@@ -1317,8 +1347,8 @@ class BasicBlock:
         return self.insns[k]
 
     def append(self, insn: Union[Union[InsnInstance, None], Sequence[Union[InsnInstance, None]]]):
-        """ Add a single Instruction Instance or a list thereof to the end of
-        this BasicBlock.
+        """ Add a single `InsnInstance` or a list thereof to the end of
+        this `BasicBlock`.
         """
         if insn is None or isinstance(insn, InsnInstance):
             self.insns.append(insn)
@@ -1331,8 +1361,8 @@ class BasicBlock:
 
         This might be slow since it may use an external encoder.
 
-        If unwrapped is True, the result will not be wrapped in a loop, even if
-        the basic block is configured to be wrapped.
+        If `unwrapped` is `True`, the result will not be wrapped in a loop,
+        even if the basic block is configured to be wrapped.
         """
         asm_str = self.get_asm(unwrapped=unwrapped)
         res = self.context.coder.asm2hex(asm_str)
@@ -1340,19 +1370,19 @@ class BasicBlock:
 
     def get_asm(self, unwrapped=False) -> str:
         """ Return a string representation of the assembly instructions for
-        this BasicBlock.
+        this `BasicBlock`.
 
         This should be rather fast since it does not use an external
         en/decoder.
 
-        If unwrapped is True, the result will not be wrapped in a loop, even if
-        the basic block is configured to be wrapped.
+        If `unwrapped` is `True`, the result will not be wrapped in a loop,
+        even if the basic block is configured to be wrapped.
         """
         asm_str = "\n".join(map(str, filter(lambda x: x is not None, self.insns)))
 
         if self.wrap_in_loop and not unwrapped:
             asm_str = "loop:\n" + asm_str + "\ndec r15\n jnz loop\n"
-            # TODO we should probably check whether r15 is unused
+            # TODO improvement: we should probably check whether r15 is unused
 
         return asm_str
 
