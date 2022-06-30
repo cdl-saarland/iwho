@@ -12,6 +12,19 @@ logger = logging.getLogger(__name__)
 
 
 class LLVMMCAPredictor(Predictor):
+    """
+    Use llvm-mca to estimate the number of cycles required to execute the basic
+    block.
+
+    Annotations are ignored, llvmmca only uses the encoded instructions.
+
+    Predictor options:
+
+    * `llvmmca_path`: the path to the llvm-mca binary
+    * `llvmmca_opts`: a list of command line options to llvm-mca, e.g., `["-mcpu", "skylake"]`
+    * `timeout`: a timeout for subprocess calls in seconds
+    """
+
     predictor_name = "llvmmca"
     predictor_options = [
             "llvmmca_path", # path to the llvmmca binary
@@ -40,11 +53,6 @@ class LLVMMCAPredictor(Predictor):
         return LLVMMCAPredictor(llvmmca_path, llvmmca_opts, timeout)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """ Use llvmmca to estimate the number of cycles required to execute
-        the basic block.
-
-        Annotations are ignored, llvmmca only uses the encoded instructions.
-        """
 
         asm_str = basic_block.get_asm()
         asm_str = ".intel_syntax noprefix\n" + asm_str

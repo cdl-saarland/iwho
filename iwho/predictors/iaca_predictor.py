@@ -13,6 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 class IACAPredictor(Predictor):
+    """
+    Use IACA to estimate the number of cycles required to execute the basic
+    block.
+
+    Annotations are ignored, IACA only uses the encoded instructions.
+
+    Predictor options:
+
+    * `iaca_path`: the path to the IACA binary
+    * `iaca_opts`: a list of command line options to IACA, e.g., `["-arch", "SKL"]`
+    * `timeout`: a timeout for subprocess calls in seconds
+    """
+
     predictor_name = "iaca"
     predictor_options = [
             "iaca_path", # path to the IACA binary
@@ -45,12 +58,6 @@ class IACAPredictor(Predictor):
         return IACAPredictor(iaca_path, iaca_opts, timeout)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """
-            Use IACA to estimate the number of cycles required to execute the
-            basic block.
-            Annotations are ignored, IACA only uses the encoded instructions.
-        """
-
         hex_str = basic_block.get_hex()
 
         # pre/append iaca marker bytes

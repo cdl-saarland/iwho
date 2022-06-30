@@ -17,13 +17,13 @@ def _filter_uarch(scheme, ctx, uarch_name):
 
 
 class Config(metaclass=ConfigMeta):
-    """ Helper class to configure iwho contexts.
+    """ Helper class to configure iwho `Context`s.
 
-    Since the Context is an abstract base class from which any actual context
-    is derived, ConfigMeta hits its limits: Ideally, one would want to specify
-    some general options in Context and some specific ones in the subclasses.
-    While this might be possible with more metaclass hacking, it's not in the
-    current focus.
+    Since the `Context` is an abstract base class from which any actual context
+    is derived, `ConfigMeta` hits its limits: Ideally, one would want to
+    specify some general options in Context and some specific ones in the
+    subclasses. While this might be possible with more metaclass hacking, it's
+    not in the current focus.
     """
     config_options = dict(
         context_specifier = ('x86_uops_info',
@@ -73,15 +73,15 @@ class Config(metaclass=ConfigMeta):
 
 
 def get_context_by_name(ctx_id: str) -> Context:
-    """ Try to create an IWHo Context that corresponds to the given identifier.
+    """ Try to create an IWHO `Context` that corresponds to the given identifier.
 
     If the identifier matches the filename (without extension) of a json file
     containing instruction schemes in the schemes directory, a Context for this
     file will be created. Otherwise, if the identifier is a prefix of one (or
-    more) of the names of these known json files (e.g. "x86"), a Context for
+    more) of the names of these known json files (e.g. `"x86"`), a Context for
     one of the matching files will be created.
 
-    In case no matching file is found or any other error occurs, an IHWOError
+    In case no matching file is found or any other error occurs, an `IHWOError`
     is raised.
     """
     from .x86 import Context as x86Context
