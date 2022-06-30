@@ -1,3 +1,7 @@
+""" IWHO infrastructure for the x86-64 ISA.
+
+Implements the necessary interfaces from `iwho.core`.
+"""
 
 from typing import Sequence, Optional, Union
 
@@ -19,13 +23,14 @@ from .utils import is_hex_str, export
 import logging
 logger = logging.getLogger(__name__)
 
+__all__ = []
 
 @export
 def extract_mnemonic(insn: Union[str, core.InsnScheme, core.InsnInstance]) -> str:
-    """ Extract the mnemonic from the assembly of a single instruction
+    """ Extract the mnemonic from the assembly of a single instruction.
 
     Here, this is the first whitespace-separated token that does not
-    start with a brace.
+    start with a brace and that is not a prefix.
     """
     if isinstance(insn, core.InsnScheme):
         insn_str = insn.str_template.template
@@ -47,11 +52,31 @@ def extract_mnemonic(insn: Union[str, core.InsnScheme, core.InsnInstance]) -> st
     return None
 
 all_registers = None
+"""A dictionary mapping `RegisterOperand`s to the strings of register names.
+
+Filled at module loading time by `_find_registers()`.
+"""
+__all__.append('all_registers')
+
+_RegAliasClass_doc = """
+An enum of all register aliasing classes (registers alias iff they have the
+same aliasing class).
+
+Filled at module loading time by `_find_registers()`.
+"""
 RegAliasClass = None
+__all__.append('RegAliasClass')
+
+_RegKind_doc = """
+An enum of all register kinds.
+
+Filled at module loading time by `_find_registers()`.
+"""
 RegKind = None
+__all__.append('RegKind')
 
 def _find_registers():
-    """ Read the x86 registers from a csv file next to this source file.
+    """ Read the x86 registers from a csv file in the `inputfiles` directory.
 
     This is called at the end of the module and initializes global variables of
     this module:
@@ -80,7 +105,10 @@ def _find_registers():
     categories = { row[CSVKeywords.category] for row in data }
 
     RegAliasClass = Enum('RegAliasClass', sorted(alias_classes), module=__name__)
+    RegAliasClass.__doc__ = _RegAliasClass_doc
+
     RegKind = Enum('RegKind', sorted(categories), module=__name__)
+    RegKind.__doc__ = _RegKind_doc
 
     all_registers = dict()
 
@@ -97,13 +125,16 @@ def _find_registers():
 
 @export
 class RegisterOperand(core.OperandInstance):
-    """ TODO document
+    """ `core.OperandInstance` subclass to represent an x86 register for use as
+    an operand.
+
+    Characterized by a `name`, by which the register is referenced, an
+    `alias_class` that is shared among registers that (fully or partially)
+    alias, a `category` describing the kind of values the register can handle,
+    and a `width` in bits.
     """
 
     def __init__(self, name: str, alias_class: "X86_RegAliasClass", category: "X86_RegKind", width: int):
-        """ TODO document
-        """
-
         self.name = name
         self.alias_class = alias_class
         self.category = category
@@ -127,7 +158,10 @@ class RegisterOperand(core.OperandInstance):
 
 @export
 class RegisterConstraint(core.SetConstraint):
-    """ TODO document
+    """ A `core.OperandConstraint` for sets of `RegisterOperand`s.
+
+    It differs from the `core.SetConstraint` in that it has a bit width
+    annotated.
     """
 
     def __init__(self, acceptable_operands):
@@ -143,7 +177,14 @@ class RegisterConstraint(core.SetConstraint):
 
 @export
 class MemoryOperand(core.OperandInstance):
-    """ TODO document
+    """ A `core.OperandInstance` for x86 memory operands.
+
+    The accessed address (wrt. an optional and mostly obsolete `segment`
+    register) of such a memory operand is
+    ```
+        address = base + index * scale + displacement
+    ```
+    (where scale is a small power of two and displacement an immediate value.)
     """
 
     def __init__(self, width: int,
@@ -153,10 +194,10 @@ class MemoryOperand(core.OperandInstance):
                 scale: int=1,
                 displacement: int=0,
                 ):
-        """ TODO document
+        """ Constructor for a memory operand with the given components.
+        Most of them are optional.
         """
 
-        # address = base + index * scale + displacement
         self.width = width
         self.segment = segment
         self.base = base
@@ -165,9 +206,11 @@ class MemoryOperand(core.OperandInstance):
         self.displacement = displacement
 
     def additionally_read(self) -> Sequence[core.OperandInstance]:
-        # to evaluate a memory operand, independently of whether it is written
-        # or read (or only used for the agen in a LEA instruction), the
-        # involved address registers are read.
+        """ Return a list of `core.OperandInstance`s that are read to compute
+        the memory location.
+
+        That is: all present register components.
+        """
         res = []
         if self.segment is not None:
             res.append(self.segment)
@@ -242,12 +285,10 @@ class MemoryOperand(core.OperandInstance):
 
 @export
 class MemConstraint(core.OperandConstraint):
-    """ TODO document
+    """ A `core.OperandConstraint` for a `MemoryOperand` of a given `width`.
     """
 
     def __init__(self, context: "Context", width: int):
-        """ TODO document
-        """
         self.ctx = context
         self.width = width
 
@@ -270,6 +311,7 @@ class MemConstraint(core.OperandConstraint):
 
     @cached_property
     def parser_pattern(self):
+        # this is a pyparsing parser for normalized x86 memory operands
         int_pattern = pp.pyparsing_common.integer
         hex_pattern = pp.Suppress(pp.Literal('0x')) + pp.pyparsing_common.hex_integer
         reg_pattern = self.ctx.pattern_all_gprs
@@ -312,12 +354,13 @@ class MemConstraint(core.OperandConstraint):
 
 @export
 class ImmediateOperand(core.OperandInstance):
-    """ TODO document
+    """ `core.OperandInstance` subclass to represent an immediate constant for
+    use as an operand.
+
+    Immediates have a `width` and a `value`
     """
 
     def __init__(self, width, value):
-        """ TODO document
-        """
         assert isinstance(value, int)
         self.width = width
         self.value = value
@@ -342,13 +385,12 @@ class ImmediateOperand(core.OperandInstance):
 
 @export
 class ImmConstraint(core.OperandConstraint):
-    """ TODO document
+    """ A `core.OperandConstraint` for an `ImmediateOperand` of a given width.
+
+    Operand values are loosely checked to be in the range implied by the width.
     """
 
     def __init__(self, context: "Context", width: int):
-        """ TODO document
-        """
-
         self.ctx = context
         self.width = width
 
@@ -398,7 +440,11 @@ class ImmConstraint(core.OperandConstraint):
 
 @export
 class SymbolOperand(core.OperandInstance):
-    """ TODO document
+    """ A `core.OperandInstance` for symbolic x86 memory operands, i.e.,
+    relocation symbols.
+
+    The actual symbols are not represented, relocations are therefore not
+    handled accurately.
     """
 
     def __init__(self):
@@ -422,7 +468,7 @@ class SymbolOperand(core.OperandInstance):
 
 @export
 class SymbolConstraint(core.OperandConstraint):
-    """ Constraint for symbol operands (for relocations/labels).
+    """ `core.OperandConstraint` for symbol operands (for relocations/labels).
 
     Those are bit odd, since for encoding, llvm-mc will not accept integer
     operands in place of symbols (i.e. we would need to print them as labels,
@@ -430,17 +476,15 @@ class SymbolConstraint(core.OperandConstraint):
     is however happy to decode corresponding instructions with an immediate
     operand.
 
-    We therefore parse them just as immediates so that we can decode them (by
-    inheriting most functionality from ImmConstraint), but don't allow encoding
-    them.
+    We therefore parse them just as immediates (which we throw away) and encode
+    them as the string `"SYM"`.
     """
-    # TODO update documentation
 
     def __init__(self, context: "Context"):
         self.ctx = context
 
     def from_match(self, match):
-        logger.warning("Encountered a relocation (e.g. for a jump label) in the input. It will not be handled semantically correct.")
+        logger.warning("Encountered a relocation (e.g. for a jump label) in the input. It will not be handled in a semantically correct way.")
         # we don't care for the actual value
         op = self.ctx.dedup_store.get(SymbolOperand)
         return op
@@ -468,7 +512,7 @@ class SymbolConstraint(core.OperandConstraint):
 
 @export
 class Context(core.Context):
-    """ TODO document
+    """ A `core.Context` implementation for the x86-64 ISA.
     """
 
     @classmethod
@@ -508,9 +552,13 @@ class Context(core.Context):
 
 
     def get_registers_where(self, *, name=None, alias_class=None, category=None, width=None):
-        """ TODO document
+        """ Get a tuple of registers that fulfill the conjunction of all
+        constraints specified via keyword arguments.
+
+        E.g., `get_registers_where(alias_class=foo, width=32)` provides a list
+        of all 32-bit registers with the alias class `foo`.
         """
-        # TODO this could benefit from an index
+        # TODO improvement: this could benefit from an index
 
         it = tuple(( reg_op for k, reg_op in all_registers.items() ))
 
@@ -568,7 +616,7 @@ class Context(core.Context):
             if isinstance(operand, RegisterOperand) and isinstance(fixed_operand, RegisterOperand):
                 if operand.alias_class == fixed_operand.alias_class:
                     return fixed_operand
-            # TODO we could do something better for immediates and memory operands
+            # TODO improvement: we could do something better for immediates and memory operands
             return None
 
         constraint = op_scheme.operand_constraint
@@ -596,7 +644,8 @@ class Context(core.Context):
                     displacement=operand.displacement)
 
         if isinstance(constraint, ImmConstraint):
-            # TODO adjust value
+            # TODO this can lead to invalid values if the value is too large
+            # for the target width.
             return self.dedup_store.get(ImmediateOperand,
                     width=target_width, # just a different width, everything else stays the same
                     value=operand.value)
@@ -625,9 +674,6 @@ class Context(core.Context):
 
 
     def operand_constraint_from_json_dict(self, jsondict):
-        """ TODO document
-        """
-
         kind = jsondict["kind"]
         if kind == "x86RegisterConstraint":
             acceptable_operands = (self.operand_from_json_dict(op_dict) for op_dict in jsondict["acceptable_operands"])
@@ -642,9 +688,6 @@ class Context(core.Context):
 
 
     def operand_from_json_dict(self, jsondict):
-        """ TODO document
-        """
-
         kind = jsondict["kind"]
         if kind == "x86RegisterOperand":
             register_op = all_registers.get(jsondict["name"], None)
@@ -679,7 +722,7 @@ class Context(core.Context):
 
 @export
 class LLVMMCCoder(core.ASMCoder):
-    """ Use the llvm-mc binary with subprocess calls (LLVM's assmebly
+    """ Use the llvm-mc binary with subprocess calls (LLVM's assembly
     playground) for assembly encoding/decoding.
     """
 
@@ -810,14 +853,16 @@ class LLVMMCCoder(core.ASMCoder):
 
 @export
 class DefaultInstantiator:
-    """ TODO document
+    """ Convenience class to quickly instantiate a `core.InsnScheme` with
+    arbitrary but valid values, mainly for testing.
     """
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
     def __call__(self, scheme):
-        """ TODO document
+        """ Return an arbitrary, but fixed, instantiation of the passed `scheme`.
+        Can handle `core.InsnScheme`s as well as `core.OperandScheme`s.
         """
 
         if isinstance(scheme, core.InsnScheme):
@@ -827,7 +872,7 @@ class DefaultInstantiator:
         raise core.SchemeError("trying to instantiate incompatible object: {}".format(repr(scheme)))
 
     def for_insn(self, insn_scheme: core.InsnScheme) -> core.InsnInstance:
-        """ Create an instruction instance from a scheme
+        """ Create an arbitrary, but fixed, `core.InsnInstance` from a scheme.
         """
 
         args = dict()
@@ -836,7 +881,7 @@ class DefaultInstantiator:
         return insn_scheme.instantiate(args)
 
     def for_operand(self, operand_scheme: core.OperandScheme) -> core.OperandInstance:
-        """ Create an OperandInstance instance from a scheme
+        """ Create an arbitrary, but fixed, `core.OperandInstance` instance from a scheme.
         """
 
         if operand_scheme.is_fixed():
@@ -862,7 +907,7 @@ class DefaultInstantiator:
             return self.get_valid_imm_operand(constraint)
 
     def get_valid_memory_operand(self, mem_constraint):
-        """ Create an OperandInstance instance from a scheme
+        """ Create an arbitrary `MemoryOperand` for a constraint.
         """
 
         base_reg = all_registers["rbx"]
@@ -871,7 +916,7 @@ class DefaultInstantiator:
         return MemoryOperand(width=mem_constraint.width, base=base_reg, displacement=displacement)
 
     def get_valid_imm_operand(self, imm_constraint):
-        """ Create an OperandInstance instance from a scheme
+        """ Create an arbitrary `ImmediateOperand` for a constraint.
         """
 
         # choose a value that is not representable with width - 8 bits
@@ -883,6 +928,11 @@ class DefaultInstantiator:
 
 @export
 class RandomRegisterInstantiator(DefaultInstantiator):
+    """ Modification of the `DefaultInstantiator` to produce somewhat
+    randomized `core.InsnInstances` rather the fixed ones produced by the
+    original.
+    """
+
     def __init__(self, ctx: Context):
         super().__init__(ctx)
         self.mem_registers = [all_registers[x] for x in ["rbx", "rdx", "r12", "r13"]]
