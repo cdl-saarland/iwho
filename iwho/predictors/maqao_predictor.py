@@ -13,11 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class MAQAOPredictor(Predictor):
+    """
+    Use MAQAO CQA to estimate the number of cycles required to execute the
+    basic block. (Only applicable to basic blocks wrapped in explicit loops!)
+
+    Predictor options:
+
+    * `maqao_path`: the path to the maqao binary
+    * `maqao_opts`: a list of command line options to maqao, e.g., `["--uarch", "SKYLAKE"]`
+    * `as_path`: a path to an assembler to use, e.g. `"as"`
+    * `timeout`: a timeout for subprocess calls in seconds
+    """
+
     predictor_name = "maqao"
     predictor_options = [
             "maqao_path", # path to the maqao binary
             "maqao_opts", # list of options to maqao, e.g. ["--uarch", "SKYLAKE"]
-            "as_path", # path to an assembler to use, e.g. "as
+            "as_path", # path to an assembler to use, e.g. "as"
             "timeout", # a timeout for subprocess calls in seconds
         ]
 
@@ -38,11 +50,6 @@ class MAQAOPredictor(Predictor):
         return MAQAOPredictor(config)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """
-            Use maqao to estimate the number of cycles required to execute the
-            basic block.
-        """
-
         # basic_block.wrap_in_loop = True
 
         assert basic_block.wrap_in_loop, "MAQAO CQA can only handle loops!"

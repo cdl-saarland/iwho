@@ -160,7 +160,7 @@ def pretty_print(obj, filter_doc=False):
 
 
 class ConfigError(Exception):
-    """ An error indicating that something went wrong in the AnICA
+    """ An error indicating that something went wrong in the IWHO
     configuration.
     """
     pass
@@ -226,9 +226,9 @@ class ConfigurableImpl:
             res[f'{key}.doc'] = cls._config_docs[key]
         return res
 
-def tuplify(ls):
+def _tuplify(ls):
     if isinstance(ls, list) or isinstance(ls, tuple):
-        return tuple(map(tuplify, ls))
+        return tuple(map(_tuplify, ls))
     elif isinstance(ls, dict):
         kind = ls.get('kind', None)
         if kind is not None:
@@ -246,7 +246,7 @@ def tuplify(ls):
                     displayed = m[1]
                 res_str += ':' + displayed
             return res_str
-        return tuple(map(lambda x: (tuplify(x[0]), tuplify(x[1])), ls.items()))
+        return tuple(map(lambda x: (_tuplify(x[0]), _tuplify(x[1])), ls.items()))
     else:
         return ls
 
@@ -272,8 +272,8 @@ def config_diff(base, comp_obj):
             for (inner_ks, x) in inner_res:
                 res.append(((k,) + inner_ks, x))
         elif isinstance(v, list) or isinstance(v, tuple):
-            vtup = set(tuplify(v))
-            other_vtup = set(tuplify(other_v))
+            vtup = set(_tuplify(v))
+            other_vtup = set(_tuplify(other_v))
             subtracted = tuple(sorted(vtup - other_vtup))
             added = tuple(sorted(other_vtup - vtup))
             for x in added:
@@ -293,8 +293,8 @@ class ConfigMeta(type):
     Classes that specify this metaclass need a `config_options` class attribute
     that contains a dictionary mapping options to tuples of default values and
     an explanatory comment in their definition.
-    They should also call self.configure(config) with a suitable config
-    dictionary in their __init__ method.
+    They should also call `self.configure(config)` with a suitable config
+    dictionary in their `__init__` method.
 
     In practice, this is less horrible than it sounds, consider the following
     example:

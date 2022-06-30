@@ -16,15 +16,18 @@ from pathlib import Path
 
 import rpyc
 
-def unwrap_netref(o):
+def _unwrap_netref(o):
     if isinstance(o, dict):
-        return { unwrap_netref(k): unwrap_netref(o[k]) for k in o }
+        return { _unwrap_netref(k): _unwrap_netref(o[k]) for k in o }
     elif isinstance(o, list):
-        return [ unwrap_netref(v) for v in o]
+        return [ _unwrap_netref(v) for v in o]
     else:
         return o
 
 class RemoteLink:
+    """ An RPyC connection to a server running inside the Ithemal docker
+    container.
+    """
     def __init__(self, hostname, port, sslpath, request_timeout):
         sslpath = Path(sslpath)
         self.hostname = hostname
@@ -56,12 +59,25 @@ class RemoteLink:
     def run_ithemal(self, model_path, byte_str):
         assert self.conn is not None, "Connection must be open!"
         try:
-            return unwrap_netref(self.conn.root.run_ithemal(model_path, byte_str))
+            return _unwrap_netref(self.conn.root.run_ithemal(model_path, byte_str))
         except rpyc.AsyncResultTimeout:
             return {'TP': -1.0, 'error': 'RPyC request timeout'}
 
 
 class IthemalDockerPredictor(Predictor):
+    """
+    Use the Ithemal Docker container to estimate the number of cycles required
+    to execute the basic block.
+
+    Predictor options:
+
+    * `host`: the hostname of the ithemal docker container (probably `127.0.0.1`)
+    * `port`: the port where the ithemal docker container is listening
+    * `ssl_path`: a path to a directory containing SSL certificates for connecting to the container (obsolete)
+    * `model`: a path to the ithemal predictor model (in the container, e.g. `'bhive/skl'`)
+    * `timeout`: a timeout for rpyc calls in seconds
+    """
+
     predictor_name = "ithemal_docker"
     predictor_options = [
             "host", # hostname of the ithemal docker container (probably 127.0.0.1)

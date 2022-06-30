@@ -59,7 +59,7 @@ def _add_available_classes():
 
 @export
 class PredictorConfigError(IWHOError):
-    """ A predictor configuration dict is broken
+    """ A predictor configuration dict is broken.
     """
 
     def __init__(self, message):
@@ -67,8 +67,14 @@ class PredictorConfigError(IWHOError):
 
 @export
 class Predictor(ABC):
+    """ Abstract interface for basic block throughput predictors.
+    """
 
     def requires_sudo(self):
+        """ Return `True` if running the predictor requires root `permissions`.
+
+        Override in a subclasses if necessary.
+        """
         return False
 
     def needs_to_run_alone(self):
@@ -80,6 +86,16 @@ class Predictor(ABC):
 
     @abstractmethod
     def evaluate(self, basic_block):
+        """ Run the throughput predictor on the given basic block and return a
+        result dictionary with at least a `'TP'` key mapping to a float value
+        representing the estimated inverse throughput of the basic block, i.e.,
+        the number of cycles required to execute it on average in a steady
+        state.
+
+        If the run was not successful, the `'TP'` field will have the value
+        `-1.0`, and there should be a `'error'` field with a reason.
+        Other fields, e.g., `'rt'` for the running time, may be included.
+        """
         pass
 
     @staticmethod
