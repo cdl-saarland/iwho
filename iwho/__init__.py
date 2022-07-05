@@ -1,5 +1,5 @@
 """
-IWHO: Instructions With Holes
+.. include:: ../README.md
 """
 
 from functools import partial
