@@ -93,8 +93,8 @@ class LightBBWrapper:
         res = self.asm_str
         if self.wrap_in_loop and not unwrapped:
             res = "loop:\n" + res + "\ndec r15\n jnz loop\n"
-            # TODO this is x86 specific and should go!
-            # TODO we should probably check whether r15 is unused
+            # TODO this is x86 specific
+            # TODO we should check whether r15 is unused
         return res
 
 
@@ -199,6 +199,10 @@ class PredictorManager(metaclass=ConfigMeta):
                 break
 
     def resolve_key_patterns(self, keys):
+        """ Given a list of predictor keys and regexes to match predictor keys,
+        return a list of present predictor keys or raise an
+        `UnknownPredictorError` if no matching key is found.
+        """
         actual_keys = []
         for key in keys:
             if key in self.pred_registry:
@@ -217,7 +221,8 @@ class PredictorManager(metaclass=ConfigMeta):
 
     def get_insn_filter_files(self, keys):
         """Get a list of file names that include lists of instruction schemes
-        that are not supported by some the predictors referenced by `keys`. """
+        that are not supported by some the predictors referenced by `keys`.
+        """
         actual_keys = self.resolve_key_patterns(keys)
         res = []
         for key in actual_keys:
@@ -283,7 +288,15 @@ class PredictorManager(metaclass=ConfigMeta):
         return results # also use zip(bbs, results) here?
 
     def eval_with_all(self, bbs):
-        """TODO document"""
+        """ Use the selected predictors to evaluate all given basic blocks
+        (concurrently if allowed and configured).
+
+        Returns a list of `(bb, res)` tuples, where `bb` is a basic block from
+        `bbs` and `res` is a result dictionary (mapping predictor keys to
+        results).
+
+        The basic block order is preserved.
+        """
         # Some predictors want to run alone (e.g. because they do actual
         # measurements that should not be too noisy), we run those first.
         run_alone = []
@@ -308,6 +321,18 @@ class PredictorManager(metaclass=ConfigMeta):
         return zip(bbs, results)
 
     def eval_with_all_and_report(self, bbs):
+        """ Use the selected predictors to evaluate all given basic blocks
+        (concurrently if allowed and configured).
+        Report the results to the measurement db.
+
+        Returns a list of `(bb, res)` tuples, where `bb` is a basic block from
+        `bbs` and `res` is a result dictionary (mapping predictor keys to
+        results), and a `result_ref` identifier to a series in the measurement
+        db.
+
+        The basic block order is preserved.
+
+        """
         series_date = datetime.now().isoformat()
 
         eval_res = list(self.eval_with_all(bbs))
