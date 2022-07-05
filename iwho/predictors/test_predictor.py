@@ -6,11 +6,15 @@ from ..x86 import extract_mnemonic
 class TestPredictor(Predictor):
     """ A simple, platform independent predictor just for testing.
     By default, it just counts the number of instructions in an experiment
+
+    Predictor options:
+
+    * `mnemonic_costs`: a dict that maps mnemonic strings to float costs (non-present mnemonics have cost 1.0)
     """
 
     predictor_name = "test"
     predictor_options = [
-            "mnemonic_costs", # dict mappings mnemonic strings to float costs (non-present mnemonics have cost 1.0)
+            "mnemonic_costs", # dict mapping mnemonic strings to float costs (non-present mnemonics have cost 1.0)
         ]
 
     def __init__(self, mnemonic_costs):

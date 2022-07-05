@@ -13,6 +13,20 @@ logger = logging.getLogger(__name__)
 
 
 class OSACAPredictor(Predictor):
+    """
+    Use osaca to estimate the number of cycles required to execute the basic
+    block.
+
+    Annotations are ignored, osaca only uses the encoded instructions.
+
+    Predictor options:
+
+    * `osaca_path`: the path to the osaca executable
+    * `osaca_opts`: a list of command line options to osaca, e.g., `["--arch", "SKL"]`
+    * `llvmmc_path`: the path to llvm-mc (used to assemble with AT&T syntax)
+    * `timeout`: a timeout for subprocess calls in seconds
+    """
+
     predictor_name = "osaca"
     predictor_options = [
             "osaca_path", # path to the osaca binary
@@ -44,11 +58,6 @@ class OSACAPredictor(Predictor):
         return OSACAPredictor(osaca_path, osaca_opts, llvmmc_path, timeout)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """ Use osaca to estimate the number of cycles required to execute
-        the basic block.
-
-        Annotations are ignored, osaca only uses the encoded instructions.
-        """
 
         orig_asm_str = basic_block.get_asm()
         orig_asm_str = ".intel_syntax noprefix\n" + orig_asm_str
