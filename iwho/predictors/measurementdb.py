@@ -1,3 +1,7 @@
+""" Interface to store prediction results in an sqlite3 database.
+"""
+
+
 from datetime import datetime
 import sqlite3
 import os
@@ -9,7 +13,7 @@ class MeasurementDB(metaclass=ConfigMeta):
     results of throughput predictors.
 
     Normal use will create one instance of this class (per database, of which
-    typically only one should be needed) and use it in a with statement as a
+    typically only one should be needed) and use it in a `with` statement as a
     context manager whenever a database operation is performed.
     """
 
@@ -49,6 +53,10 @@ class MeasurementDB(metaclass=ConfigMeta):
             self._deinit_con()
 
     def get_series(self, series_id):
+        """ Obtain the series matching the `series_id` from the database.
+        The result is a structure of lists and dictionaries representing a
+        sequence of basic block throughput estimations.
+        """
         con = self.con
         assert con is not None
         cur = con.cursor()
@@ -91,6 +99,8 @@ class MeasurementDB(metaclass=ConfigMeta):
         return series_dict
 
     def create_tables(self):
+        """ Set up the database tables.
+        """
         con = self.con
         assert con is not None
 
@@ -140,18 +150,21 @@ class MeasurementDB(metaclass=ConfigMeta):
 
 
     def add_series(self, measdict):
-        # {
-        #   "series_date": $date,
-        #   "source_computer": "skylake",
-        #   "measurements": [{
-        #       "input": "49ffabcdef",
-        #       "predictor_runs": [{
-        #           "predictor": "llvm-mca.12-r+a.skl",
-        #           "result": 42.17,
-        #           "remark": null
-        #       }]
-        #   }]
-        # }
+        """ Insert a measurement series into the database.
+        `measdict` needs to be a dictionary with the following structure:
+            {
+              "series_date": $date,
+              "source_computer": "$name",
+              "measurements": [{
+                  "input": "49ffabcdef",
+                  "predictor_runs": [{
+                      "predictor": "llvm-mca.12-r+a.skl",
+                      "result": 42.17,
+                      "remark": null
+                  }]
+              }]
+            }
+        """
 
         con = self.con
         assert con is not None
