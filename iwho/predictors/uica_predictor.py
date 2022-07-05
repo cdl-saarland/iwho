@@ -13,9 +13,20 @@ logger = logging.getLogger(__name__)
 
 
 class UICAPredictor(Predictor):
+    """
+    Use uiCA to estimate the number of cycles required to execute the basic
+    block.
+
+    Predictor options:
+
+    * `uica_path`: the path to the uiCA executable
+    * `uica_opts`: a list of command line options to llvm-mca, e.g., `["-arch", "SKL"]`
+    * `timeout`: a timeout for subprocess calls in seconds
+    """
+
     predictor_name = "uica"
     predictor_options = [
-            "uica_path", # path to the uiCA binary
+            "uica_path", # path to the uiCA executable
             "uica_opts", # list of options to uiCA, e.g. ["-arch", "SKL"]
             "timeout", # a timeout for subprocess calls in seconds
         ]
@@ -37,10 +48,6 @@ class UICAPredictor(Predictor):
         return UICAPredictor(config)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """
-            Use uiCA to estimate the number of cycles required to execute the
-            basic block.
-        """
 
         hex_str = basic_block.get_hex()
 

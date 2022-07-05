@@ -12,6 +12,22 @@ logger = logging.getLogger(__name__)
 
 
 class NanoBenchPredictor(Predictor):
+    """
+    Use nanoBench to measure the number of cycles required to execute the basic
+    block.
+
+    Requires sudo permissions and needs to run alone to avoid measurement
+    noise. It is strongly recommended to also disable hyperthreading/
+    simultaneous multi-threeading before using this predictor.
+
+    Predictor options:
+
+    * `result_key`: key of the performance counter in nanoBench's output to use
+    * `nanobench_path`: the path to the nanobench.sh script
+    * `nanobench_opts`: a list of command line options to nanoBench, e.g., `["-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt"]`
+    * `timeout`: a timeout for subprocess calls in seconds
+    * `num_samples`: take the minimum of this many runs of nanoBench
+    """
     predictor_name = "nanobench"
     predictor_options = [
             "result_key", # key of the performance counter in nanoBench's output to use
@@ -53,10 +69,6 @@ class NanoBenchPredictor(Predictor):
         return NanoBenchPredictor(result_key, nanobench_path, nanobench_opts, timeout, num_samples)
 
     def evaluate(self, basic_block, disable_logging=False):
-        """
-            Use nanobench to measure the number of cycles required to execute
-            the basic block.
-        """
 
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run nanoBench without sudo password!")
