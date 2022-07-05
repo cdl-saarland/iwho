@@ -77,7 +77,7 @@ def main():
     keys = { x for x in data[0].keys() if x != 'bb'}
 
     if args.groundtruth in keys:
-        grountruth_key = args.groundtruth
+        groundtruth_key = args.groundtruth
     else:
         candidates = [x for x in keys if args.groundtruth in x]
         if len(candidates) < 1:
