@@ -20,14 +20,58 @@ IWHO is **not** suitable for use as a full (dis)assembler framework since, e.g.,
 
 Currently, only the x86-64 ISA is implemented, with instruction schemes extracted from [uops.info](https://uops.info/).
 
+## Maturity
+
+This is a research prototype, expect things to break!
+
 
 ## Installation
 
-TODO
+These steps are for installing IWHO on its own. If you install IWHO as part of
+AnICA, follow the steps there instead of the ones here. In particular, AnICA
+and IWHO should use the same virtual python environment.
+
+Make sure that you have `llvm-mc` on your path (most likely by installing [LLVM](https://llvm.org/)).
+It is used to handle basic instruction (dis)assembly tasks.
+Furthermore, you need a python3 setup with the `venv` standard module available.
+
+1. Get the repository and its submodule(s):
+    ```
+    git clone <repo> iwho
+    cd iwho
+    ```
+2. Set up the virtual environment for IWHO and install python dependencies and
+   the IWHO package itself there:
+   ```
+   ./setup_venv.sh
+   ```
+   Whenever you run IWHO commands from a shell, you need to have activated
+   the virtual environment in this shell before:
+   ```
+   source ./env/iwho/bin/activate
+   ```
+3. Download the uops.info xml file:
+   ```
+   ./inputs/uops_info/fetch_xml.sh
+   ```
+   Extract the InsnSchemes from the xml file:
+   ```
+   ./build_schemes.sh
+   ```
+4. Run the tests:
+   ```
+   ./tests/test_iwho.py
+   ```
+
 
 ## Usage
 
-TODO
+example
+
+iwho-predict
+
+playground
+
 
 ## Generating Documentation
 
@@ -35,6 +79,29 @@ The API documentation can be built with [pdoc3](https://pdoc3.github.io/pdoc/).
 After installing pdoc3 (`pip install pdoc3`) in the virtual environment, run the following command to generate html documentation in the `html` directory:
 ```
 pdoc --html iwho --force
+```
+
+## Getting Throughput Predictors
+
+There are a number of convenience scripts to obtain and install several basic block throughput predictors for use with IWHO in the subdirectories of the `predictors` directory (`get.sh`).
+
+For Ithemal, there is a submodule instead of a getter script since we use a modified version of the original docker container.
+We added an [RPyC](https://rpyc.readthedocs.io/en/latest/)-based interface to query into the container for throughputs and fixed some of the build scripts in the container that were affected by bit rot.
+
+If you want to use the Ithemal docker container for throughput predictions with IWHO, you therefore need to fetch the corresponding submodule:
+```
+git submodule update --init --recursive
+```
+Then build and start the docker container (this requires sudo (the scripts query where necessary), a running docker service, and some time):
+```
+cd ./predictors/ithemal/
+./build.sh
+./start.sh
+```
+
+You can stop the ithemal docker container again with the following script:
+```
+./stop.sh
 ```
 
 ## Configuration
