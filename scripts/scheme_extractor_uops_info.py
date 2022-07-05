@@ -140,6 +140,11 @@ def make_operands_explicit(scheme, operand_keys):
 
 
 def extract_features(xml_entry):
+    """ Extract all interesting features from an xml_entry for an instruction
+    scheme.
+
+    Expand this function to make more information available to tool users.
+    """
     results = dict()
 
     def take_if_not_none(*, xmlkey, reskey=None, xmlnode=xml_entry, resdict=results):
