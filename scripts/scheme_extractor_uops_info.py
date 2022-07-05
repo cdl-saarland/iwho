@@ -225,7 +225,7 @@ def add_uops_info_xml(ctx, xml_path, validate):
         all_schemes[key] = scheme
         ctx.add_insn_scheme(scheme)
 
-    # TODO these also need features
+    # TODO improvement: these should also have features
     # search for features for cmpss, cmpsd, cmpps, cmppd and vcmpss, vcmpsd, vcmpps, vcmppd
     # it might make sense to insert these schemes after all the others so that we can look these features up
 
