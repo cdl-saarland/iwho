@@ -13,7 +13,7 @@ README = (HERE / "README.md").read_text()
 LICENSE = (HERE / "LICENSE").read_text()
 
 def post_command(a):
-    # TODO extract the insn schemes here
+    # TODO improvement: extract the insn schemes here
     pass
 
 class PostDevelopCommand(develop):

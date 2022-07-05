@@ -27,7 +27,6 @@ def main():
     argparser.add_argument("-i", "--interactive", action="store_true", help="after loading instructions, open an interactive mode (IPython if available)")
 
     args = parse_args_with_logging(argparser, "warning")
-    # TODO stdin
 
 
     iwhoconfig = load_json_config(args.iwhoconfig)
