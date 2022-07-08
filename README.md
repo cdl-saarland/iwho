@@ -66,11 +66,40 @@ Furthermore, you need a python3 setup with the `venv` standard module available.
 
 ## Usage
 
-example
+You can directly interact with the IWHO instruction representations with the
+interactive `scripts/playground.py` script.
+Run it, with an optional IWHO config (see below) and optionally providing an
+input basic block in hex encoding or as assembly, for example:
 
-iwho-predict
+```
+./scripts/playground
 
-playground
+./scripts/playground -c configs/iwho/default.json
+
+./scripts/playground -x "c0ffee"
+
+./scripts/playground -a "add rax, rbx; sub rcx, rdx"
+
+./scripts/playground -a ".att_syntax; addq %rbx, %rax; subq %rdx, %rcx"
+```
+
+If available, IPython will be used for improved interactivity (run `pip install
+ipython` in the virtual environment to install it).
+If instructions are provided via arguments, they are loaded, displayed, and
+inserted to the `insns` list before starting the interactive session.
+
+The interactive session prints the available variables and functions, which can be used to encode and decode instructions.
+You can check the human-readable IWHO representation of the loaded instructions by just typing `insns`.
+
+Once you have set up a predictor registry (see below), you can also use `tool/iwho-predict` to run registered basic block throughput predictors one given basic blocks:
+
+```
+iwho-predict -c ./configs/predictors/default.json -a bb.s <pred_key_pattern1> ...
+
+iwho-predict -c ./configs/predictors/default.json -x 'c0ffee' <pred_key_pattern1> ...
+```
+
+The positional arguments can be keys from the used predictor registry (see below) or python regex patterns matching one or more of these keys.
 
 
 ## Generating Documentation
@@ -106,13 +135,25 @@ You can stop the ithemal docker container again with the following script:
 
 ## Configuration
 
-Possible entries (duplicates are allowed):
+IWHO is configured with a json file. For an example configuration, see `configs/iwho/default.json`, the default.
+
+The `context_specifier` is a string identifier of the ISA declaration to use.
+Currently, only the x86 instruction schemes extracted from uops.info are supported.
+If you specify only a prefix of an available context specifier (like `x86`), one of the matching ISA declarations is chosen.
+
+The `filters` entry is a list of filters used to control what instruction schemes from the selected ISA declaration are used.
+Possible entries are (duplicates are allowed):
   - `{"kind": "no_cf"}`: only instruction schemes that do not affect control flow
   - `{"kind": "with_measurements", "archs": ["SKL", ...]}`: only instruction schemes for which measurements are available for all of the given microarchitectures
   - `{"kind": "only_mnemonics", "mnemonics": ["add", ...]}`: only instruction schemes with one of the specified mnemonics
   - `{"kind": "blacklist", "file_path": "./path/to/schemes.csv"}`: only instruction schemes that are not in the specified file
   - `{"kind": "whitelist", "file_path": "./path/to/schemes.csv"}`: only instructions that are in the specified file
 
+IWHO also provides an interface to many basic block throughput predictors.
+This component is configured with additional json config files:
+For an example see `configs/predictors/default.json`:
+It specifies how many prediction tasks may be performed concurrently (0 for as many as there are processor cores) and a path to a predictor registry file.
+To run predictors, you need to create such a registry file, for example as `configs/predictors/pred_registry.json` to work with the default config.
+This predictor registry needs to contain a dictionary that assigns configurations to unique predictor identifiers.
+You may copy and adjust entries from `configs/predictors/pred_registry_template.json` to this file, while inserting install-dependent paths to the tools where necessary.
 
-
-TODO add a MANIFEST.in
