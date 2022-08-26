@@ -44,6 +44,8 @@ def main():
             help='run the predictors on all supported instructions')
     input_group.add_argument('--csv', default=None, metavar='CSV file',
             help='path to a csv file containing hex strings of basic blocks as their first column')
+    input_group.add_argument('--list-predictors', action="store_true",
+            help='if specified, only enumerate the keys of available predictors ')
 
     argparser.add_argument('--csv-prefix', default=None, metavar="STR",
             help='string that is prepended to newly introduced csv keys, only applies to --csv')
@@ -68,6 +70,10 @@ def main():
 
     all_keys = pm.resolve_key_patterns(args.predictors)
 
+    if args.list_predictors:
+        for k in pm.predictor_map.keys():
+            print(k)
+        return 0
     if args.testbasic:
         bbs = [ ctx.make_example_bb() ]
     elif args.testallinsns:
