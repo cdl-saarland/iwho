@@ -1,0 +1,3 @@
+[submodule "predictors/ithemal"]
+	path = predictors/ithemal
+	url = https://github.com/fabian-r/Ithemal.git
