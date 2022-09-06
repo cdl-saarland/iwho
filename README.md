@@ -20,6 +20,17 @@ IWHO is **not** suitable for use as a full (dis)assembler framework since, e.g.,
 
 Currently, only the x86-64 ISA is implemented, with instruction schemes extracted from [uops.info](https://uops.info/).
 
+## Context: The AnICA Project
+
+**This repo is a part of the AnICA project.** Here are more related resources, for some context:
+- [The project page](https://compilers.cs.uni-saarland.de/projects/anica/) provides general information on the project.
+- [AnICA](https://github.com/cdl-saarland/AnICA), the repo for the implementation of the core AnICA algorithm. Start there if you want to work with AnICA without the artifact VM and don't want to use the browser-based user interface.
+- [AnICA-UI](https://github.com/cdl-saarland/AnICA-UI), the repo for the accompanying browser-based user interface for inspecting discovered inconsistencies. Start there if you want to work with AnICA without the artifact VM and you want to use the UI.
+- [iwho](https://github.com/cdl-saarland/iwho) (this repository), a subcomponent of AnICA that provides a convenient abstraction around instructions, which in this project greatly eases the task of randomly sampling valid basic blocks. Start there if you only want to use the instruction schemes abstraction, independent of AnICA.
+- [AnICA-Artifact](https://github.com/cdl-saarland/AnICA-Artifact), which provides the scripts used to generate the AnICA research artifact.
+- [The pre-built artifact](https://doi.org/10.5281/zenodo.6818170) on Zenodo, including a Vagrant VM and a guide to reproduce our results.
+
+
 ## Maturity
 
 This is a research prototype, expect things to break!
