@@ -1,3 +1,0 @@
-[submodule "predictors/ithemal"]
-	path = predictors/ithemal
-	url = git@gitlab.cs.uni-saarland.de:cdl/portmapping-inference/eval-ithemal.git
