@@ -31,14 +31,16 @@ class NanoBenchPredictor(Predictor):
     predictor_name = "nanobench"
     predictor_options = [
             "result_key", # key of the performance counter in nanoBench's output to use
+            "additional_counters", # dictionary mapping identifiers to the counter name (as given in the nanobench config)
             "nanobench_path", # path to the nanobench.sh script
             "nanobench_opts", # list of options to nanobench, e.g. ["-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt"]
             "timeout", # a timeout for subprocess calls in seconds
             "num_samples", # take the minimum of this many runs of nanoBench
         ]
 
-    def __init__(self, result_key, nanobench_path, nanobench_opts, timeout, num_samples):
+    def __init__(self, result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples):
         self.result_key = result_key
+        self.additional_counters = additional_counters
         self.base_path = os.path.dirname(nanobench_path)
         self.nanobench_script = os.path.basename(nanobench_path)
         self.nanobench_opts = list(map(lambda x: x.replace("${NANOBENCH_BASE}", self.base_path), nanobench_opts))
@@ -47,6 +49,11 @@ class NanoBenchPredictor(Predictor):
 
         # regular expression for extracting the number of cycles from nanobench's output
         self.parsing_re = re.compile(f"{self.result_key}" + r": (\d+\.\d+)")
+
+        self.additional_counter_res = [
+                (k, re.compile(f"{counter}" + r": (\d+\.\d+)"))
+                for k, counter in self.additional_counters.items()
+            ]
 
     def requires_sudo(self):
         return True
@@ -59,6 +66,7 @@ class NanoBenchPredictor(Predictor):
         nanobench_opts = config["nanobench_opts"]
         nanobench_path = config["nanobench_path"]
         result_key = config["result_key"]
+        additional_counters = config["additional_counters"]
         timeout = config["timeout"]
         num_samples = config["num_samples"]
         if not os.path.isfile(nanobench_path):
@@ -66,7 +74,7 @@ class NanoBenchPredictor(Predictor):
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return NanoBenchPredictor(result_key, nanobench_path, nanobench_opts, timeout, num_samples)
+        return NanoBenchPredictor(result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples)
 
     def evaluate(self, basic_block, disable_logging=False):
 
@@ -84,7 +92,7 @@ class NanoBenchPredictor(Predictor):
 
         rt = 0
 
-        tps = []
+        results = []
 
         logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
 
@@ -115,9 +123,18 @@ class NanoBenchPredictor(Predictor):
             if m is None:
                 return { 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt }
 
-            tps.append(float(m.group(1)))
+            result = {'TP': float(m.group(1))}
 
-        tp = min(tps)
-        return {"TP": tp, 'rt': rt}
+            for k, pat in self.additional_counter_res:
+                m = pat.search(str_res)
+                if m is None:
+                    result[k] = -1.0
+                else:
+                    result[k] = float(m.group(1))
+
+            results.append(result)
+
+        res = min(results, key='TP')
+        return {*res, 'rt': rt}
 
 
