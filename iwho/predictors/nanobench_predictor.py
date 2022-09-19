@@ -134,7 +134,7 @@ class NanoBenchPredictor(Predictor):
 
             results.append(result)
 
-        res = min(results, key='TP')
+        res = min(results, key=lambda x: x['TP'])
         res['rt'] = rt
         return res
 
