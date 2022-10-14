@@ -124,13 +124,13 @@ class NanoBenchPredictor(Predictor):
                         err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
                         if not disable_logging:
                             logger.error(err_str)
-                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(cmd), 'rt': rt })
+                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd)), 'rt': rt })
                         continue
                 except subprocess.TimeoutExpired:
                         err_str = f"nanoBench call hit the timeout of {timeout} seconds"
                         if not disable_logging:
                             logger.error(err_str)
-                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(cmd)})
+                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd))})
                         continue
 
                 str_res = res.stdout
@@ -138,7 +138,7 @@ class NanoBenchPredictor(Predictor):
                 # parse nanoBenchs's results
                 m = self.parsing_re.search(str_res)
                 if m is None:
-                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(cmd) })
+                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)) })
                     continue
 
                 result = {'TP': float(m.group(1))}
@@ -151,7 +151,7 @@ class NanoBenchPredictor(Predictor):
                         result[k] = float(m.group(1))
 
                 if add_details:
-                    result['nb_command'] = " ".join(cmd)
+                    result['nb_command'] = " ".join(map(repr, cmd))
                 results.append(result)
 
         res = min(results, key=lambda x: x['TP'])
