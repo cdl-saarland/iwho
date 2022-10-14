@@ -1,5 +1,6 @@
 from . import Predictor, PredictorConfigError, PWManager
 
+from copy import deepcopy
 import os
 import re
 import subprocess
@@ -89,7 +90,7 @@ class NanoBenchPredictor(Predictor):
 
         return NanoBenchPredictor(result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples)
 
-    def evaluate(self, basic_block, disable_logging=False):
+    def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
 
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run nanoBench without sudo password!")
@@ -123,19 +124,22 @@ class NanoBenchPredictor(Predictor):
                         err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
                         if not disable_logging:
                             logger.error(err_str)
-                        return { 'TP': -1.0, 'error': err_str, 'rt': rt }
+                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(cmd), 'rt': rt })
+                        continue
                 except subprocess.TimeoutExpired:
                         err_str = f"nanoBench call hit the timeout of {timeout} seconds"
                         if not disable_logging:
                             logger.error(err_str)
-                        return { 'TP': -1.0, 'error': err_str}
+                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(cmd)})
+                        continue
 
                 str_res = res.stdout
 
                 # parse nanoBenchs's results
                 m = self.parsing_re.search(str_res)
                 if m is None:
-                    return { 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt }
+                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(cmd) })
+                    continue
 
                 result = {'TP': float(m.group(1))}
 
@@ -146,10 +150,15 @@ class NanoBenchPredictor(Predictor):
                     else:
                         result[k] = float(m.group(1))
 
+                if add_details:
+                    result['nb_command'] = " ".join(cmd)
                 results.append(result)
 
         res = min(results, key=lambda x: x['TP'])
         res['rt'] = rt
+        if add_details:
+            res = deepcopy(res) # avoid a recursive datastructure
+            res['all_results'] = results
         return res
 
 
