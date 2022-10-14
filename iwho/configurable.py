@@ -120,13 +120,13 @@ def _make_paths_relative(basepath, obj):
     else:
         return obj
 
-def pretty_print(obj, filter_doc=False):
+def pretty_print(obj, filter_doc=False, target_width=80):
     """ A prettier alternative to just json-dumping a config dict.
     If filter_doc is True, keys that are considered documentation (because of
     their suffix) are omitted.
     """
     json_str = json.dumps(obj)
-    if len(json_str) <= 80:
+    if len(json_str) <= target_width:
         return json_str
 
     if isinstance(obj, dict):
@@ -136,7 +136,7 @@ def pretty_print(obj, filter_doc=False):
             if filter_doc and ConfigurableImpl.is_doc_key(key):
                 continue
 
-            value_str = pretty_print(value, filter_doc=filter_doc)
+            value_str = pretty_print(value, filter_doc=filter_doc, target_width=target_width)
             lines = value_str.split('\n')
             if len(lines) > 1:
                 value_str = lines[0] + "\n" + 4*" " + ("\n" + 4*" ").join(lines[1:])
@@ -149,7 +149,7 @@ def pretty_print(obj, filter_doc=False):
     elif isinstance(obj, list) or isinstance(obj, tuple):
         entries = []
         for value in obj:
-            value_str = pretty_print(value, filter_doc=filter_doc)
+            value_str = pretty_print(value, filter_doc=filter_doc, target_width=target_width)
             entries.append(textwrap.indent(value_str, '  '))
         res = "[\n"
         res += ",\n".join(entries)
