@@ -158,7 +158,7 @@ class NanoBenchPredictor(Predictor):
         res['rt'] = rt
         if add_details:
             res = deepcopy(res) # avoid a recursive datastructure
-            res['all_results'] = results
+            res['all_results'] = sorted(results, key=lambda x: x['TP'])
         return res
 
 
