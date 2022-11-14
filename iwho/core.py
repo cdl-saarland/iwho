@@ -110,7 +110,11 @@ class Filters:
             res = set()
             with open(scheme_strs, "r") as f:
                 for line in f:
-                    res.add(line.strip())
+                    cropped_line = line
+                    if "#" in cropped_line:
+                        cropped_line = cropped_line.split('#')[0]
+                    cropped_line = cropped_line.strip()
+                    res.add(cropped_line)
             scheme_strs = res
         else:
             scheme_strs = set(scheme_strs)
@@ -135,7 +139,11 @@ class Filters:
             res = set()
             with open(scheme_strs, "r") as f:
                 for line in f:
-                    res.add(line.strip())
+                    cropped_line = line
+                    if "#" in cropped_line:
+                        cropped_line = cropped_line.split('#')[0]
+                    cropped_line = cropped_line.strip()
+                    res.add(cropped_line)
             scheme_strs = res
         else:
             scheme_strs = set(scheme_strs)
