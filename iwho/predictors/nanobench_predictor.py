@@ -62,7 +62,7 @@ class NanoBenchPredictor(Predictor):
         self.num_samples = num_samples
 
         # regular expression for extracting the number of cycles from nanobench's output
-        self.parsing_re = re.compile(f"{self.result_key}" + r": (\d+\.\d+)")
+        self.parsing_re = re.compile(f"{self.result_key}" + r": (-?\d+\.\d+)")
 
         self.additional_counter_res = [
                 (k, re.compile(f"{counter}" + r": (\d+\.\d+)"))
@@ -138,10 +138,22 @@ class NanoBenchPredictor(Predictor):
                 # parse nanoBenchs's results
                 m = self.parsing_re.search(str_res)
                 if m is None:
-                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)) })
+                    out_str = "nanoBench output:\n  stdout:\n"
+                    out_str += textwrap.indent(res.stdout, 4*' ')
+                    out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
                     continue
 
-                result = {'TP': float(m.group(1))}
+                tp_val = float(m.group(1))
+
+                if tp_val < 0.0:
+                    out_str = "nanoBench output:\n  stdout:\n"
+                    out_str += textwrap.indent(res.stdout, 4*' ')
+                    out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    results.append({ 'TP': -1.0, 'error': "negative throughput in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
+                    continue
+
+                result = {'TP': tp_val}
 
                 for k, pat in self.additional_counter_res:
                     m = pat.search(str_res)
