@@ -28,6 +28,7 @@ class NanoBenchPredictor(Predictor):
     * `nanobench_opts`: a list of command line options to nanoBench, e.g., `["-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt"]`
     * `timeout`: a timeout for subprocess calls in seconds
     * `num_samples`: take the minimum of this many runs of nanoBench
+    * `aggregator`: aggregation method to use among the samples ("median" or "min")
     """
     predictor_name = "nanobench"
     predictor_options = [
@@ -37,9 +38,12 @@ class NanoBenchPredictor(Predictor):
             "nanobench_opts", # list of options to nanobench, e.g. ["-config", "${NANOBENCH_BASE}/configs/cfg_Skylake_common.txt"]
             "timeout", # a timeout for subprocess calls in seconds
             "num_samples", # take the minimum of this many runs of nanoBench
+            "aggregator", # a timeout for subprocess calls in seconds
         ]
 
-    def __init__(self, result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples):
+    aggregator_funs = { "min", "median", }
+
+    def __init__(self, result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples, aggregator):
         self.result_key = result_key
         self.additional_counters = additional_counters
         self.base_path = os.path.dirname(nanobench_path)
@@ -60,6 +64,10 @@ class NanoBenchPredictor(Predictor):
                 ]
         self.timeout = timeout
         self.num_samples = num_samples
+
+        if aggregator not in self.aggregator_funs:
+            raise PredictorConfigError(f"Invalid aggregator: {aggregator}")
+        self.aggregator = aggregator
 
         # regular expression for extracting the number of cycles from nanobench's output
         self.parsing_re = re.compile(f"{self.result_key}" + r": (-?\d+\.\d+)")
@@ -83,12 +91,13 @@ class NanoBenchPredictor(Predictor):
         additional_counters = config["additional_counters"]
         timeout = config["timeout"]
         num_samples = config["num_samples"]
+        aggregator = config["aggregator"]
         if not os.path.isfile(nanobench_path):
             err_str = "no nanobench.sh script found at specified path '{}'".format(nanobench_path)
             logger.error(err_str)
             raise PredictorConfigError(err_str)
 
-        return NanoBenchPredictor(result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples)
+        return NanoBenchPredictor(result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples, aggregator)
 
     def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
 
@@ -166,11 +175,18 @@ class NanoBenchPredictor(Predictor):
                     result['nb_command'] = " ".join(map(repr, cmd))
                 results.append(result)
 
-        res = min(results, key=lambda x: x['TP'])
+        sorted_results = sorted(results, key=lambda x: x['TP'])
+        if self.aggregator == "min":
+            res = sorted_results[0]
+        elif self.aggregator == "median":
+            res = sorted_results[len(sorted_results)//2]
+        else:
+            assert False, f"aggregator {self.aggregator} not handled!"
+
         res['rt'] = rt
         if add_details:
             res = deepcopy(res) # avoid a recursive datastructure
-            res['all_results'] = sorted(results, key=lambda x: x['TP'])
+            res['all_results'] = sorted_results
         return res
 
 
