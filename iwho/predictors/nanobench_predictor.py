@@ -109,7 +109,28 @@ class NanoBenchPredictor(Predictor):
 
         timeout = self.timeout
 
-        results = []
+        # We perform two levels of aggregation:
+        # (1) We try different nanobench configs. The goal is to have one in
+        #     there that achieves optimal throughput. We want to take the
+        #     result of the config that executes in the minimal number of
+        #     cycles.
+        # (2) For each of these configs, we run a number of samples. The
+        #     purpose of that is to handle CPUs that produce messy, noisy
+        #     measurements (looking at you, Zen+...). Since we cannot assume
+        #     that we will always measure things take at least as long as an
+        #     optimal execution (we even observed executions with a negative
+        #     number of cycles!), the median is a better choice for such cases.
+        #     This aggregation function is however configurable with the
+        #     `aggregator` config option. For architectures with more reliable
+        #     measurements, `minimum` is a viable option here.
+        #
+        # `all_results` contains ALL run results
+        # `chosen_results` contains for each config one result that has been
+        #   chosen according to aggregation (2). Aggregation (1) is performed
+        #   on this list.
+
+        chosen_results = []
+        all_results = []
 
         rt = 0
 
@@ -120,6 +141,7 @@ class NanoBenchPredictor(Predictor):
 
             logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
 
+            sample_results = []
             for it in range(self.num_samples):
                 try:
                     start = timer()
@@ -133,13 +155,13 @@ class NanoBenchPredictor(Predictor):
                         err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
                         if not disable_logging:
                             logger.error(err_str)
-                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd)), 'rt': rt })
+                        sample_results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd)), 'rt': rt })
                         continue
                 except subprocess.TimeoutExpired:
                         err_str = f"nanoBench call hit the timeout of {timeout} seconds"
                         if not disable_logging:
                             logger.error(err_str)
-                        results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd))})
+                        sample_results.append({ 'TP': -1.0, 'error': err_str, 'nb_command': " ".join(map(repr, cmd))})
                         continue
 
                 str_res = res.stdout
@@ -150,7 +172,7 @@ class NanoBenchPredictor(Predictor):
                     out_str = "nanoBench output:\n  stdout:\n"
                     out_str += textwrap.indent(res.stdout, 4*' ')
                     out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                    results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
+                    sample_results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
                     continue
 
                 tp_val = float(m.group(1))
@@ -159,7 +181,7 @@ class NanoBenchPredictor(Predictor):
                     out_str = "nanoBench output:\n  stdout:\n"
                     out_str += textwrap.indent(res.stdout, 4*' ')
                     out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                    results.append({ 'TP': -1.0, 'error': "negative throughput in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
+                    sample_results.append({ 'TP': -1.0, 'error': "negative throughput in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
                     continue
 
                 result = {'TP': tp_val}
@@ -173,20 +195,28 @@ class NanoBenchPredictor(Predictor):
 
                 if add_details:
                     result['nb_command'] = " ".join(map(repr, cmd))
-                results.append(result)
+                sample_results.append(result)
 
-        sorted_results = sorted(results, key=lambda x: x['TP'])
-        if self.aggregator == "min":
-            res = sorted_results[0]
-        elif self.aggregator == "median":
-            res = sorted_results[len(sorted_results)//2]
-        else:
-            assert False, f"aggregator {self.aggregator} not handled!"
+            # level (2) of aggregation, configurable
+            sorted_results = sorted(sample_results, key=lambda x: x['TP'])
+            if self.aggregator == "min":
+                chosen_result = sorted_results[0]
+            elif self.aggregator == "median":
+                chosen_result = sorted_results[len(sorted_results)//2]
+            else:
+                assert False, f"aggregator {self.aggregator} not handled!"
+
+            chosen_results.append(chosen_result)
+            all_results += sample_results
+
+        # level (1) of aggregation, min
+        res = min(chosen_results, key=lambda x: x['TP'])
 
         res['rt'] = rt
         if add_details:
             res = deepcopy(res) # avoid a recursive datastructure
-            res['all_results'] = sorted_results
+            res['chosen_results'] = sorted_results
+            res['all_results'] = sorted(all_results, key=lambda x: x['TP'])
         return res
 
 
