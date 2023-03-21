@@ -189,117 +189,6 @@ def add_uops_info_xml(ctx, xml_path, validate):
 
     feature_mapping = defaultdict(list)
 
-    # add the SSE/AVX cmp pseudo ops
-    # Maybe it would be better to map all of those versions to the corresponding immediate version, or have a predicate operand
-    # TODO if we would support AVX512, masked versions would be needed here as well
-
-
-    def r_op(constraint):
-        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=True, written=False)
-
-    def w_op(constraint):
-        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=True)
-
-    def rw_op(constraint):
-        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=True, written=True)
-
-    def mem_constraint(width):
-        return ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
-
-    registers = [f"xmm{x}" for x in range(0,16)]
-    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
-    xmm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
-
-    registers = [f"ymm{x}" for x in range(0,16)]
-    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
-    ymm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
-
-    cmp_versions = ["eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord"]
-
-
-    def make_scheme(str_template, explicit_operands, implicit_operands=None, affects_control_flow=False):
-        if implicit_operands is None:
-            implicit_operands = []
-        scheme = iwho.InsnScheme(
-                str_template=str_template,
-                explicit_operands=explicit_operands,
-                implicit_operands=implicit_operands,
-                affects_control_flow=affects_control_flow
-            )
-        key = str(scheme)
-        all_schemes[key] = scheme
-        ctx.add_insn_scheme(scheme)
-
-    # TODO improvement: these should also have features
-    # search for features for cmpss, cmpsd, cmpps, cmppd and vcmpss, vcmpsd, vcmpps, vcmppd
-    # it might make sense to insert these schemes after all the others so that we can look these features up
-
-    for cmpv in cmp_versions:
-        curr_mnemonic = "cmp{}ss".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}",
-                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, dword ptr ${mem0}",
-                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(32))})
-
-        curr_mnemonic = "cmp{}sd".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}",
-                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, qword ptr ${mem0}",
-                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(64))})
-
-        curr_mnemonic = "cmp{}ps".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}",
-                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, xmmword ptr ${mem0}",
-                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(128))})
-
-        curr_mnemonic = "cmp{}pd".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}",
-                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, xmmword ptr ${mem0}",
-                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(128))})
-
-
-    vcmp_versions = [ "eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord",
-            "eq_uq", "nge", "ngt", "false", "neq_oq", "ge", "gt", "true",
-            "eq_os", "lt_oq", "le_oq", "unord_s", "neq_us", "nlt_uq", "nle_uq",
-            "ord_s", "eq_us", "nge_uq", "ngt_uq", "false_os", "neq_os", "ge_oq",
-            "gt_oq", "true_us"]
-
-    for cmpv in vcmp_versions:
-        curr_mnemonic = "vcmp{}ss".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, dword ptr ${mem0}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(32))})
-
-        curr_mnemonic = "vcmp{}sd".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, qword ptr ${mem0}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(64))})
-
-        curr_mnemonic = "vcmp{}ps".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, xmmword ptr ${mem0}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(128))})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint), "reg2": r_op(ymm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ymmword ptr ${mem0}",
-                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint),"mem0": r_op(mem_constraint(256))})
-
-        curr_mnemonic = "vcmp{}pd".format(cmpv)
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, xmmword ptr ${mem0}",
-                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(128))})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}",
-                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint), "reg2": r_op(ymm_constraint)})
-        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ymmword ptr ${mem0}",
-                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint),"mem0": r_op(mem_constraint(256))})
-
-
     for instrNode in xml_root.iter('instruction'):
         try:
             affects_control_flow = False
@@ -320,8 +209,8 @@ def add_uops_info_xml(ctx, xml_path, validate):
             if any(x in instrNode.attrib['isa-set'] for x in ['XOP', 'AVX512', 'LWP']):
                 continue
 
-            # if any(x in instrNode.attrib['extension'] for x in ['AVX512']):
-            #     continue
+            if any(x in instrNode.attrib['extension'] for x in ['AVX_VNNI', 'GFNI']): # additional AVX512 things
+                continue
 
             if instrNode.attrib['extension'] in ['AMD_INVLPGB', 'AMX_BF16',
                     'AMX_INT8', 'AMX_TILE', 'CLDEMOTE', 'ENQCMD', 'HRESET',
@@ -389,19 +278,6 @@ def add_uops_info_xml(ctx, xml_path, validate):
                 str_template = str_template.replace("REPE", "REP", 1)
 
             mnemonic = str_template
-
-            if mnemonic in [ "CLFLUSHOPT", "CLFLUSH", "CLWB",
-                    "INS", "INSB", "INSW", "INSD", # input from port
-                    "REP INS", "REP INSB", "REP INSW", "REP INSD", # input from port
-                    "REPNE INS", "REPNE INSB", "REPNE INSW", "REPNE INSD", # input from port
-                    "OUTS", "OUTSB", "OUTSW", "OUTSD", # output to port
-                    "REP OUTS", "REP OUTSB", "REP OUTSW", "REP OUTSD", # output to port
-                    "REPNE OUTS", "REPNE OUTSB", "REPNE OUTSW", "REPNE OUTSD", # output to port
-                    "IRETW",]:
-                continue
-
-            # if "PREFETCH" in mnemonic:
-            #     continue
 
             explicit_operands = dict()
             implicit_operands = []
@@ -569,6 +445,132 @@ def add_uops_info_xml(ctx, xml_path, validate):
         logger.debug(f"Encountered {num_errors} unsupported instruction entries while processing uops.info xml.")
 
     logger.info(f"{len(ctx.insn_schemes)} instruction schemes after processing uops.info xml.")
+
+
+    # add the SSE/AVX cmp pseudo ops
+    # Maybe it would be better to map all of those versions to the corresponding immediate version, or have a predicate operand
+    # TODO if we would support AVX512, masked versions would be needed here as well
+
+    def r_op(constraint):
+        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=True, written=False)
+
+    def w_op(constraint):
+        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=False, written=True)
+
+    def rw_op(constraint):
+        return ctx.dedup_store.get(iwho.OperandScheme, constraint=constraint, read=True, written=True)
+
+    def mem_constraint(width):
+        return ctx.dedup_store.get(x86.MemConstraint, unhashed_kwargs={"context": ctx}, width=width)
+
+    registers = [f"xmm{x}" for x in range(0,16)]
+    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
+    xmm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
+
+    registers = [f"ymm{x}" for x in range(0,16)]
+    allowed_registers = frozenset(( x86.all_registers[reg] for reg in registers ))
+    ymm_constraint = ctx.dedup_store.get(x86.RegisterConstraint, acceptable_operands=allowed_registers)
+
+    cmp_versions = ["eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord"]
+
+
+    def get_features(str_template, explicit_operands):
+        # make a dummy scheme to obtain the key
+        scheme = iwho.InsnScheme(
+                str_template=str_template,
+                explicit_operands=explicit_operands,
+                implicit_operands=[], # irrelevant
+                affects_control_flow=False, #irrelevant
+            )
+        key = str(scheme)
+        return feature_mapping[key]
+
+    def make_scheme(str_template, remove_for_features, explicit_operands, implicit_operands=None, affects_control_flow=False):
+        if implicit_operands is None:
+            implicit_operands = []
+        scheme = iwho.InsnScheme(
+                str_template=str_template,
+                explicit_operands=explicit_operands,
+                implicit_operands=implicit_operands,
+                affects_control_flow=affects_control_flow
+            )
+        key = str(scheme)
+        all_schemes[key] = scheme
+
+        features = get_features(str_template.replace(remove_for_features, "", 1) + ", IMM(8)", explicit_operands)
+        assert len(features) > 0
+        feature_mapping[key] = features
+
+        ctx.add_insn_scheme(scheme)
+
+    # TODO improvement: these should also have features
+    # search for features for cmpss, cmpsd, cmpps, cmppd and vcmpss, vcmpsd, vcmpps, vcmppd
+    # it might make sense to insert these schemes after all the others so that we can look these features up
+
+    for cmpv in cmp_versions:
+        curr_mnemonic = "cmp{}ss".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, dword ptr ${mem0}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(32))})
+
+        curr_mnemonic = "cmp{}sd".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, qword ptr ${mem0}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(64))})
+
+        curr_mnemonic = "cmp{}ps".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, xmmword ptr ${mem0}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(128))})
+
+        curr_mnemonic = "cmp{}pd".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "reg1": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, xmmword ptr ${mem0}", cmpv,
+                {"reg0": rw_op(xmm_constraint), "mem0": r_op(mem_constraint(128))})
+
+
+    vcmp_versions = [ "eq", "lt", "le", "unord", "neq", "nlt", "nle", "ord",
+            "eq_uq", "nge", "ngt", "false", "neq_oq", "ge", "gt", "true",
+            "eq_os", "lt_oq", "le_oq", "unord_s", "neq_us", "nlt_uq", "nle_uq",
+            "ord_s", "eq_us", "nge_uq", "ngt_uq", "false_os", "neq_os", "ge_oq",
+            "gt_oq", "true_us"]
+
+    for cmpv in vcmp_versions:
+        curr_mnemonic = "vcmp{}ss".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, dword ptr ${mem0}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(32))})
+
+        curr_mnemonic = "vcmp{}sd".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, qword ptr ${mem0}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(64))})
+
+        curr_mnemonic = "vcmp{}ps".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, xmmword ptr ${mem0}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(128))})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint), "reg2": r_op(ymm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ymmword ptr ${mem0}", cmpv,
+                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint),"mem0": r_op(mem_constraint(256))})
+
+        curr_mnemonic = "vcmp{}pd".format(cmpv)
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint), "reg2": r_op(xmm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, xmmword ptr ${mem0}", cmpv,
+                {"reg0": w_op(xmm_constraint), "reg1": r_op(xmm_constraint),"mem0": r_op(mem_constraint(128))})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ${reg2}", cmpv,
+                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint), "reg2": r_op(ymm_constraint)})
+        make_scheme(curr_mnemonic + " ${reg0}, ${reg1}, ymmword ptr ${mem0}", cmpv,
+                {"reg0": w_op(ymm_constraint), "reg1": r_op(ymm_constraint),"mem0": r_op(mem_constraint(256))})
 
     if validate:
         # ensure that all schemes are realizable and make it through encoder and decoder
