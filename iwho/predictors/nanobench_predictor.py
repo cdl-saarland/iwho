@@ -3,6 +3,7 @@ from . import Predictor, PredictorConfigError, PWManager
 from copy import deepcopy
 import os
 import re
+import json
 import subprocess
 import tempfile
 import textwrap
@@ -172,7 +173,10 @@ class NanoBenchPredictor(Predictor):
                     out_str = "nanoBench output:\n  stdout:\n"
                     out_str += textwrap.indent(res.stdout, 4*' ')
                     out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                    sample_results.append({ 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
+                    sample_result = { 'TP': -1.0, 'error': "throughput missing in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str }
+                    sample_results.append(sample_result)
+                    if not disable_logging:
+                        logger.debug("nanobench result:\n  " + json.dumps(sample_result))
                     continue
 
                 tp_val = float(m.group(1))
@@ -181,7 +185,10 @@ class NanoBenchPredictor(Predictor):
                     out_str = "nanoBench output:\n  stdout:\n"
                     out_str += textwrap.indent(res.stdout, 4*' ')
                     out_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                    sample_results.append({ 'TP': -1.0, 'error': "negative throughput in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str })
+                    sample_result = { 'TP': -1.0, 'error': "negative throughput in nanoBench output", 'rt': rt, 'nb_command': " ".join(map(repr, cmd)), 'nb_output': out_str }
+                    sample_results.append(sample_result)
+                    if not disable_logging:
+                        logger.debug("nanobench result:\n  " + json.dumps(sample_result))
                     continue
 
                 result = {'TP': tp_val}
@@ -195,6 +202,10 @@ class NanoBenchPredictor(Predictor):
 
                 if add_details:
                     result['nb_command'] = " ".join(map(repr, cmd))
+
+                if not disable_logging:
+                    logger.debug("nanobench result:\n  " + json.dumps(result))
+
                 sample_results.append(result)
 
             # level (2) of aggregation, configurable
