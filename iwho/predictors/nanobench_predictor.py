@@ -100,6 +100,18 @@ class NanoBenchPredictor(Predictor):
 
         return NanoBenchPredictor(result_key, additional_counters, nanobench_path, nanobench_opts, timeout, num_samples, aggregator)
 
+    # This code should warm the CPU up a little before measurements, hopefully
+    # leading to better accuracy. It is also used for at least some uops.info
+    # measurements, according to their tables.
+    init_code = """
+        MOV R15, 10000;
+        L: VADDPS YMM0, YMM1, YMM1;
+        VADDPS YMM0, YMM1, YMM1;
+        DEC R15;
+        JNZ L;
+        VZEROALL;
+        """
+
     def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
 
         if PWManager.password is None:
@@ -107,6 +119,8 @@ class NanoBenchPredictor(Predictor):
 
         # we do not want the block to be wrapped in a loop, since nanoBench adds its own loop
         asm_str = '; '.join(basic_block.get_asm(unwrapped=True).split('\n'))
+
+        init_code_str = '; '.join(map(lambda x: x.strip(), self.init_code.split('\n')))
 
         timeout = self.timeout
 
@@ -139,6 +153,9 @@ class NanoBenchPredictor(Predictor):
             cmd = ['sudo', '-S', './' + self.nanobench_script]
             cmd.extend(('-asm', asm_str))
             cmd.extend(nb_opt)
+
+            cmd.extend('-asm_init', init_code_str)
+            # TODO properly initialize all used registers?
 
             logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
 
