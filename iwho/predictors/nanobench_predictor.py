@@ -154,7 +154,7 @@ class NanoBenchPredictor(Predictor):
             cmd.extend(('-asm', asm_str))
             cmd.extend(nb_opt)
 
-            cmd.extend('-asm_init', init_code_str)
+            cmd.extend(('-asm_init', init_code_str))
             # TODO properly initialize all used registers?
 
             logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
