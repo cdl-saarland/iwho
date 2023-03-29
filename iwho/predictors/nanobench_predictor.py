@@ -103,6 +103,8 @@ class NanoBenchPredictor(Predictor):
     # This code should warm the CPU up a little before measurements, hopefully
     # leading to better accuracy. It is also used for at least some uops.info
     # measurements, according to their tables.
+    # It is however weird that this would be necessary, because we use
+    # nanoBench's warm-up feature, which serves the same purpose.
     init_code = """
         MOV R15, 10000;
         L: VADDPS YMM0, YMM1, YMM1;
@@ -154,7 +156,7 @@ class NanoBenchPredictor(Predictor):
             cmd.extend(('-asm', asm_str))
             cmd.extend(nb_opt)
 
-            cmd.extend(('-asm_init', init_code_str))
+            # cmd.extend(('-asm_init', init_code_str))
             # TODO properly initialize all used registers?
 
             logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
