@@ -240,7 +240,13 @@ class NanoBenchPredictor(Predictor):
             all_results += sample_results
 
         # level (1) of aggregation, min
-        res = min(chosen_results, key=lambda x: x['TP'])
+        # If some, but not all results are negative (i.e., cause errors), ignore
+        # the negative ones.
+        non_negative_results = [ r for r in chosen_results if r['TP'] >= 0 ]
+        if len(non_negative_results) > 0:
+            res = min(non_negative_results, key=lambda x: x['TP'])
+        else:
+            res = min(chosen_results, key=lambda x: x['TP'])
 
         res['rt'] = rt
         if add_details:
