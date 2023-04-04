@@ -49,7 +49,7 @@ def init_register_code_x86():
             ]
 
     # initialize the GPRs
-    for r in [rax, rbx, rdx, r8, r9, r10, r11, r12, r13]:
+    for r in ["rax", "rbx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13"]:
         lines.append(f"mov {r}, 42")
 
     # C and r14 get a special treatment, one is for shift amounts, the other for small, unmodified values
