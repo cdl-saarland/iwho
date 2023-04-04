@@ -172,7 +172,7 @@ class NanoBenchPredictor(Predictor):
         # we do not want the block to be wrapped in a loop, since nanoBench adds its own loop
         asm_str = '; '.join(basic_block.get_asm(unwrapped=True).split('\n'))
 
-        init_code_str = ' '.join(map(lambda x: x.strip(), self.init_code.split('\n')))
+        # init_code_str = ' '.join(map(lambda x: x.strip(), self.init_code.split('\n')))
 
         timeout = self.timeout
 
