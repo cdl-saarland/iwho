@@ -43,20 +43,20 @@ def init_register_code_x86():
             "MOV r13d, 42",
             f"VCVTSI2SS xmm0, xmm0, r13d", # set the lower-most float to the value
             f"VPERMILPS xmm0, xmm0, 0", # set the lower half of the floats to the lower-most
-            f"vinsertf128 ymm0, ymm0, xmm0, 1", # set the upper half of the floats to the lower half
+            f"VINSERTF128 ymm0, ymm0, xmm0, 1", # set the upper half of the floats to the lower half
         ]
 
     # copy it to all other ymm registers
     for n in range(1, 15):
-        lines += [ f"movaps ymm{n}, ymm0", ]
+        lines += [ f"VMOVAPS ymm{n}, ymm0", ]
 
     # initialize the GPRs
     for r in ["rax", "rbx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13"]:
-        lines.append(f"mov {r}, 42")
+        lines.append(f"MOV {r}, 42")
 
     # C and r14 get a special treatment, one is for shift amounts, the other for small, unmodified values
-    lines.append("mov rcx, 3") # shifts
-    lines.append("mov r14, 7") # small value
+    lines.append("MOV rcx, 3") # shifts
+    lines.append("MOV r14, 7") # small value
 
     # clear the flags
     lines += [
