@@ -1,6 +1,7 @@
 from . import Predictor, PredictorConfigError, PWManager
 
 from copy import deepcopy
+import functools
 import os
 import re
 import json
@@ -9,9 +10,58 @@ import tempfile
 import textwrap
 from timeit import default_timer as timer
 
+import iwho.x86 as x86
+
 import logging
 logger = logging.getLogger(__name__)
 
+@functools.lru_cache
+def pre_init_code_x86():
+    lines = []
+
+    # disable denormal floats
+    lines += [
+            "MOV r13, qword ptr [r14]", # save [r14] contents for later
+            "VSTMXCSR dword ptr [r14]", # move control register contents to memory
+            "OR dword ptr [r14], 0x8040", # or with (1 << 15) | (1 << 6)
+            "VLDMXCSR dword ptr [r14]", # move memory contents to the control register
+            "MOV qword ptr [r14], r13", # restore [r14] contents
+        ]
+
+    return "; ".join(lines)
+
+@functools.lru_cache
+def init_register_code_x86():
+    lines = []
+    # R14, RDI, RSI, RSP, and RBP are initialized with valid addresses by NB
+    # R15 is the loop counter
+
+    # initialize the vector registers first, since that requires GPRs
+    lines += [
+            "VZEROALL",
+            "MOV r13d, 42",
+        ]
+    for n in range(0, 15):
+        lines += [
+                f"VCVTSI2SS xmm{n}, xmm{n}, r13d", # set the lower-most float to the value
+                f"VPERMILPS xmm{n}, xmm{n}, 0", # set the lower half of the floats to the lower-most
+                f"vinsertf128 ymm{n}, ymm{n}, xmm{n}, 1", # set the upper half of the floats to the lower half
+            ]
+
+    # initialize the GPRs
+    for r in [rax, rbx, rdx, r8, r9, r10, r11, r12, r13]:
+        lines.append(f"mov {r}, 42")
+
+    # C and r14 get a special treatment, one is for shift amounts, the other for small, unmodified values
+    lines.append("mov rcx, 3") # shifts
+    lines.append("mov r14, 7") # small value
+
+    # clear the flags
+    lines += [
+            "CMP rbx, rbx"
+        ]
+
+    return "; ".join(lines)
 
 class NanoBenchPredictor(Predictor):
     """
@@ -105,14 +155,14 @@ class NanoBenchPredictor(Predictor):
     # measurements, according to their tables.
     # It is however weird that this would be necessary, because we use
     # nanoBench's warm-up feature, which serves the same purpose.
-    init_code = """
-        MOV R15, 10000;
-        L: VADDPS YMM0, YMM1, YMM1;
-        VADDPS YMM0, YMM1, YMM1;
-        DEC R15;
-        JNZ L;
-        VZEROALL;
-        """
+    # init_code = """
+    #     MOV R15, 10000;
+    #     L: VADDPS YMM0, YMM1, YMM1;
+    #     VADDPS YMM0, YMM1, YMM1;
+    #     DEC R15;
+    #     JNZ L;
+    #     VZEROALL;
+    #     """
 
     def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
 
@@ -156,8 +206,8 @@ class NanoBenchPredictor(Predictor):
             cmd.extend(('-asm', asm_str))
             cmd.extend(nb_opt)
 
-            # cmd.extend(('-asm_init', init_code_str))
-            # TODO properly initialize all used registers?
+            cmd.extend(('-asm_one_time_init', pre_init_code_x86()))
+            cmd.extend(('-asm_init', init_register_code_x86()))
 
             logger.debug(f"nanoBench command (with cwd={self.base_path}):\n" + ' '.join(map(lambda x: f'"{x}"', cmd)))
 
