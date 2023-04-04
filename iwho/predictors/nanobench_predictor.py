@@ -36,17 +36,19 @@ def init_register_code_x86():
     # R14, RDI, RSI, RSP, and RBP are initialized with valid addresses by NB
     # R15 is the loop counter
 
-    # initialize the vector registers first, since that requires GPRs
+    # initialize the vector registers first, since that requires a GPR
+    # set up the first ymm register to a vector of floats
     lines += [
             "VZEROALL",
             "MOV r13d, 42",
+            f"VCVTSI2SS xmm0, xmm0, r13d", # set the lower-most float to the value
+            f"VPERMILPS xmm0, xmm0, 0", # set the lower half of the floats to the lower-most
+            f"vinsertf128 ymm0, ymm0, xmm0, 1", # set the upper half of the floats to the lower half
         ]
-    for n in range(0, 15):
-        lines += [
-                f"VCVTSI2SS xmm{n}, xmm{n}, r13d", # set the lower-most float to the value
-                f"VPERMILPS xmm{n}, xmm{n}, 0", # set the lower half of the floats to the lower-most
-                f"vinsertf128 ymm{n}, ymm{n}, xmm{n}, 1", # set the upper half of the floats to the lower half
-            ]
+
+    # copy it to all other ymm registers
+    for n in range(1, 15):
+        lines += [ f"movaps ymm{n}, ymm0", ]
 
     # initialize the GPRs
     for r in ["rax", "rbx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13"]:
