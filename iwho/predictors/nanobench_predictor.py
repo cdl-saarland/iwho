@@ -245,8 +245,12 @@ class NanoBenchPredictor(Predictor):
         non_negative_results = [ r for r in chosen_results if r['TP'] >= 0 ]
         if len(non_negative_results) > 0:
             res = min(non_negative_results, key=lambda x: x['TP'])
+            if len(non_negative_results) < len(chosen_results):
+                res['negative_results_omitted'] = True
+                logger.warning("some broken runs were omitted")
         else:
             res = min(chosen_results, key=lambda x: x['TP'])
+            logger.warning("only broken runs observed")
 
         res['rt'] = rt
         if add_details:
