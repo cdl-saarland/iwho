@@ -1,0 +1,183 @@
+"""
+
+Ultimately, this implementation is based on work by Kallistos Weis.
+"""
+
+import json
+import os
+from pathlib import Path
+import re
+import textwrap
+import subprocess
+import tempfile
+from timeit import default_timer as timer
+
+from iwho.predictors import Predictor, PredictorConfigError, PWManager
+
+import logging
+logger = logging.getLogger(__name__)
+
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pite_frame.c')) as f:
+    program_frame = f.read()
+
+
+class PITEPredictor(Predictor):
+    predictor_name = "pite"
+    predictor_options = [
+            "isa", # the architecture the basic blocks are from, currently supported: 'x86'
+            "pinned_core", # processor core to run benchmarks on
+            "timeout", # a timeout for subprocess calls in seconds
+            "compiler_cmd", # a compiler command, with arguments listed
+            "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
+            "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
+        ]
+
+    cpufreq_path = "/sys/devices/system/cpu/cpu{core}/cpufreq/scaling_cur_freq"
+
+    def requires_sudo(self):
+        return True
+
+    def needs_to_run_alone(self):
+        return True
+
+    def __init__(self, config):
+        for opt in self.predictor_options:
+            setattr(self, opt, config[opt])
+
+    @staticmethod
+    def from_config(config):
+        return PITEPredictor(config)
+
+    def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
+
+        if PWManager.password is None:
+            raise PredictorConfigError("Trying to run PITE without sudo privileges!")
+
+        timeout = self.timeout
+
+        with tempfile.TemporaryDirectory(prefix="PITEbench_") as work_dir_name:
+            work_dir = Path(work_dir_name)
+            src_path = work_dir / 'bench.c'
+            bin_path = work_dir / 'bench.bin'
+
+            # generate benchmark code in file with unique name
+
+            bench_code_lines = []
+            for line in basic_block.get_asm(unwrapped=True).split('\n'):
+                bench_code_lines.append('        "    {}\\n"'.format(line))
+
+            bench_code = "\n".join(bench_code_lines)
+
+            rt = 0.0
+
+            all_results = []
+
+            for subconfig in self.subconfigs:
+                target_usec = subconfig['target_usec']
+                num_samples_internal = subconfig['num_samples_internal']
+                replacements = {
+                    "PLACEHOLDER_TARGET_USEC": str(target_usec),
+                    "PLACEHOLDER_NUM_REPS": str(num_samples_internal),
+                    "PLACEHOLDER_FREQ_PATH": self.cpufreq_path.format(core=self.pinned_core),
+                    "PLACEHOLDER_BENCH_CODE": bench_code,
+                }
+                instantiated_frame = program_frame
+                for k, v in replacements.items():
+                    instantiated_frame = instantiated_frame.replace(k, v)
+
+                with open(src_path, 'w') as f:
+                    f.write(instantiated_frame)
+
+                # compile benchmark code
+                cmd = self.compiler_cmd + ('-o', bin_path, src_path)
+
+                try:
+                    res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)
+                except subprocess.TimeoutExpired:
+                    err_str = f"PITE template compilation hit the timeout of {timeout} seconds"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str})
+                    continue
+
+                if res.returncode != 0:
+                    err_str = f"failed to compile the PITE source template:\n"
+                    err_str += "  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    err_str += "  source code:" + textwrap.indent(instantiated_frame, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str})
+                    continue
+
+                # run benchmark code
+                try:
+                    cmd = ["sudo", "-S", "taskset", "-c", str(self.pinned_core), bin_path]
+                    start = timer()
+                    res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout, input=PWManager.password)
+                    end = timer()
+                    rt += end - start
+                except subprocess.TimeoutExpired:
+                    err_str = f"PITE call hit the timeout of {timeout} seconds"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str})
+                    continue
+
+                if res.returncode != 0:
+                    err_str = "PITE benchmark run failed:\n  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
+                    continue
+
+                try:
+                    str_res = res.stdout
+                    res_data = json.loads(str_res)
+
+                except:
+                    err_str = "PITE benchmark run had invalid result:\n  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
+                    continue
+
+                valid_cycles_per_iteration = []
+                for res_entry in res_data:
+                    if abs(res_entry["freq_early_kHz"] - res_entry["freq_late_kHz"]) > self.freq_threshold * res_entry["avg_freq_kHz"]:
+                        logger.warning('discarding run because of unstable clock frequency:\n  before measurements: {} kHz\n  after measurements: {} kHz\n  average: {} kHz'.format(res_entry["freq_early_kHz"], res_entry["freq_late_kHz"], res_entry["avg_freq_kHz"]))
+                        continue
+                    valid_cycles_per_iteration.append(res_entry["cycles_per_iteration"])
+
+                agg_cycles_per_iteration = min(valid_cycles_per_iteration) # TODO we could use the median instead
+                all_results.append({
+                    'TP': agg_cycles_per_iteration,
+                    'num_uops': 1, # TODO implement this
+                    'run_details': res_data})
+
+        chosen_results = all_results
+
+        non_negative_results = [ r for r in chosen_results if r['TP'] >= 0 ]
+
+        if len(non_negative_results) > 0:
+            res = min(non_negative_results, key=lambda x: x['TP'])
+            if len(non_negative_results) < len(chosen_results):
+                res['negative_results_omitted'] = True
+                logger.warning("some broken runs were omitted")
+        else:
+            res = min(chosen_results, key=lambda x: x['TP'])
+            logger.warning("only broken runs observed")
+
+        res['rt'] = rt
+        if add_details:
+            res = deepcopy(res) # avoid a recursive datastructure
+            res['chosen_results'] = sorted_results
+            # res['all_results'] = sorted(all_results, key=lambda x: x['TP'])
+        return res
+
+

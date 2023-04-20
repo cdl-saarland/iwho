@@ -38,6 +38,7 @@ def _add_available_classes():
     from .uica_predictor import UICAPredictor
     from .maqao_predictor import MAQAOPredictor
     from .nanobench_predictor import NanoBenchPredictor
+    from .pite_predictor import PITEPredictor
     from .osaca_predictor import OSACAPredictor
     from .test_predictor import TestPredictor
     available_classes = [
@@ -46,6 +47,7 @@ def _add_available_classes():
             UICAPredictor,
             MAQAOPredictor,
             NanoBenchPredictor,
+            PITEPredictor,
             OSACAPredictor,
             TestPredictor,
         ]
