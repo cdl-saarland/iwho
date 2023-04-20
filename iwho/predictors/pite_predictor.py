@@ -151,6 +151,7 @@ class PITEPredictor(Predictor):
                 for res_entry in res_data:
                     if abs(res_entry["freq_early_kHz"] - res_entry["freq_late_kHz"]) > self.freq_threshold * res_entry["avg_freq_kHz"]:
                         logger.warning('discarding run because of unstable clock frequency:\n  before measurements: {} kHz\n  after measurements: {} kHz\n  average: {} kHz'.format(res_entry["freq_early_kHz"], res_entry["freq_late_kHz"], res_entry["avg_freq_kHz"]))
+                        res_entry["discarded"] = True
                         continue
                     valid_cycles_per_iteration.append(res_entry["cycles_per_iteration"])
 
