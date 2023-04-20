@@ -27,6 +27,7 @@ class PITEPredictor(Predictor):
             "isa", # the architecture the basic blocks are from, currently supported: 'x86'
             "pinned_core", # processor core to run benchmarks on
             "timeout", # a timeout for subprocess calls in seconds
+            "aggregator", # aggregation method to use among the samples ("median" or "min")
             "compiler_cmd", # a compiler command, with arguments listed
             "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
             "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
@@ -156,6 +157,15 @@ class PITEPredictor(Predictor):
                     valid_cycles_per_iteration.append(res_entry["cycles_per_iteration"])
 
                 agg_cycles_per_iteration = min(valid_cycles_per_iteration) # TODO we could use the median instead
+
+                sorted_results = sorted(valid_cycles_per_iteration)
+                if self.aggregator == "min":
+                    agg_cycles_per_iteration = sorted_results[0]
+                elif self.aggregator == "median":
+                    agg_cycles_per_iteration = sorted_results[len(sorted_results)//2]
+                else:
+                    assert False, f"aggregator {self.aggregator} not handled!"
+
                 all_results.append({
                     'TP': agg_cycles_per_iteration,
                     'num_uops': 1, # TODO implement this
