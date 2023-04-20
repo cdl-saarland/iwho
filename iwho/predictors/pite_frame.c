@@ -15,7 +15,7 @@ void *memset(void *s, int c, size_t n);
 
 
 #define PAGE_SIZE 4096
-#define PRERUN_NUM_ITERATIONS 10000
+#define PRERUN_NUM_ITERATIONS 1000
 
 // PLACEHOLDER_* strings are replaced by the python framework.
 #define TARGET_USEC PLACEHOLDER_TARGET_USEC
