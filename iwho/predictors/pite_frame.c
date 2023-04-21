@@ -180,7 +180,8 @@ int main(void) {
     fprintf(stdout, "[\n");
     for (int curr_it = 0; curr_it < NUM_REPS; ++curr_it) {
         // pre-run: run the code for a fixed, small number of iterations, to
-        // estimate how long it runs
+        // estimate how long it runs (but do it twice, for warm-up purposes)
+        measure_usec(&perf_counter_return, scratch_mem, mem_size, PRERUN_NUM_ITERATIONS);
         double prerun_usec = measure_usec(&perf_counter_return, scratch_mem, mem_size, PRERUN_NUM_ITERATIONS);
 
         // compute how often we need to execute the code to roughly reach the
