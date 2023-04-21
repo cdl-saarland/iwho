@@ -20,18 +20,60 @@ void *memset(void *s, int c, size_t n);
 // PLACEHOLDER_* strings are replaced by the python framework.
 #define TARGET_USEC PLACEHOLDER_TARGET_USEC
 #define NUM_REPS PLACEHOLDER_NUM_REPS
-#define FREQ_PATH "PLACEHOLDER_FREQ_PATH"
+#define FREQ_PATH "/sys/devices/system/cpu/cpuPLACEHOLDER_PINNED_CORE/cpufreq/scaling_cur_freq"
+#define PINNED_CORE PLACEHOLDER_PINNED_CORE
 
 typedef int64_t num_t;
 
+static uint64_t __attribute__((used)) saved_counters[2] = {0};
+
+
+void write_msr(unsigned int msr, uint64_t value) {
+    // use the wrmsr command to change a machine-specific register, since the
+    // instruction for that can only be executed in kernel mode.
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "wrmsr -p%d %#x %#llx", PINNED_CORE, msr, value);
+    if (system(cmd)) {
+        fprintf(stderr, "\"%s\" failed.", cmd);
+        exit(1);
+    }
+}
+
+#define MSR_PM_CONTROL 0xC0010200
+#define MSR_PM_COUNTER 0xC0010201
+
+void configure_perf_counters(void) {
+    // this is specific to AMD family 17h (i.e., Zen, Zen+, Zen2) processors
+
+    write_msr(MSR_PM_CONTROL, 0); // clear the perf counter config
+    write_msr(MSR_PM_COUNTER, 0); // clear the perf counter
+
+    // write the PerfEvtSel0 MSR register
+    uint64_t control_word = 0;
+    control_word &= ~(0xffull << 24); // clear bits 31:24, the CNT_MASK, so that all events are counted
+    control_word |= (1ull << 22);     // set bit 22, the EN bit, to enable the counter
+    control_word &= ~(1ull << 20);    // clear bit 20, the INT bit, to disable overflow interrupts
+    control_word &= ~(1ull << 18);    // clear bit 18, the EDGE bit, to disable edge detection
+    control_word &= ~(1ull << 17);    // clear bit 17, the OS bit, to ignore events in os mode
+    control_word |= (1ull << 16);     // set bit 16, the USR bit, to count events in user mode
+
+    control_word &= ~(0xffull << 8);  // clear bits 15:8, the UNIT_MASK, to indicate subcounter 0
+    control_word |= (0x0ull << 32);      // set the highest nibble of the EVENT_SELECT bits (35:32) to 0x0 for the "uop" counter
+    control_word |= (0xc1ull << 0);      // set the low byte of the EVENT_SELECT bits (7:0) to 0xc1 for the "uop" counter
+
+    fprintf(stderr, "%#llx", control_word);
+    write_msr(MSR_PM_CONTROL, control_word);
+}
+
 void one_time_init(void) {
     _mm_setcsr( _mm_getcsr() | (1<<15) | (1<<6)); // disable denormal floats
+    configure_perf_counters();
 }
 
 // it's probably better for caches if we make sure that the benchmarking code
 // is not duplicated
 __attribute__((noinline))
-double measure_usec(void *scratch_mem, size_t scratch_mem_size, num_t num_iterations) {
+double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_mem_size, num_t num_iterations) {
     struct timeval start, end;
     double benchtime_usec;
 
@@ -69,6 +111,13 @@ double measure_usec(void *scratch_mem, size_t scratch_mem_size, num_t num_iterat
         "   VMOVAPS ymm14, ymm0\n"
         "   VMOVAPS ymm15, ymm0\n"
 
+        // read performance counter
+        "   XOR rcx, rcx\n" // use the first programmable counter
+        "   RDPMC\n" // reads into EDX:EAX
+        "   SHL RDX, 32\n"
+        "   OR RAX, RDX\n"
+        "   MOV qword ptr [rip+saved_counters+0], RAX\n"
+
         "   MOV rax, 42\n"
         "   MOV rbx, 42\n"
         "   MOV rdx, 42\n"
@@ -92,9 +141,17 @@ PLACEHOLDER_BENCH_CODE
         // benchmarked instructions end
         "   SUB r15, 1\n"
         "   JNZ TestbenchLabel\n"
+
+        // read performance counter
+        "   XOR rcx, rcx\n"
+        "   RDPMC\n"
+        "   SHL RDX, 32\n"
+        "   OR RAX, RDX\n"
+        "   MOV qword ptr [rip+saved_counters+8], RAX\n"
+
         "   .att_syntax\n"
         : "=r" (num_iterations_reg) // declare this as an output since it is an input that we want to clobber
-        : "r" (num_iterations_reg),
+        : "r" (num_iterations_reg), //[saved_counters_addr] "o" (saved_counters),
           "r" (mem_rbp), "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14) // inputs for memory operands
         : "rax", "rbx", "rcx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13",
           "ymm0", "ymm1", "ymm2", "ymm3", "ymm4", "ymm5", "ymm6", "ymm7",
@@ -103,6 +160,8 @@ PLACEHOLDER_BENCH_CODE
     );
     gettimeofday(&end, NULL);
     }
+
+    *res_perf_counter = saved_counters[1] - saved_counters[0];
 
     benchtime_usec = ((double)end.tv_sec - (double)start.tv_sec) * 1000000 +
             ((double)end.tv_usec - (double)start.tv_usec);
@@ -116,18 +175,20 @@ int main(void) {
     size_t mem_size = PAGE_SIZE + 8 * PAGE_SIZE;
     char * scratch_mem = (char*) aligned_alloc(PAGE_SIZE, mem_size);
 
+    num_t perf_counter_return = 0;
+
     fprintf(stdout, "[\n");
     for (int curr_it = 0; curr_it < NUM_REPS; ++curr_it) {
         // pre-run: run the code for a fixed, small number of iterations, to
         // estimate how long it runs
-        double prerun_usec = measure_usec(scratch_mem, mem_size, PRERUN_NUM_ITERATIONS);
+        double prerun_usec = measure_usec(&perf_counter_return, scratch_mem, mem_size, PRERUN_NUM_ITERATIONS);
 
         // compute how often we need to execute the code to roughly reach the
         // target execution time
         num_t num_iterations = (PRERUN_NUM_ITERATIONS * TARGET_USEC) / prerun_usec;
 
         // do a warmup run with N iterations
-        measure_usec(scratch_mem, mem_size, num_iterations);
+        measure_usec(&perf_counter_return, scratch_mem, mem_size, num_iterations);
 
         // measure the clock frequency
         num_t parse_freq_early;
@@ -139,13 +200,15 @@ int main(void) {
         double freq_early_kHz = (double)parse_freq_early;
 
         // do another warmup run with N iterations
-        measure_usec(scratch_mem, mem_size, num_iterations);
+        measure_usec(&perf_counter_return, scratch_mem, mem_size, num_iterations);
 
         // measure the time for 2*N interations
-        double measurement_twice_usec = measure_usec(scratch_mem, mem_size, 2* num_iterations);
+        double measurement_twice_usec = measure_usec(&perf_counter_return, scratch_mem, mem_size, 2* num_iterations);
+        num_t perf_counter_twice = perf_counter_return;
 
         // measure the time for N interations
-        double measurement_once_usec = measure_usec(scratch_mem, mem_size, num_iterations);
+        double measurement_once_usec = measure_usec(&perf_counter_return, scratch_mem, mem_size, num_iterations);
+        num_t perf_counter_once = perf_counter_return;
 
         // measure the clock frequency again, to check for inconsistencies
         num_t parse_freq_late;
@@ -168,11 +231,16 @@ int main(void) {
         double total_cycles = (measured_time_usec * freq_kHz) / 1000.0;
         double cycles_per_iteration = total_cycles / num_iterations;
 
+        num_t total_perf_counter = perf_counter_twice - perf_counter_once;
+        num_t perf_counter_per_iteration = total_perf_counter / num_iterations;
+
         // dump output
         fprintf(stdout, "  {\n");
         fprintf(stdout, "    \"measured_time_usec\": %.2f,\n", measured_time_usec);
         fprintf(stdout, "    \"cycles_per_iteration\": %.10f,\n", cycles_per_iteration);
         fprintf(stdout, "    \"total_cycles\": %.10f,\n", total_cycles);
+        fprintf(stdout, "    \"perf_counter_per_iteration\": %lld,\n", perf_counter_per_iteration);
+        fprintf(stdout, "    \"total_perf_counter\": %lld,\n", total_perf_counter);
         fprintf(stdout, "    \"num_iterations\": %lld,\n", num_iterations);
         fprintf(stdout, "    \"freq_early_kHz\": %f,\n", freq_early_kHz);
         fprintf(stdout, "    \"freq_late_kHz\": %f,\n", freq_late_kHz);
@@ -185,5 +253,6 @@ int main(void) {
         }
     }
     fprintf(stdout, "]\n");
+    return 0;
 }
 

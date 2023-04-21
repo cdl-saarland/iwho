@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pite_frame.c')) as f:
     program_frame = f.read()
 
+# Things that PITE cannot benchmark:
+# - anything affecting rsp, including push and pop, since they could mess up
+#   the local variables of the benchmarking code
 
 class PITEPredictor(Predictor):
     predictor_name = "pite"
@@ -32,8 +35,6 @@ class PITEPredictor(Predictor):
             "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
             "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
         ]
-
-    cpufreq_path = "/sys/devices/system/cpu/cpu{core}/cpufreq/scaling_cur_freq"
 
     def requires_sudo(self):
         return True
@@ -79,7 +80,7 @@ class PITEPredictor(Predictor):
                 replacements = {
                     "PLACEHOLDER_TARGET_USEC": str(target_usec),
                     "PLACEHOLDER_NUM_REPS": str(num_samples_internal),
-                    "PLACEHOLDER_FREQ_PATH": self.cpufreq_path.format(core=self.pinned_core),
+                    "PLACEHOLDER_PINNED_CORE": str(self.pinned_core),
                     "PLACEHOLDER_BENCH_CODE": bench_code,
                 }
                 instantiated_frame = program_frame
@@ -110,6 +111,19 @@ class PITEPredictor(Predictor):
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str})
+                    continue
+
+                # enable rdpmc
+                cmd = ["sudo", "-S", "bash", "-c", "echo 2 > /sys/bus/event_source/devices/cpu/rdpmc"]
+                res = subprocess.run(cmd, capture_output=True, encoding="latin1", input=PWManager.password)
+                # TODO disable again afterwards? Also: temporarily disable NMI watchdogs?
+                if res.returncode != 0:
+                    err_str = "failed to enable rdpmc:\n  stdout:\n"
+                    err_str += textwrap.indent(res.stdout, 4*' ')
+                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
                     continue
 
                 # run benchmark code
@@ -148,27 +162,34 @@ class PITEPredictor(Predictor):
                     all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
                     continue
 
-                valid_cycles_per_iteration = []
+                valid_results = []
                 for res_entry in res_data:
                     if abs(res_entry["freq_early_kHz"] - res_entry["freq_late_kHz"]) > self.freq_threshold * res_entry["avg_freq_kHz"]:
                         logger.warning('discarding run because of unstable clock frequency:\n  before measurements: {} kHz\n  after measurements: {} kHz\n  average: {} kHz'.format(res_entry["freq_early_kHz"], res_entry["freq_late_kHz"], res_entry["avg_freq_kHz"]))
                         res_entry["discarded"] = True
                         continue
-                    valid_cycles_per_iteration.append(res_entry["cycles_per_iteration"])
+                    if res_entry["total_perf_counter"] > 2**48: # uneducated overflow check
+                        logger.warning('discarding run because of likely perf counter overflow:\n  value: {}'.format(res_entry["total_perf_counter"]))
+                        res_entry["discarded"] = True
+                        continue
+                    valid_results.append({"cycles": res_entry["cycles_per_iteration"], "perf_counter": res_entry["perf_counter_per_iteration"]})
 
-                agg_cycles_per_iteration = min(valid_cycles_per_iteration) # TODO we could use the median instead
-
-                sorted_results = sorted(valid_cycles_per_iteration)
+                sorted_results = sorted(valid_results, key=lambda x: x['cycles'])
                 if self.aggregator == "min":
-                    agg_cycles_per_iteration = sorted_results[0]
+                    chosen_result = sorted_results[0]
                 elif self.aggregator == "median":
-                    agg_cycles_per_iteration = sorted_results[len(sorted_results)//2]
+                    chosen_result = sorted_results[len(sorted_results)//2]
                 else:
                     assert False, f"aggregator {self.aggregator} not handled!"
 
+                agg_cycles_per_iteration = chosen_result['cycles']
+                agg_perf_counter_per_iteration = chosen_result['perf_counter']
+
+                agg_perf_counter_per_iteration -= 2 # the SUB and JNZ instructions from the benchmarking loop
+
                 all_results.append({
                     'TP': agg_cycles_per_iteration,
-                    'num_uops': 1, # TODO implement this
+                    'num_uops': agg_perf_counter_per_iteration,
                     'run_details': res_data})
 
         chosen_results = all_results
