@@ -20,9 +20,20 @@ logger = logging.getLogger(__name__)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pite_frame.c')) as f:
     program_frame = f.read()
 
+
+def fmt_output(res):
+    err_str = "  stdout:\n"
+    err_str += textwrap.indent(res.stdout, 4*' ')
+    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+    return err_str
+
 # Things that PITE cannot benchmark:
 # - anything affecting rsp, including push and pop, since they could mess up
 #   the local variables of the benchmarking code
+
+# Using PITE to count uops requires the 'msr-tools' package.
+# Make sure to run ../../scripts/pite_setup.sh before using PITE for the first
+# time in a boot.
 
 class PITEPredictor(Predictor):
     predictor_name = "pite"
@@ -103,27 +114,11 @@ class PITEPredictor(Predictor):
                     continue
 
                 if res.returncode != 0:
-                    err_str = f"failed to compile the PITE source template:\n"
-                    err_str += "  stdout:\n"
-                    err_str += textwrap.indent(res.stdout, 4*' ')
-                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    err_str = f"failed to compile the PITE source template:\n" + fmt_output(res)
                     err_str += "  source code:" + textwrap.indent(instantiated_frame, 4*' ') + "\n"
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str})
-                    continue
-
-                # enable rdpmc
-                cmd = ["sudo", "-S", "bash", "-c", "echo 2 > /sys/bus/event_source/devices/cpu/rdpmc"]
-                res = subprocess.run(cmd, capture_output=True, encoding="latin1", input=PWManager.password)
-                # TODO disable again afterwards? Also: temporarily disable NMI watchdogs?
-                if res.returncode != 0:
-                    err_str = "failed to enable rdpmc:\n  stdout:\n"
-                    err_str += textwrap.indent(res.stdout, 4*' ')
-                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
-                    if not disable_logging:
-                        logger.error(err_str)
-                    all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
                     continue
 
                 # run benchmark code
@@ -148,9 +143,7 @@ class PITEPredictor(Predictor):
                     continue
 
                 if res.returncode != 0:
-                    err_str = "PITE benchmark run failed:\n  stdout:\n"
-                    err_str += textwrap.indent(res.stdout, 4*' ')
-                    err_str += "\n  stderr:" + textwrap.indent(res.stderr, 4*' ') + "\n"
+                    err_str = "PITE benchmark run failed:\n" + fmt_output(res)
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
