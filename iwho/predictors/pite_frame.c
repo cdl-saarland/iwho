@@ -115,7 +115,9 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
 #if USE_PERF_COUNTERS
         // read performance counter
         "   XOR rcx, rcx\n" // use the first programmable counter
+        "   LFENCE\n"
         "   RDPMC\n" // reads into EDX:EAX
+        "   LFENCE\n"
         "   SHL RDX, 32\n"
         "   OR RAX, RDX\n"
         "   MOV qword ptr [rip+saved_counters+0], RAX\n"
@@ -148,7 +150,9 @@ PLACEHOLDER_BENCH_CODE
 #if USE_PERF_COUNTERS
         // read performance counter
         "   XOR rcx, rcx\n"
+        "   LFENCE\n"
         "   RDPMC\n"
+        "   LFENCE\n"
         "   SHL RDX, 32\n"
         "   OR RAX, RDX\n"
         "   MOV qword ptr [rip+saved_counters+8], RAX\n"
@@ -241,14 +245,14 @@ int main(void) {
         double cycles_per_iteration = total_cycles / num_iterations;
 
         num_t total_perf_counter = perf_counter_twice - perf_counter_once;
-        num_t perf_counter_per_iteration = total_perf_counter / num_iterations;
+        double perf_counter_per_iteration = (double)total_perf_counter / (double)num_iterations;
 
         // dump output
         fprintf(stdout, "  {\n");
         fprintf(stdout, "    \"measured_time_usec\": %.2f,\n", measured_time_usec);
         fprintf(stdout, "    \"cycles_per_iteration\": %.10f,\n", cycles_per_iteration);
         fprintf(stdout, "    \"total_cycles\": %.10f,\n", total_cycles);
-        fprintf(stdout, "    \"perf_counter_per_iteration\": %lld,\n", perf_counter_per_iteration);
+        fprintf(stdout, "    \"perf_counter_per_iteration\": %.10f,\n", perf_counter_per_iteration);
         fprintf(stdout, "    \"total_perf_counter\": %lld,\n", total_perf_counter);
         fprintf(stdout, "    \"num_iterations\": %lld,\n", num_iterations);
         fprintf(stdout, "    \"freq_early_kHz\": %f,\n", freq_early_kHz);
