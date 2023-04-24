@@ -200,6 +200,8 @@ int main(void) {
         // target execution time
         num_t num_iterations = (PRERUN_NUM_ITERATIONS * TARGET_USEC) / prerun_usec;
 
+        fprintf(stderr, "determined number of iterations: %lld\n", num_iterations);
+
         // do a warmup run with N iterations
         measure_usec(&perf_counter_return, scratch_mem, mem_size, num_iterations);
 
