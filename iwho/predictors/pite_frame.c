@@ -1,17 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
-/* #include <stdlib.h> */
-/* #include <dirent.h> */
-/* #include <dlfcn.h> */
-#include <sys/time.h>
-/* #include <sys/stat.h> */
-/* #include <sys/types.h> */
+#include <time.h>
 #include <xmmintrin.h>
-
 
 void *aligned_alloc(size_t alignment, size_t size);
 void *memset(void *s, int c, size_t n);
-
 
 #ifndef USE_PERF_COUNTERS
 // default: do not use model specific performance counters
@@ -20,7 +13,7 @@ void *memset(void *s, int c, size_t n);
 #endif
 
 #define PAGE_SIZE 4096
-#define PRERUN_NUM_ITERATIONS 1000
+#define PRERUN_NUM_ITERATIONS 100000
 
 // PLACEHOLDER_* strings are replaced by the python framework.
 #define TARGET_USEC PLACEHOLDER_TARGET_USEC
@@ -80,15 +73,15 @@ void one_time_init(void) {
 // is not duplicated
 __attribute__((noinline))
 double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_mem_size, num_t num_iterations) {
-    struct timeval start, end;
-    double benchtime_usec;
+    struct timespec start, end;
 
     memset(scratch_mem, 42, scratch_mem_size);
 
     {
     saved_counters[0] = 0;
     saved_counters[1] = 0;
-    gettimeofday(&start, NULL);
+    clock_gettime(CLOCK_MONOTONIC,  &start);
+
     register num_t num_iterations_reg asm("r15") = num_iterations;
     register void * mem_rbp asm("rbp") = scratch_mem + 1 * PAGE_SIZE;
     register void * mem_rsi asm("rsi") = scratch_mem + 2 * PAGE_SIZE;
@@ -170,13 +163,13 @@ PLACEHOLDER_BENCH_CODE
           "ymm8", "ymm9", "ymm10", "ymm11", "ymm12", "ymm13", "ymm14", "ymm15", "cc", "memory"
            // clobber everything, except for the inputs
     );
-    gettimeofday(&end, NULL);
+    clock_gettime(CLOCK_MONOTONIC,  &end);
     }
 
     *res_perf_counter = saved_counters[1] - saved_counters[0];
 
-    benchtime_usec = ((double)end.tv_sec - (double)start.tv_sec) * 1000000 +
-            ((double)end.tv_usec - (double)start.tv_usec);
+    double benchtime_usec = ((double)end.tv_sec - (double)start.tv_sec) * 1000000 +
+            (((double)end.tv_nsec - (double)start.tv_nsec) / 1000);
     return benchtime_usec;
 }
 
@@ -200,7 +193,8 @@ int main(void) {
         // target execution time
         num_t num_iterations = (PRERUN_NUM_ITERATIONS * TARGET_USEC) / prerun_usec;
 
-        fprintf(stderr, "determined number of iterations: %lld\n", num_iterations);
+        fprintf(stderr, "determined number of iterations: %lld", num_iterations);
+        fprintf(stderr, " with prerun time: %.10f usec\n", prerun_usec);
 
         // do a warmup run with N iterations
         measure_usec(&perf_counter_return, scratch_mem, mem_size, num_iterations);

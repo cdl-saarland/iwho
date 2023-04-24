@@ -181,6 +181,13 @@ class PITEPredictor(Predictor):
                         continue
                     valid_results.append({"cycles": res_entry["cycles_per_iteration"], "perf_counter": res_entry["perf_counter_per_iteration"]})
 
+                if len(valid_results) < len(res_data) / 2:
+                    err_str = "discarded more than half of the PITE benchmark runs"
+                    if not disable_logging:
+                        logger.error(err_str)
+                    all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
+                    continue
+
                 sorted_results = sorted(valid_results, key=lambda x: x['cycles'])
                 if self.aggregator == "min":
                     chosen_result = sorted_results[0]
