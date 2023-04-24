@@ -128,9 +128,16 @@ class PITEPredictor(Predictor):
 
                 # run benchmark code
                 try:
-                    cmd = ["sudo", "-S", "taskset", "-c", str(self.pinned_core), bin_path]
+                    # we use the timeout command instead of the timeout option
+                    # of subprocess.run here since the latter apparently cannot
+                    # handle timeouting processes with root privileges, which
+                    # would lead to failing timeouts
+                    cmd = ["sudo", "-S",
+                           "timeout", "-k", str(timeout*1.5), str(timeout),
+                           "taskset", "-c", str(self.pinned_core),
+                           bin_path]
                     start = timer()
-                    res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout, input=PWManager.password)
+                    res = subprocess.run(cmd, capture_output=True, encoding="latin1", input=PWManager.password)
                     end = timer()
                     rt += end - start
                 except subprocess.TimeoutExpired:
