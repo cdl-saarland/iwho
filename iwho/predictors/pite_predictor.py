@@ -91,7 +91,7 @@ class PITEPredictor(Predictor):
                     f.write(instantiated_frame)
 
                 # compile benchmark code
-                cmd = self.compiler_cmd + ('-o', bin_path, src_path)
+                cmd = self.compiler_cmd + ('-DUSE_PERF_COUNTERS=1', '-o', bin_path, src_path)
 
                 try:
                     res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)

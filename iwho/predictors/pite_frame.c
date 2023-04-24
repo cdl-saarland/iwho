@@ -13,6 +13,11 @@ void *aligned_alloc(size_t alignment, size_t size);
 void *memset(void *s, int c, size_t n);
 
 
+#ifndef USE_PERF_COUNTERS
+// default: do not use model specific performance counters
+// Adjust by compiling with `-DUSE_PERF_COUNTERS 1`
+#define USE_PERF_COUNTERS 0
+#endif
 
 #define PAGE_SIZE 4096
 #define PRERUN_NUM_ITERATIONS 1000
@@ -61,13 +66,14 @@ void configure_perf_counters(void) {
     control_word |= (0x0ull << 32);      // set the highest nibble of the EVENT_SELECT bits (35:32) to 0x0 for the "uop" counter
     control_word |= (0xc1ull << 0);      // set the low byte of the EVENT_SELECT bits (7:0) to 0xc1 for the "uop" counter
 
-    fprintf(stderr, "%#llx", control_word);
     write_msr(MSR_PM_CONTROL, control_word);
 }
 
 void one_time_init(void) {
     _mm_setcsr( _mm_getcsr() | (1<<15) | (1<<6)); // disable denormal floats
+#if USE_PERF_COUNTERS
     configure_perf_counters();
+#endif
 }
 
 // it's probably better for caches if we make sure that the benchmarking code
@@ -80,6 +86,8 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
     memset(scratch_mem, 42, scratch_mem_size);
 
     {
+    saved_counters[0] = 0;
+    saved_counters[1] = 0;
     gettimeofday(&start, NULL);
     register num_t num_iterations_reg asm("r15") = num_iterations;
     register void * mem_rbp asm("rbp") = scratch_mem + 1 * PAGE_SIZE;
@@ -111,12 +119,14 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
         "   VMOVAPS ymm14, ymm0\n"
         "   VMOVAPS ymm15, ymm0\n"
 
+#if USE_PERF_COUNTERS
         // read performance counter
         "   XOR rcx, rcx\n" // use the first programmable counter
         "   RDPMC\n" // reads into EDX:EAX
         "   SHL RDX, 32\n"
         "   OR RAX, RDX\n"
         "   MOV qword ptr [rip+saved_counters+0], RAX\n"
+#endif
 
         "   MOV rax, 42\n"
         "   MOV rbx, 42\n"
@@ -142,12 +152,14 @@ PLACEHOLDER_BENCH_CODE
         "   SUB r15, 1\n"
         "   JNZ TestbenchLabel\n"
 
+#if USE_PERF_COUNTERS
         // read performance counter
         "   XOR rcx, rcx\n"
         "   RDPMC\n"
         "   SHL RDX, 32\n"
         "   OR RAX, RDX\n"
         "   MOV qword ptr [rip+saved_counters+8], RAX\n"
+#endif
 
         "   .att_syntax\n"
         : "=r" (num_iterations_reg) // declare this as an output since it is an input that we want to clobber
