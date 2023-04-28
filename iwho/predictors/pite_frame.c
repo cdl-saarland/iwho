@@ -26,8 +26,8 @@ void *memset(void *s, int c, size_t n);
 #define COUNTER_ID 0x0c1
 #endif
 
-#define CTR_ID_HIGH_NIBBLE ((((uint64_t)(COUNTER_ID)) >> 8) & 0xF);
-#define CTR_ID_LOW_BYTE (((uint64_t)(COUNTER_ID)) & 0xFF);
+#define CTR_ID_HIGH_NIBBLE ((((uint64_t)(COUNTER_ID)) >> 8) & 0xF)
+#define CTR_ID_LOW_BYTE (((uint64_t)(COUNTER_ID)) & 0xFF)
 
 typedef int64_t num_t;
 
