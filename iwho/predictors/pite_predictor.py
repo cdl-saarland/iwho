@@ -61,7 +61,7 @@ class PITEPredictor(Predictor):
     def from_config(config):
         return PITEPredictor(config)
 
-    def evaluate(self, basic_block, disable_logging=False, *, add_details=False):
+    def evaluate(self, basic_block, disable_logging=False, *, add_details=False, use_alternative_perf_counter=None):
 
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run PITE without sudo privileges!")
@@ -103,6 +103,9 @@ class PITEPredictor(Predictor):
 
                 # compile benchmark code
                 cmd = self.compiler_cmd + ('-DUSE_PERF_COUNTERS=1', '-o', bin_path, src_path)
+
+                if use_alternative_perf_counter is not None:
+                    cmd = cmd + (f'-DCOUNTER_ID={use_alternative_perf_counter}',)
 
                 try:
                     res = subprocess.run(cmd, capture_output=True, encoding="latin1", timeout=timeout)

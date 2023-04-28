@@ -21,6 +21,14 @@ void *memset(void *s, int c, size_t n);
 #define FREQ_PATH "/sys/devices/system/cpu/cpuPLACEHOLDER_PINNED_CORE/cpufreq/scaling_cur_freq"
 #define PINNED_CORE PLACEHOLDER_PINNED_CORE
 
+
+#ifndef COUNTER_ID
+#define COUNTER_ID 0x0c1
+#endif
+
+#define CTR_ID_HIGH_NIBBLE ((((uint64_t)(COUNTER_ID)) >> 8) & 0xF);
+#define CTR_ID_LOW_BYTE (((uint64_t)(COUNTER_ID)) & 0xFF);
+
 typedef int64_t num_t;
 
 static uint64_t __attribute__((used)) saved_counters[2] = {0};
@@ -56,8 +64,9 @@ void configure_perf_counters(void) {
     control_word |= (1ull << 16);     // set bit 16, the USR bit, to count events in user mode
 
     control_word &= ~(0xffull << 8);  // clear bits 15:8, the UNIT_MASK, to indicate subcounter 0
-    control_word |= (0x0ull << 32);      // set the highest nibble of the EVENT_SELECT bits (35:32) to 0x0 for the "uop" counter
-    control_word |= (0xc1ull << 0);      // set the low byte of the EVENT_SELECT bits (7:0) to 0xc1 for the "uop" counter
+
+    control_word |= (CTR_ID_HIGH_NIBBLE << 32);      // set the highest nibble of the EVENT_SELECT bits (35:32) to 0x0 for the "uop" counter
+    control_word |= (CTR_ID_LOW_BYTE);      // set the low byte of the EVENT_SELECT bits (7:0) to 0xc1 for the "uop" counter
 
     write_msr(MSR_PM_CONTROL, control_word);
 }
