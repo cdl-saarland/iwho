@@ -26,8 +26,13 @@ void *memset(void *s, int c, size_t n);
 #define COUNTER_ID 0x0c1
 #endif
 
+#ifndef UNIT_MASK
+#define UNIT_MASK 0x00
+#endif
+
 #define CTR_ID_HIGH_NIBBLE ((((uint64_t)(COUNTER_ID)) >> 8) & 0xF)
 #define CTR_ID_LOW_BYTE (((uint64_t)(COUNTER_ID)) & 0xFF)
+#define UNIT_MASK_BYTE (((uint64_t)(UNIT_MASK)) & 0xFF)
 
 typedef int64_t num_t;
 
@@ -63,8 +68,7 @@ void configure_perf_counters(void) {
     control_word &= ~(1ull << 17);    // clear bit 17, the OS bit, to ignore events in os mode
     control_word |= (1ull << 16);     // set bit 16, the USR bit, to count events in user mode
 
-    control_word &= ~(0xffull << 8);  // clear bits 15:8, the UNIT_MASK, to indicate subcounter 0
-
+    control_word |= (UNIT_MASK_BYTE << 8);  // set bits 15:8, the UNIT_MASK, to indicate the subcounter
     control_word |= (CTR_ID_HIGH_NIBBLE << 32);      // set the highest nibble of the EVENT_SELECT bits (35:32) to 0x0 for the "uop" counter
     control_word |= (CTR_ID_LOW_BYTE);      // set the low byte of the EVENT_SELECT bits (7:0) to 0xc1 for the "uop" counter
 
