@@ -61,7 +61,7 @@ class PITEPredictor(Predictor):
     def from_config(config):
         return PITEPredictor(config)
 
-    def evaluate(self, basic_block, disable_logging=False, *, add_details=False, dvars=dict()):
+    def evaluate(self, basic_block, disable_logging=False, *, add_details=False, dvars=dict(), excessive_log=None):
 
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run PITE without sudo privileges!")
@@ -85,7 +85,7 @@ class PITEPredictor(Predictor):
 
             all_results = []
 
-            for subconfig in self.subconfigs:
+            for subconfig_id, subconfig in enumerate(self.subconfigs):
                 target_usec = subconfig['target_usec']
                 num_samples_internal = subconfig['num_samples_internal']
                 replacements = {
@@ -115,10 +115,38 @@ class PITEPredictor(Predictor):
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str})
+
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': None,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': -1.0,
+                                'num_uops': -1.0,
+                                'res_entry': None,
+                                'msg': err_str,
+                            }
+                        excessive_log.append(excessive_entry)
                     continue
 
                 if res.returncode != 0:
                     err_str = f"failed to compile the PITE source template:\n" + fmt_output(res)
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': None,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': -1.0,
+                                'num_uops': -1.0,
+                                'res_entry': None,
+                                'msg': err_str,
+                            }
+                        excessive_log.append(excessive_entry)
+
                     err_str += "  source code:" + textwrap.indent(instantiated_frame, 4*' ') + "\n"
                     if not disable_logging:
                         logger.error(err_str)
@@ -144,6 +172,19 @@ class PITEPredictor(Predictor):
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str})
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': None,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': -1.0,
+                                'num_uops': -1.0,
+                                'res_entry': None,
+                                'msg': err_str,
+                            }
+                        excessive_log.append(excessive_entry)
                     continue
 
                 if res.returncode != 0:
@@ -151,6 +192,19 @@ class PITEPredictor(Predictor):
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': None,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': -1.0,
+                                'num_uops': -1.0,
+                                'res_entry': None,
+                                'msg': err_str,
+                            }
+                        excessive_log.append(excessive_entry)
                     continue
 
                 try:
@@ -164,17 +218,47 @@ class PITEPredictor(Predictor):
                     if not disable_logging:
                         logger.error(err_str)
                     all_results.append({ 'TP': -1.0, 'error': err_str, 'rt': rt })
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': None,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': -1.0,
+                                'num_uops': -1.0,
+                                'res_entry': None,
+                                'msg': err_str,
+                            }
+                        excessive_log.append(excessive_entry)
                     continue
 
                 valid_results = []
-                for res_entry in res_data:
+                for internal_res_id, res_entry in enumerate(res_data):
+                    if excessive_log is not None:
+                        excessive_entry = {
+                                'predictor': "PITE",
+                                'subconfig_id': subconfig_id,
+                                'internal_res_id': internal_res_id_id,
+                                'target_usec': target_usec,
+                                'num_samples_internal': num_samples_internal,
+                                'cycles': res_entry["cycles_per_iteration"],
+                                'num_uops': res_entry["perf_counter_per_iteration"],
+                                'res_entry': res_entry,
+                                'msg': None,
+                            }
+                        excessive_log.append(excessive_entry)
                     if abs(res_entry["freq_early_kHz"] - res_entry["freq_late_kHz"]) > self.freq_threshold * res_entry["avg_freq_kHz"]:
                         logger.warning('discarding run because of unstable clock frequency:\n  before measurements: {} kHz\n  after measurements: {} kHz\n  average: {} kHz'.format(res_entry["freq_early_kHz"], res_entry["freq_late_kHz"], res_entry["avg_freq_kHz"]))
                         res_entry["discarded"] = True
+                        if excessive_log is not None:
+                            excessive_entry['msg'] = 'discarded because of unstable clock frequency'
                         continue
                     if res_entry["total_perf_counter"] > 2**48: # uneducated overflow check
                         logger.warning('discarding run because of likely perf counter overflow:\n  value: {}'.format(res_entry["total_perf_counter"]))
                         res_entry["discarded"] = True
+                        if excessive_log is not None:
+                            excessive_entry['msg'] = 'discarded because of likely perf counter overflow'
                         continue
                     valid_results.append({"cycles": res_entry["cycles_per_iteration"], "perf_counter": res_entry["perf_counter_per_iteration"]})
 
@@ -218,8 +302,9 @@ class PITEPredictor(Predictor):
 
         res['rt'] = rt
         if add_details:
-            res = deepcopy(res) # avoid a recursive datastructure
-            res['chosen_results'] = sorted_results
+            pass
+            # res = deepcopy(res) # avoid a recursive datastructure
+            # res['chosen_results'] = chosen_results
             # res['all_results'] = sorted(all_results, key=lambda x: x['TP'])
         return res
 
