@@ -239,7 +239,7 @@ class PITEPredictor(Predictor):
                         excessive_entry = {
                                 'predictor': "PITE",
                                 'subconfig_id': subconfig_id,
-                                'internal_res_id': internal_res_id_id,
+                                'internal_res_id': internal_res_id,
                                 'target_usec': target_usec,
                                 'num_samples_internal': num_samples_internal,
                                 'cycles': res_entry["cycles_per_iteration"],
