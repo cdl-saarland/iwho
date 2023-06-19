@@ -186,9 +186,9 @@ PLACEHOLDER_BENCH_CODE
         "   .att_syntax\n"
         : "=r" (num_iterations_reg) // declare this as an output since it is an input that we want to clobber
         : "r" (num_iterations_reg), //[saved_counters_addr] "o" (saved_counters),
-          "r" (mem_rbp), // inputs for memory operands
+          "r" (mem_rbp) // inputs for memory operands
 #if INIT_ADDITIONAL_MEM_REGS
-          "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14)
+          , "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14)
 #endif
         : "rax", "rbx", "rcx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13",
 #if (! INIT_ADDITIONAL_MEM_REGS)
