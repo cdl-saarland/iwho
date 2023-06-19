@@ -15,12 +15,15 @@ void *memset(void *s, int c, size_t n);
 #define PAGE_SIZE 4096
 #define PRERUN_NUM_ITERATIONS 100000
 
+#ifndef INIT_ADDITIONAL_MEM_REGS
+#define INIT_ADDITIONAL_MEM_REGS 0
+#endif
+
 // PLACEHOLDER_* strings are replaced by the python framework.
 #define TARGET_USEC PLACEHOLDER_TARGET_USEC
 #define NUM_REPS PLACEHOLDER_NUM_REPS
 #define FREQ_PATH "/sys/devices/system/cpu/cpuPLACEHOLDER_PINNED_CORE/cpufreq/scaling_cur_freq"
 #define PINNED_CORE PLACEHOLDER_PINNED_CORE
-
 
 #ifndef COUNTER_ID
 #define COUNTER_ID 0x0c1
@@ -97,9 +100,11 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
 
     register num_t num_iterations_reg asm("r15") = num_iterations;
     register void * mem_rbp asm("rbp") = scratch_mem + 1 * PAGE_SIZE;
-    /* register void * mem_rsi asm("rsi") = scratch_mem + 2 * PAGE_SIZE; */
-    /* register void * mem_rdi asm("rdi") = scratch_mem + 3 * PAGE_SIZE; */
-    /* register void * mem_r14 asm("r14") = scratch_mem + 4 * PAGE_SIZE; */
+#if INIT_ADDITIONAL_MEM_REGS
+    register void * mem_rsi asm("rsi") = scratch_mem + 2 * PAGE_SIZE;
+    register void * mem_rdi asm("rdi") = scratch_mem + 3 * PAGE_SIZE;
+    register void * mem_r14 asm("r14") = scratch_mem + 4 * PAGE_SIZE;
+#endif
     asm volatile (
         "   .intel_syntax noprefix\n"
 
@@ -146,10 +151,12 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
         "   MOV r12, 42\n"
         "   MOV r13, 42\n"
 
+#if (! INIT_ADDITIONAL_MEM_REGS)
         // additional ones that might make problems with memory instructions
         "   MOV r14, 42\n" // (kernel)nanobench's preferred memory operand
         "   MOV rsi, 42\n"
         "   MOV rdi, 42\n"
+#endif
 
         "   MOV rcx, 3\n"  // shift amount
 
@@ -179,8 +186,14 @@ PLACEHOLDER_BENCH_CODE
         "   .att_syntax\n"
         : "=r" (num_iterations_reg) // declare this as an output since it is an input that we want to clobber
         : "r" (num_iterations_reg), //[saved_counters_addr] "o" (saved_counters),
-          "r" (mem_rbp), "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14) // inputs for memory operands
+          "r" (mem_rbp), // inputs for memory operands
+#if INIT_ADDITIONAL_MEM_REGS
+          "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14)
+#endif
         : "rax", "rbx", "rcx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13",
+#if (! INIT_ADDITIONAL_MEM_REGS)
+          "r14", "rsi", "rdi",
+#endif
           "ymm0", "ymm1", "ymm2", "ymm3", "ymm4", "ymm5", "ymm6", "ymm7",
           "ymm8", "ymm9", "ymm10", "ymm11", "ymm12", "ymm13", "ymm14", "ymm15", "cc", "memory"
            // clobber everything, except for the inputs
