@@ -165,7 +165,7 @@ class NanoBenchPredictor(Predictor):
     #     VZEROALL;
     #     """
 
-    def evaluate(self, basic_block, disable_logging=False, *args, add_details=False, *kwargs):
+    def evaluate(self, basic_block, disable_logging=False, *args, add_details=False, **kwargs):
 
         if PWManager.password is None:
             raise PredictorConfigError("Trying to run nanoBench without sudo password!")
