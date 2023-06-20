@@ -102,7 +102,9 @@ class PITEPredictor(Predictor):
                     f.write(instantiated_frame)
 
                 # compile benchmark code
-                cmd = self.compiler_cmd + ('-DUSE_PERF_COUNTERS=1', '-o', bin_path, src_path)
+                cmd = self.compiler_cmd + ('-DUSE_PERF_COUNTERS=1',
+                                           '-DINIT_ADDITIONAL_MEM_REGS=1',
+                                           '-o', bin_path, src_path)
 
                 # set macro values in the C code via compiler flags
                 for k, v in dvars.items():
