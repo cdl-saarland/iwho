@@ -43,6 +43,7 @@ class PITEPredictor(Predictor):
             "timeout", # a timeout for subprocess calls in seconds
             "aggregator", # aggregation method to use among the samples ("median" or "min")
             "compiler_cmd", # a compiler command, with arguments listed
+            "use_perf_counters", # if enabled, count uops with performance counters. currently only AMD supported
             "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
             "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
         ]
@@ -102,9 +103,11 @@ class PITEPredictor(Predictor):
                     f.write(instantiated_frame)
 
                 # compile benchmark code
-                cmd = self.compiler_cmd + ('-DUSE_PERF_COUNTERS=1',
-                                           '-DINIT_ADDITIONAL_MEM_REGS=1',
+                cmd = self.compiler_cmd + ('-DINIT_ADDITIONAL_MEM_REGS=1',
                                            '-o', bin_path, src_path)
+
+                if self.use_perf_counters:
+                    cmd += ('-DUSE_PERF_COUNTERS=1',)
 
                 # set macro values in the C code via compiler flags
                 for k, v in dvars.items():
