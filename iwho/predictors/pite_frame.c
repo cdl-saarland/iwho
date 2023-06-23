@@ -13,7 +13,7 @@ void *memset(void *s, int c, size_t n);
 #endif
 
 #define PAGE_SIZE 4096
-#define PRERUN_NUM_ITERATIONS 20000
+#define PRERUN_NUM_ITERATIONS 1000
 
 #ifndef INIT_ADDITIONAL_MEM_REGS
 #define INIT_ADDITIONAL_MEM_REGS 0
