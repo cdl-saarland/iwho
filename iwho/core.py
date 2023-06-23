@@ -878,10 +878,15 @@ class OperandScheme:
                 written = written)
 
     def __hash__(self):
-        raise NotImplementedError("No hash implemented on OperandSchemes")
+        return hash((self.operand_constraint, self.fixed_operand,
+                    self.is_read, self.is_written,))
 
     def __eq__(self, other):
-        raise NotImplementedError("No equality implemented on OperandSchemes")
+        return isinstance(other, OperandScheme) and (
+                self.operand_constraint == other.operand_constraint and
+                self.fixed_operand == other.fixed_operand
+                self.is_read == other.is_read
+                self.is_written == other.is_written)
 
 
 @export
