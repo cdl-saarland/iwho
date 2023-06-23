@@ -139,6 +139,7 @@ class RegisterOperand(core.OperandInstance):
         self.alias_class = alias_class
         self.category = category
         self.width = width
+        self._cached_hash = hash(self.name)
 
     def __str__(self):
         return str(self.name)
@@ -150,7 +151,7 @@ class RegisterOperand(core.OperandInstance):
         return self.__class__ == other.__class__ and self.name == other.name
 
     def __hash__(self):
-        return hash((self.name))
+        return self._cached_hash
 
     def to_json_dict(self):
         # all the other information is in the register description
@@ -204,6 +205,8 @@ class MemoryOperand(core.OperandInstance):
         self.index = index
         self.scale = scale
         self.displacement = displacement
+
+        self._cached_hash = hash((self.segment, self.base, self.index, self.scale, self.displacement))
 
     def additionally_read(self) -> Sequence[core.OperandInstance]:
         """ Return a list of `core.OperandInstance`s that are read to compute
@@ -271,7 +274,7 @@ class MemoryOperand(core.OperandInstance):
                 and self.displacement == other.displacement)
 
     def __hash__(self):
-        return hash((self.segment, self.base, self.index, self.scale, self.displacement))
+        return self._cached_hash
 
     def to_json_dict(self):
         return { "kind": "x86MemoryOperand", "width": self.width,
@@ -364,6 +367,7 @@ class ImmediateOperand(core.OperandInstance):
         assert isinstance(value, int)
         self.width = width
         self.value = value
+        self._cached_hash = hash((self.width, self.value))
 
     def __str__(self):
         return hex(self.value)
@@ -377,7 +381,7 @@ class ImmediateOperand(core.OperandInstance):
                 and self.value == other.value)
 
     def __hash__(self):
-        return hash((self.width, self.value))
+        return self._cached_hash
 
     def to_json_dict(self):
         return { "kind": "x86ImmediateOperand", "width": self.width, "value": self.value }
