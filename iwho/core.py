@@ -884,8 +884,8 @@ class OperandScheme:
     def __eq__(self, other):
         return isinstance(other, OperandScheme) and (
                 self.operand_constraint == other.operand_constraint and
-                self.fixed_operand == other.fixed_operand
-                self.is_read == other.is_read
+                self.fixed_operand == other.fixed_operand and
+                self.is_read == other.is_read and
                 self.is_written == other.is_written)
 
 
