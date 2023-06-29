@@ -749,7 +749,7 @@ class SetConstraint(OperandConstraint):
 
     def to_json_dict(self):
         return {"kind": self.json_kind_id,
-                "acceptable_operands": [ op.to_json_dict() for op in self.acceptable_operands ],
+                "acceptable_operands": [ op.to_json_dict() for op in sorted(self.acceptable_operands, key=str) ],
             }
 
 
