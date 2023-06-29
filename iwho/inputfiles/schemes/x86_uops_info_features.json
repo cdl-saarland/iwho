@@ -13244,7 +13244,7 @@
       }
     }
   ],
-  "vpextrb byte ptr W:MEM(8), R:XMM0..15, IMM(8)": [
+  "vpextrb byte ptr RW:MEM(8), R:XMM0..15, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/VPEXTRB_M8_XMM_I8.html",
       "ref_url": "felixcloutier.com/x86/PEXTRB:PEXTRD:PEXTRQ.html",
@@ -13424,7 +13424,7 @@
       }
     }
   ],
-  "vpextrw word ptr W:MEM(16), R:XMM0..15, IMM(8)": [
+  "vpextrw word ptr RW:MEM(16), R:XMM0..15, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/VPEXTRW_M16_XMM_I8.html",
       "ref_url": "felixcloutier.com/x86/PEXTRW.html",
@@ -37188,7 +37188,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:16, word ptr R:MEM(16)": [
+  "bsf RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37218,7 +37218,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:32, dword ptr R:MEM(32)": [
+  "bsf RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37248,7 +37248,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:64, qword ptr R:MEM(64)": [
+  "bsf RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37278,7 +37278,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:16, R:GPR:16": [
+  "bsf RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37308,7 +37308,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:32, R:GPR:32": [
+  "bsf RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37338,7 +37338,7 @@
       "doc": {}
     }
   ],
-  "bsf W:GPR:64, R:GPR:64": [
+  "bsf RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/BSF_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/BSF.html",
@@ -37368,7 +37368,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:16, word ptr R:MEM(16)": [
+  "bsr RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -37398,7 +37398,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:32, dword ptr R:MEM(32)": [
+  "bsr RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -37428,7 +37428,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:64, qword ptr R:MEM(64)": [
+  "bsr RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -37458,7 +37458,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:16, R:GPR:16": [
+  "bsr RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -37488,7 +37488,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:32, R:GPR:32": [
+  "bsr RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -37518,7 +37518,7 @@
       "doc": {}
     }
   ],
-  "bsr W:GPR:64, R:GPR:64": [
+  "bsr RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/BSR_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/BSR.html",
@@ -41009,7 +41009,7 @@
       }
     }
   ],
-  "cmovb W:GPR:16, word ptr R:MEM(16)": [
+  "cmovb RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41039,7 +41039,7 @@
       "doc": {}
     }
   ],
-  "cmovb W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovb RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41069,7 +41069,7 @@
       "doc": {}
     }
   ],
-  "cmovb W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovb RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41099,7 +41099,7 @@
       "doc": {}
     }
   ],
-  "cmovb W:GPR:16, R:GPR:16": [
+  "cmovb RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41133,7 +41133,7 @@
       }
     }
   ],
-  "cmovb W:GPR:32, R:GPR:32": [
+  "cmovb RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41167,7 +41167,7 @@
       }
     }
   ],
-  "cmovb W:GPR:64, R:GPR:64": [
+  "cmovb RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVB_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41201,7 +41201,7 @@
       }
     }
   ],
-  "cmovbe W:GPR:16, word ptr R:MEM(16)": [
+  "cmovbe RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41231,7 +41231,7 @@
       "doc": {}
     }
   ],
-  "cmovbe W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovbe RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41261,7 +41261,7 @@
       "doc": {}
     }
   ],
-  "cmovbe W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovbe RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41291,7 +41291,7 @@
       "doc": {}
     }
   ],
-  "cmovbe W:GPR:16, R:GPR:16": [
+  "cmovbe RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41325,7 +41325,7 @@
       }
     }
   ],
-  "cmovbe W:GPR:32, R:GPR:32": [
+  "cmovbe RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41359,7 +41359,7 @@
       }
     }
   ],
-  "cmovbe W:GPR:64, R:GPR:64": [
+  "cmovbe RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVBE_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41393,7 +41393,7 @@
       }
     }
   ],
-  "cmovl W:GPR:16, word ptr R:MEM(16)": [
+  "cmovl RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41423,7 +41423,7 @@
       "doc": {}
     }
   ],
-  "cmovl W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovl RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41453,7 +41453,7 @@
       "doc": {}
     }
   ],
-  "cmovl W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovl RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41483,7 +41483,7 @@
       "doc": {}
     }
   ],
-  "cmovl W:GPR:16, R:GPR:16": [
+  "cmovl RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41517,7 +41517,7 @@
       }
     }
   ],
-  "cmovl W:GPR:32, R:GPR:32": [
+  "cmovl RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41551,7 +41551,7 @@
       }
     }
   ],
-  "cmovl W:GPR:64, R:GPR:64": [
+  "cmovl RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVL_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41585,7 +41585,7 @@
       }
     }
   ],
-  "cmovle W:GPR:16, word ptr R:MEM(16)": [
+  "cmovle RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41615,7 +41615,7 @@
       "doc": {}
     }
   ],
-  "cmovle W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovle RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41645,7 +41645,7 @@
       "doc": {}
     }
   ],
-  "cmovle W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovle RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41675,7 +41675,7 @@
       "doc": {}
     }
   ],
-  "cmovle W:GPR:16, R:GPR:16": [
+  "cmovle RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41709,7 +41709,7 @@
       }
     }
   ],
-  "cmovle W:GPR:32, R:GPR:32": [
+  "cmovle RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41743,7 +41743,7 @@
       }
     }
   ],
-  "cmovle W:GPR:64, R:GPR:64": [
+  "cmovle RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVLE_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41777,7 +41777,7 @@
       }
     }
   ],
-  "cmovae W:GPR:16, word ptr R:MEM(16)": [
+  "cmovae RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41807,7 +41807,7 @@
       "doc": {}
     }
   ],
-  "cmovae W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovae RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41837,7 +41837,7 @@
       "doc": {}
     }
   ],
-  "cmovae W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovae RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41867,7 +41867,7 @@
       "doc": {}
     }
   ],
-  "cmovae W:GPR:16, R:GPR:16": [
+  "cmovae RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41901,7 +41901,7 @@
       }
     }
   ],
-  "cmovae W:GPR:32, R:GPR:32": [
+  "cmovae RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41935,7 +41935,7 @@
       }
     }
   ],
-  "cmovae W:GPR:64, R:GPR:64": [
+  "cmovae RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNB_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41969,7 +41969,7 @@
       }
     }
   ],
-  "cmova W:GPR:16, word ptr R:MEM(16)": [
+  "cmova RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -41999,7 +41999,7 @@
       "doc": {}
     }
   ],
-  "cmova W:GPR:32, dword ptr R:MEM(32)": [
+  "cmova RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42029,7 +42029,7 @@
       "doc": {}
     }
   ],
-  "cmova W:GPR:64, qword ptr R:MEM(64)": [
+  "cmova RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42059,7 +42059,7 @@
       "doc": {}
     }
   ],
-  "cmova W:GPR:16, R:GPR:16": [
+  "cmova RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42093,7 +42093,7 @@
       }
     }
   ],
-  "cmova W:GPR:32, R:GPR:32": [
+  "cmova RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42127,7 +42127,7 @@
       }
     }
   ],
-  "cmova W:GPR:64, R:GPR:64": [
+  "cmova RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNBE_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42161,7 +42161,7 @@
       }
     }
   ],
-  "cmovge W:GPR:16, word ptr R:MEM(16)": [
+  "cmovge RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42191,7 +42191,7 @@
       "doc": {}
     }
   ],
-  "cmovge W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovge RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42221,7 +42221,7 @@
       "doc": {}
     }
   ],
-  "cmovge W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovge RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42251,7 +42251,7 @@
       "doc": {}
     }
   ],
-  "cmovge W:GPR:16, R:GPR:16": [
+  "cmovge RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42285,7 +42285,7 @@
       }
     }
   ],
-  "cmovge W:GPR:32, R:GPR:32": [
+  "cmovge RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42319,7 +42319,7 @@
       }
     }
   ],
-  "cmovge W:GPR:64, R:GPR:64": [
+  "cmovge RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNL_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42353,7 +42353,7 @@
       }
     }
   ],
-  "cmovg W:GPR:16, word ptr R:MEM(16)": [
+  "cmovg RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42383,7 +42383,7 @@
       "doc": {}
     }
   ],
-  "cmovg W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovg RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42413,7 +42413,7 @@
       "doc": {}
     }
   ],
-  "cmovg W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovg RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42443,7 +42443,7 @@
       "doc": {}
     }
   ],
-  "cmovg W:GPR:16, R:GPR:16": [
+  "cmovg RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42477,7 +42477,7 @@
       }
     }
   ],
-  "cmovg W:GPR:32, R:GPR:32": [
+  "cmovg RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42511,7 +42511,7 @@
       }
     }
   ],
-  "cmovg W:GPR:64, R:GPR:64": [
+  "cmovg RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNLE_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42545,7 +42545,7 @@
       }
     }
   ],
-  "cmovno W:GPR:16, word ptr R:MEM(16)": [
+  "cmovno RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42575,7 +42575,7 @@
       "doc": {}
     }
   ],
-  "cmovno W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovno RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42605,7 +42605,7 @@
       "doc": {}
     }
   ],
-  "cmovno W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovno RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42635,7 +42635,7 @@
       "doc": {}
     }
   ],
-  "cmovno W:GPR:16, R:GPR:16": [
+  "cmovno RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42669,7 +42669,7 @@
       }
     }
   ],
-  "cmovno W:GPR:32, R:GPR:32": [
+  "cmovno RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42703,7 +42703,7 @@
       }
     }
   ],
-  "cmovno W:GPR:64, R:GPR:64": [
+  "cmovno RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNO_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42737,7 +42737,7 @@
       }
     }
   ],
-  "cmovnp W:GPR:16, word ptr R:MEM(16)": [
+  "cmovnp RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42767,7 +42767,7 @@
       "doc": {}
     }
   ],
-  "cmovnp W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovnp RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42797,7 +42797,7 @@
       "doc": {}
     }
   ],
-  "cmovnp W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovnp RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42827,7 +42827,7 @@
       "doc": {}
     }
   ],
-  "cmovnp W:GPR:16, R:GPR:16": [
+  "cmovnp RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42861,7 +42861,7 @@
       }
     }
   ],
-  "cmovnp W:GPR:32, R:GPR:32": [
+  "cmovnp RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42895,7 +42895,7 @@
       }
     }
   ],
-  "cmovnp W:GPR:64, R:GPR:64": [
+  "cmovnp RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNP_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42929,7 +42929,7 @@
       }
     }
   ],
-  "cmovns W:GPR:16, word ptr R:MEM(16)": [
+  "cmovns RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42959,7 +42959,7 @@
       "doc": {}
     }
   ],
-  "cmovns W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovns RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -42989,7 +42989,7 @@
       "doc": {}
     }
   ],
-  "cmovns W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovns RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43019,7 +43019,7 @@
       "doc": {}
     }
   ],
-  "cmovns W:GPR:16, R:GPR:16": [
+  "cmovns RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43053,7 +43053,7 @@
       }
     }
   ],
-  "cmovns W:GPR:32, R:GPR:32": [
+  "cmovns RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43087,7 +43087,7 @@
       }
     }
   ],
-  "cmovns W:GPR:64, R:GPR:64": [
+  "cmovns RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNS_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43121,7 +43121,7 @@
       }
     }
   ],
-  "cmovne W:GPR:16, word ptr R:MEM(16)": [
+  "cmovne RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43151,7 +43151,7 @@
       "doc": {}
     }
   ],
-  "cmovne W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovne RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43181,7 +43181,7 @@
       "doc": {}
     }
   ],
-  "cmovne W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovne RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43211,7 +43211,7 @@
       "doc": {}
     }
   ],
-  "cmovne W:GPR:16, R:GPR:16": [
+  "cmovne RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43245,7 +43245,7 @@
       }
     }
   ],
-  "cmovne W:GPR:32, R:GPR:32": [
+  "cmovne RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43279,7 +43279,7 @@
       }
     }
   ],
-  "cmovne W:GPR:64, R:GPR:64": [
+  "cmovne RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVNZ_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43313,7 +43313,7 @@
       }
     }
   ],
-  "cmovo W:GPR:16, word ptr R:MEM(16)": [
+  "cmovo RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43343,7 +43343,7 @@
       "doc": {}
     }
   ],
-  "cmovo W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovo RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43373,7 +43373,7 @@
       "doc": {}
     }
   ],
-  "cmovo W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovo RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43403,7 +43403,7 @@
       "doc": {}
     }
   ],
-  "cmovo W:GPR:16, R:GPR:16": [
+  "cmovo RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43437,7 +43437,7 @@
       }
     }
   ],
-  "cmovo W:GPR:32, R:GPR:32": [
+  "cmovo RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43471,7 +43471,7 @@
       }
     }
   ],
-  "cmovo W:GPR:64, R:GPR:64": [
+  "cmovo RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVO_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43505,7 +43505,7 @@
       }
     }
   ],
-  "cmovp W:GPR:16, word ptr R:MEM(16)": [
+  "cmovp RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43535,7 +43535,7 @@
       "doc": {}
     }
   ],
-  "cmovp W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovp RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43565,7 +43565,7 @@
       "doc": {}
     }
   ],
-  "cmovp W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovp RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43595,7 +43595,7 @@
       "doc": {}
     }
   ],
-  "cmovp W:GPR:16, R:GPR:16": [
+  "cmovp RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43629,7 +43629,7 @@
       }
     }
   ],
-  "cmovp W:GPR:32, R:GPR:32": [
+  "cmovp RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43663,7 +43663,7 @@
       }
     }
   ],
-  "cmovp W:GPR:64, R:GPR:64": [
+  "cmovp RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVP_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43697,7 +43697,7 @@
       }
     }
   ],
-  "cmovs W:GPR:16, word ptr R:MEM(16)": [
+  "cmovs RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43727,7 +43727,7 @@
       "doc": {}
     }
   ],
-  "cmovs W:GPR:32, dword ptr R:MEM(32)": [
+  "cmovs RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43757,7 +43757,7 @@
       "doc": {}
     }
   ],
-  "cmovs W:GPR:64, qword ptr R:MEM(64)": [
+  "cmovs RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43787,7 +43787,7 @@
       "doc": {}
     }
   ],
-  "cmovs W:GPR:16, R:GPR:16": [
+  "cmovs RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43821,7 +43821,7 @@
       }
     }
   ],
-  "cmovs W:GPR:32, R:GPR:32": [
+  "cmovs RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43855,7 +43855,7 @@
       }
     }
   ],
-  "cmovs W:GPR:64, R:GPR:64": [
+  "cmovs RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVS_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43889,7 +43889,7 @@
       }
     }
   ],
-  "cmove W:GPR:16, word ptr R:MEM(16)": [
+  "cmove RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43919,7 +43919,7 @@
       "doc": {}
     }
   ],
-  "cmove W:GPR:32, dword ptr R:MEM(32)": [
+  "cmove RW:GPR:32, dword ptr R:MEM(32)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R32_M32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43949,7 +43949,7 @@
       "doc": {}
     }
   ],
-  "cmove W:GPR:64, qword ptr R:MEM(64)": [
+  "cmove RW:GPR:64, qword ptr R:MEM(64)": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R64_M64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -43979,7 +43979,7 @@
       "doc": {}
     }
   ],
-  "cmove W:GPR:16, R:GPR:16": [
+  "cmove RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -44013,7 +44013,7 @@
       }
     }
   ],
-  "cmove W:GPR:32, R:GPR:32": [
+  "cmove RW:GPR:32, R:GPR:32": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R32_R32.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -44047,7 +44047,7 @@
       }
     }
   ],
-  "cmove W:GPR:64, R:GPR:64": [
+  "cmove RW:GPR:64, R:GPR:64": [
     {
       "uops_info_url": "uops.info/html-instr/CMOVZ_R64_R64.html",
       "ref_url": "felixcloutier.com/x86/CMOVcc.html",
@@ -47950,7 +47950,7 @@
       }
     }
   ],
-  "imul W:GPR:16, word ptr R:MEM(16), IMM(16)": [
+  "imul RW:GPR:16, word ptr R:MEM(16), IMM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_R16_M16_I16.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48052,7 +48052,7 @@
       }
     }
   ],
-  "imul W:GPR:16, R:GPR:16, IMM(16)": [
+  "imul RW:GPR:16, R:GPR:16, IMM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_IMMZ_R16_R16_I16.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48154,7 +48154,7 @@
       }
     }
   ],
-  "imul W:GPR:16, word ptr R:MEM(16), 0x0": [
+  "imul RW:GPR:16, word ptr R:MEM(16), 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_R16_M16_0.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48188,7 +48188,7 @@
       }
     }
   ],
-  "imul W:GPR:16, word ptr R:MEM(16), IMM(8)": [
+  "imul RW:GPR:16, word ptr R:MEM(16), IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_R16_M16_I8.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48358,7 +48358,7 @@
       }
     }
   ],
-  "imul W:GPR:16, R:GPR:16, 0x0": [
+  "imul RW:GPR:16, R:GPR:16, 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_IMMB_R16_R16_0.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48392,7 +48392,7 @@
       }
     }
   ],
-  "imul W:GPR:16, R:GPR:16, IMM(8)": [
+  "imul RW:GPR:16, R:GPR:16, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/IMUL_IMMB_R16_R16_I8.html",
       "ref_url": "felixcloutier.com/x86/IMUL.html",
@@ -48766,7 +48766,7 @@
       }
     }
   ],
-  "in W:al, 0x0": [
+  "in RW:al, 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AL_0.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -48796,7 +48796,7 @@
       "doc": {}
     }
   ],
-  "in W:al, IMM(8)": [
+  "in RW:al, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AL_I8.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -48826,7 +48826,7 @@
       "doc": {}
     }
   ],
-  "in W:ax, 0x0": [
+  "in RW:ax, 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AX_0.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -48856,7 +48856,7 @@
       "doc": {}
     }
   ],
-  "in W:ax, IMM(8)": [
+  "in RW:ax, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AX_I8.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -48946,7 +48946,7 @@
       "doc": {}
     }
   ],
-  "in W:al, R:dx": [
+  "in RW:al, R:dx": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AL_DX.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -48976,7 +48976,7 @@
       "doc": {}
     }
   ],
-  "in W:ax, R:dx": [
+  "in RW:ax, R:dx": [
     {
       "uops_info_url": "uops.info/html-instr/IN_AX_DX.html",
       "ref_url": "felixcloutier.com/x86/IN.html",
@@ -50834,7 +50834,7 @@
       }
     }
   ],
-  "lea W:GPR:16, MEM(0)": [
+  "lea RW:GPR:16, MEM(0)": [
     {
       "uops_info_url": "uops.info/html-instr/LEA_R_D32_R16.html",
       "ref_url": "felixcloutier.com/x86/LEA.html",
@@ -52151,7 +52151,7 @@
       }
     }
   ],
-  "lodsb W:al, byte ptr R:[rsi]": [
+  "lodsb RW:al, byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSB.html",
       "ref_url": "felixcloutier.com/x86/LODS:LODSB:LODSW:LODSD:LODSQ.html",
@@ -52181,7 +52181,7 @@
       "doc": {}
     }
   ],
-  "lodsd W:eax, dword ptr R:[rsi]": [
+  "lodsd RW:eax, dword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSD.html",
       "ref_url": "felixcloutier.com/x86/LODS:LODSB:LODSW:LODSD:LODSQ.html",
@@ -52211,7 +52211,7 @@
       "doc": {}
     }
   ],
-  "lodsw W:ax, word ptr R:[rsi]": [
+  "lodsw RW:ax, word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSW.html",
       "ref_url": "felixcloutier.com/x86/LODS:LODSB:LODSW:LODSD:LODSQ.html",
@@ -52343,7 +52343,7 @@
       }
     }
   ],
-  "mov byte ptr W:MEM(8), 0x0": [
+  "mov byte ptr RW:MEM(8), 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M8_0.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52373,7 +52373,7 @@
       "doc": {}
     }
   ],
-  "mov byte ptr W:MEM(8), IMM(8)": [
+  "mov byte ptr RW:MEM(8), IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M8_I8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52437,7 +52437,7 @@
       }
     }
   ],
-  "mov word ptr W:MEM(16), IMM(16)": [
+  "mov word ptr RW:MEM(16), IMM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M16_I16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52527,7 +52527,7 @@
       "doc": {}
     }
   ],
-  "mov W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "mov RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_88_R8l_R8l.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52593,7 +52593,7 @@
       }
     }
   ],
-  "mov W:ah,bh,ch,dh, R:al,bl,cl,dl": [
+  "mov RW:ah,bh,ch,dh, R:al,bl,cl,dl": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_88_R8h_R8l.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52659,7 +52659,7 @@
       }
     }
   ],
-  "mov W:al,bl,cl,dl, R:ah,bh,ch,dh": [
+  "mov RW:al,bl,cl,dl, R:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_88_R8l_R8h.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52725,7 +52725,7 @@
       }
     }
   ],
-  "mov W:ah,bh,ch,dh, R:ah,bh,ch,dh": [
+  "mov RW:ah,bh,ch,dh, R:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_88_R8h_R8h.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52791,7 +52791,7 @@
       }
     }
   ],
-  "mov byte ptr W:MEM(8), R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "mov byte ptr RW:MEM(8), R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M8_R8l.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52821,7 +52821,7 @@
       "doc": {}
     }
   ],
-  "mov byte ptr W:MEM(8), R:ah,bh,ch,dh": [
+  "mov byte ptr RW:MEM(8), R:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M8_R8h.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52851,7 +52851,7 @@
       "doc": {}
     }
   ],
-  "mov word ptr W:MEM(16), R:GPR:16": [
+  "mov word ptr RW:MEM(16), R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M16_R16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -52941,7 +52941,7 @@
       "doc": {}
     }
   ],
-  "mov W:GPR:16, R:GPR:16": [
+  "mov RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_89_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53095,7 +53095,7 @@
       }
     }
   ],
-  "mov W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, byte ptr R:MEM(8)": [
+  "mov RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, byte ptr R:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8l_M8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53125,7 +53125,7 @@
       "doc": {}
     }
   ],
-  "mov W:ah,bh,ch,dh, byte ptr R:MEM(8)": [
+  "mov RW:ah,bh,ch,dh, byte ptr R:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8h_M8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53155,7 +53155,7 @@
       "doc": {}
     }
   ],
-  "mov W:GPR:16, word ptr R:MEM(16)": [
+  "mov RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53245,7 +53245,7 @@
       "doc": {}
     }
   ],
-  "mov word ptr W:MEM(16), R:SEGMENT:16": [
+  "mov word ptr RW:MEM(16), R:SEGMENT:16": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_M16_SEG.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53273,6 +53273,40 @@
         "ADL-P": "1*p1+1*p49+1*p78"
       },
       "doc": {}
+    }
+  ],
+  "mov RW:GPR:16, R:SEGMENT:16": [
+    {
+      "uops_info_url": "uops.info/html-instr/MOV_R16_SEG.html",
+      "ref_url": "felixcloutier.com/x86/MOV.html",
+      "extension": "BASE",
+      "isa-set": "I86",
+      "category": "DATAXFER",
+      "measurements": {
+        "CON": "1*p2",
+        "WOL": "1*p2",
+        "NHM": "1*p2",
+        "WSM": "1*p2",
+        "SNB": "1*p015+1*p1",
+        "IVB": "1*p015+1*p1",
+        "HSW": "1*p0156+1*p1",
+        "BDW": "1*p0156+1*p1",
+        "SKL": "1*p0156+1*p1",
+        "SKX": "1*p0156+1*p1",
+        "KBL": "1*p0156+1*p1",
+        "CFL": "1*p0156+1*p1",
+        "CNL": "1*p0156+1*p1",
+        "CLX": "1*p0156+1*p1",
+        "ICL": "1*p0156+1*p1",
+        "TGL": "1*p0156+1*p1",
+        "RKL": "1*p0156+1*p1",
+        "ADL-P": "1*p0156B+1*p1"
+      },
+      "doc": {
+        "ZEN+": "ALU",
+        "ZEN2": "ALU",
+        "ZEN3": "ALU"
+      }
     }
   ],
   "mov W:GPR:32, R:SEGMENT:16": [
@@ -53343,7 +53377,7 @@
       }
     }
   ],
-  "mov W:ds,es,fs,gs,ss, word ptr R:MEM(16)": [
+  "mov RW:ds,es,fs,gs,ss, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R_M16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53354,7 +53388,7 @@
       "doc": {}
     }
   ],
-  "mov W:ds,es,fs,gs,ss, R:GPR:16": [
+  "mov RW:ds,es,fs,gs,ss, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R_R16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53369,7 +53403,7 @@
       }
     }
   ],
-  "mov W:al, byte ptr R:MEM(8)": [
+  "mov RW:al, byte ptr R:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_AL_Moffs8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53399,7 +53433,7 @@
       "doc": {}
     }
   ],
-  "mov W:ax, word ptr R:MEM(16)": [
+  "mov RW:ax, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_AX_Moffs16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53489,7 +53523,7 @@
       "doc": {}
     }
   ],
-  "mov byte ptr W:MEM(8), R:al": [
+  "mov byte ptr RW:MEM(8), R:al": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_Moffs8_AL.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53519,7 +53553,7 @@
       "doc": {}
     }
   ],
-  "mov word ptr W:MEM(16), R:ax": [
+  "mov word ptr RW:MEM(16), R:ax": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_Moffs16_AX.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53609,7 +53643,7 @@
       "doc": {}
     }
   ],
-  "mov W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, 0x0": [
+  "mov RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8l_0.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53643,7 +53677,7 @@
       }
     }
   ],
-  "mov W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, IMM(8)": [
+  "mov RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8l_I8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53677,7 +53711,7 @@
       }
     }
   ],
-  "mov W:ah,bh,ch,dh, 0x0": [
+  "mov RW:ah,bh,ch,dh, 0x0": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8h_0.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53711,7 +53745,7 @@
       }
     }
   ],
-  "mov W:ah,bh,ch,dh, IMM(8)": [
+  "mov RW:ah,bh,ch,dh, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R8h_I8.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53745,7 +53779,7 @@
       }
     }
   ],
-  "mov W:GPR:16, IMM(16)": [
+  "mov RW:GPR:16, IMM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOV_R16_I16.html",
       "ref_url": "felixcloutier.com/x86/MOV.html",
@@ -53847,7 +53881,7 @@
       }
     }
   ],
-  "movsb byte ptr W:es:[rdi], byte ptr R:[rsi]": [
+  "movsb byte ptr RW:es:[rdi], byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSB.html",
       "ref_url": "felixcloutier.com/x86/MOVS:MOVSB:MOVSW:MOVSD:MOVSQ.html",
@@ -53907,7 +53941,7 @@
       "doc": {}
     }
   ],
-  "movsw word ptr W:es:[rdi], word ptr R:[rsi]": [
+  "movsw word ptr RW:es:[rdi], word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSW.html",
       "ref_url": "felixcloutier.com/x86/MOVS:MOVSB:MOVSW:MOVSD:MOVSQ.html",
@@ -53937,7 +53971,7 @@
       "doc": {}
     }
   ],
-  "movsx W:GPR:16, byte ptr R:MEM(8)": [
+  "movsx RW:GPR:16, byte ptr R:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSX_R16_M8.html",
       "ref_url": "felixcloutier.com/x86/MOVSX:MOVSXD.html",
@@ -54027,7 +54061,7 @@
       "doc": {}
     }
   ],
-  "movsx W:GPR:16, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "movsx RW:GPR:16, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSX_R16_R8l.html",
       "ref_url": "felixcloutier.com/x86/MOVSX:MOVSXD.html",
@@ -54061,7 +54095,7 @@
       }
     }
   ],
-  "movsx W:ax,bp,bx,cx,di,dx,si,sp, R:ah,bh,ch,dh": [
+  "movsx RW:ax,bp,bx,cx,di,dx,si,sp, R:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSX_R16_R8h.html",
       "ref_url": "felixcloutier.com/x86/MOVSX:MOVSXD.html",
@@ -54325,7 +54359,7 @@
       }
     }
   ],
-  "movzx W:GPR:16, byte ptr R:MEM(8)": [
+  "movzx RW:GPR:16, byte ptr R:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/MOVZX_R16_M8.html",
       "ref_url": "felixcloutier.com/x86/MOVZX.html",
@@ -54415,7 +54449,7 @@
       "doc": {}
     }
   ],
-  "movzx W:GPR:16, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "movzx RW:GPR:16, R:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/MOVZX_R16_R8l.html",
       "ref_url": "felixcloutier.com/x86/MOVZX.html",
@@ -54449,7 +54483,7 @@
       }
     }
   ],
-  "movzx W:ax,bp,bx,cx,di,dx,si,sp, R:ah,bh,ch,dh": [
+  "movzx RW:ax,bp,bx,cx,di,dx,si,sp, R:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/MOVZX_R16_R8h.html",
       "ref_url": "felixcloutier.com/x86/MOVZX.html",
@@ -58543,7 +58577,7 @@
       "doc": {}
     }
   ],
-  "pop word ptr W:MEM(16)": [
+  "pop word ptr RW:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/POP_M16.html",
       "ref_url": "felixcloutier.com/x86/POP.html",
@@ -58603,7 +58637,7 @@
       "doc": {}
     }
   ],
-  "pop W:GPR:16": [
+  "pop RW:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/POP_R16.html",
       "ref_url": "felixcloutier.com/x86/POP.html",
@@ -58669,7 +58703,7 @@
       }
     }
   ],
-  "pop W:fs": [
+  "pop RW:fs": [
     {
       "uops_info_url": "uops.info/html-instr/POP_W_FS.html",
       "ref_url": "felixcloutier.com/x86/POP.html",
@@ -58689,7 +58723,7 @@
       "doc": {}
     }
   ],
-  "pop W:gs": [
+  "pop RW:gs": [
     {
       "uops_info_url": "uops.info/html-instr/POP_W_GS.html",
       "ref_url": "felixcloutier.com/x86/POP.html",
@@ -62461,7 +62495,7 @@
       "doc": {}
     }
   ],
-  "rep lodsb W:al, byte ptr R:[rsi]": [
+  "rep lodsb RW:al, byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSB_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62491,7 +62525,7 @@
       "doc": {}
     }
   ],
-  "repne lodsb W:al, byte ptr R:[rsi]": [
+  "repne lodsb RW:al, byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSB_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62521,7 +62555,7 @@
       "doc": {}
     }
   ],
-  "rep lodsd W:eax, dword ptr R:[rsi]": [
+  "rep lodsd RW:eax, dword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSD_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62551,7 +62585,7 @@
       "doc": {}
     }
   ],
-  "repne lodsd W:eax, dword ptr R:[rsi]": [
+  "repne lodsd RW:eax, dword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSD_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62581,7 +62615,7 @@
       "doc": {}
     }
   ],
-  "rep lodsw W:ax, word ptr R:[rsi]": [
+  "rep lodsw RW:ax, word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSW_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62611,7 +62645,7 @@
       "doc": {}
     }
   ],
-  "repne lodsw W:ax, word ptr R:[rsi]": [
+  "repne lodsw RW:ax, word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSW_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62641,7 +62675,7 @@
       "doc": {}
     }
   ],
-  "rep movsb byte ptr W:es:[rdi], byte ptr R:[rsi]": [
+  "rep movsb byte ptr RW:es:[rdi], byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSB_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62671,7 +62705,7 @@
       "doc": {}
     }
   ],
-  "repne movsb byte ptr W:es:[rdi], byte ptr R:[rsi]": [
+  "repne movsb byte ptr RW:es:[rdi], byte ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSB_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62701,7 +62735,7 @@
       "doc": {}
     }
   ],
-  "rep movsd dword ptr W:es:[rdi], dword ptr R:[rsi]": [
+  "rep movsd dword ptr RW:es:[rdi], dword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSD_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62731,7 +62765,7 @@
       "doc": {}
     }
   ],
-  "repne movsd dword ptr W:es:[rdi], dword ptr R:[rsi]": [
+  "repne movsd dword ptr RW:es:[rdi], dword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSD_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62761,7 +62795,7 @@
       "doc": {}
     }
   ],
-  "rep movsw word ptr W:es:[rdi], word ptr R:[rsi]": [
+  "rep movsw word ptr RW:es:[rdi], word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSW_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -62791,7 +62825,7 @@
       "doc": {}
     }
   ],
-  "repne movsw word ptr W:es:[rdi], word ptr R:[rsi]": [
+  "repne movsw word ptr RW:es:[rdi], word ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSW_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63057,7 +63091,7 @@
       "doc": {}
     }
   ],
-  "rep stosb byte ptr W:es:[rdi], R:al": [
+  "rep stosb byte ptr RW:es:[rdi], R:al": [
     {
       "uops_info_url": "uops.info/html-instr/STOSB_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63087,7 +63121,7 @@
       "doc": {}
     }
   ],
-  "repne stosb byte ptr W:es:[rdi], R:al": [
+  "repne stosb byte ptr RW:es:[rdi], R:al": [
     {
       "uops_info_url": "uops.info/html-instr/STOSB_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63117,7 +63151,7 @@
       "doc": {}
     }
   ],
-  "repne stosd dword ptr W:es:[rdi], R:eax": [
+  "repne stosd dword ptr RW:es:[rdi], R:eax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSD_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63147,7 +63181,7 @@
       "doc": {}
     }
   ],
-  "rep stosd dword ptr W:es:[rdi], R:eax": [
+  "rep stosd dword ptr RW:es:[rdi], R:eax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSD_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63177,7 +63211,7 @@
       "doc": {}
     }
   ],
-  "rep stosw word ptr W:es:[rdi], R:ax": [
+  "rep stosw word ptr RW:es:[rdi], R:ax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSW_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -63207,7 +63241,7 @@
       "doc": {}
     }
   ],
-  "repne stosw word ptr W:es:[rdi], R:ax": [
+  "repne stosw word ptr RW:es:[rdi], R:ax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSW_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -69540,7 +69574,7 @@
       "doc": {}
     }
   ],
-  "setb byte ptr W:MEM(8)": [
+  "setb byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETB_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69572,7 +69606,7 @@
       }
     }
   ],
-  "setb W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setb RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETB_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69606,7 +69640,7 @@
       }
     }
   ],
-  "setb W:ah,bh,ch,dh": [
+  "setb RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETB_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69640,7 +69674,7 @@
       }
     }
   ],
-  "setbe byte ptr W:MEM(8)": [
+  "setbe byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETBE_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69672,7 +69706,7 @@
       }
     }
   ],
-  "setbe W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setbe RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETBE_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69706,7 +69740,7 @@
       }
     }
   ],
-  "setbe W:ah,bh,ch,dh": [
+  "setbe RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETBE_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69740,7 +69774,7 @@
       }
     }
   ],
-  "setl byte ptr W:MEM(8)": [
+  "setl byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETL_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69772,7 +69806,7 @@
       }
     }
   ],
-  "setl W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setl RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETL_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69806,7 +69840,7 @@
       }
     }
   ],
-  "setl W:ah,bh,ch,dh": [
+  "setl RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETL_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69840,7 +69874,7 @@
       }
     }
   ],
-  "setle byte ptr W:MEM(8)": [
+  "setle byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETLE_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69872,7 +69906,7 @@
       }
     }
   ],
-  "setle W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setle RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETLE_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69906,7 +69940,7 @@
       }
     }
   ],
-  "setle W:ah,bh,ch,dh": [
+  "setle RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETLE_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69940,7 +69974,7 @@
       }
     }
   ],
-  "setae byte ptr W:MEM(8)": [
+  "setae byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNB_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -69972,7 +70006,7 @@
       }
     }
   ],
-  "setae W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setae RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNB_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70006,7 +70040,7 @@
       }
     }
   ],
-  "setae W:ah,bh,ch,dh": [
+  "setae RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNB_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70040,7 +70074,7 @@
       }
     }
   ],
-  "seta byte ptr W:MEM(8)": [
+  "seta byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNBE_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70072,7 +70106,7 @@
       }
     }
   ],
-  "seta W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "seta RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNBE_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70106,7 +70140,7 @@
       }
     }
   ],
-  "seta W:ah,bh,ch,dh": [
+  "seta RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNBE_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70140,7 +70174,7 @@
       }
     }
   ],
-  "setge byte ptr W:MEM(8)": [
+  "setge byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNL_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70172,7 +70206,7 @@
       }
     }
   ],
-  "setge W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setge RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNL_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70206,7 +70240,7 @@
       }
     }
   ],
-  "setge W:ah,bh,ch,dh": [
+  "setge RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNL_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70240,7 +70274,7 @@
       }
     }
   ],
-  "setg byte ptr W:MEM(8)": [
+  "setg byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNLE_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70272,7 +70306,7 @@
       }
     }
   ],
-  "setg W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setg RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNLE_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70306,7 +70340,7 @@
       }
     }
   ],
-  "setg W:ah,bh,ch,dh": [
+  "setg RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNLE_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70340,7 +70374,7 @@
       }
     }
   ],
-  "setno byte ptr W:MEM(8)": [
+  "setno byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNO_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70372,7 +70406,7 @@
       }
     }
   ],
-  "setno W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setno RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNO_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70406,7 +70440,7 @@
       }
     }
   ],
-  "setno W:ah,bh,ch,dh": [
+  "setno RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNO_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70440,7 +70474,7 @@
       }
     }
   ],
-  "setnp byte ptr W:MEM(8)": [
+  "setnp byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNP_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70472,7 +70506,7 @@
       }
     }
   ],
-  "setnp W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setnp RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNP_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70506,7 +70540,7 @@
       }
     }
   ],
-  "setnp W:ah,bh,ch,dh": [
+  "setnp RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNP_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70540,7 +70574,7 @@
       }
     }
   ],
-  "setns byte ptr W:MEM(8)": [
+  "setns byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNS_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70572,7 +70606,7 @@
       }
     }
   ],
-  "setns W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setns RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNS_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70606,7 +70640,7 @@
       }
     }
   ],
-  "setns W:ah,bh,ch,dh": [
+  "setns RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNS_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70640,7 +70674,7 @@
       }
     }
   ],
-  "setne byte ptr W:MEM(8)": [
+  "setne byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETNZ_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70672,7 +70706,7 @@
       }
     }
   ],
-  "setne W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setne RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETNZ_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70706,7 +70740,7 @@
       }
     }
   ],
-  "setne W:ah,bh,ch,dh": [
+  "setne RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETNZ_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70740,7 +70774,7 @@
       }
     }
   ],
-  "seto byte ptr W:MEM(8)": [
+  "seto byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETO_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70772,7 +70806,7 @@
       }
     }
   ],
-  "seto W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "seto RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETO_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70806,7 +70840,7 @@
       }
     }
   ],
-  "seto W:ah,bh,ch,dh": [
+  "seto RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETO_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70840,7 +70874,7 @@
       }
     }
   ],
-  "setp byte ptr W:MEM(8)": [
+  "setp byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETP_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70872,7 +70906,7 @@
       }
     }
   ],
-  "setp W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "setp RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETP_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70906,7 +70940,7 @@
       }
     }
   ],
-  "setp W:ah,bh,ch,dh": [
+  "setp RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETP_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70940,7 +70974,7 @@
       }
     }
   ],
-  "sets byte ptr W:MEM(8)": [
+  "sets byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETS_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -70972,7 +71006,7 @@
       }
     }
   ],
-  "sets W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "sets RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETS_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -71006,7 +71040,7 @@
       }
     }
   ],
-  "sets W:ah,bh,ch,dh": [
+  "sets RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETS_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -71040,7 +71074,7 @@
       }
     }
   ],
-  "sete byte ptr W:MEM(8)": [
+  "sete byte ptr RW:MEM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/SETZ_M8.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -71072,7 +71106,7 @@
       }
     }
   ],
-  "sete W:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
+  "sete RW:al,bl,bpl,cl,dil,dl,r10b,r11b,r12b,r13b,r14b,r15b,r8b,r9b,sil,spl": [
     {
       "uops_info_url": "uops.info/html-instr/SETZ_R8l.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -71106,7 +71140,7 @@
       }
     }
   ],
-  "sete W:ah,bh,ch,dh": [
+  "sete RW:ah,bh,ch,dh": [
     {
       "uops_info_url": "uops.info/html-instr/SETZ_R8h.html",
       "ref_url": "felixcloutier.com/x86/SETcc.html",
@@ -74874,7 +74908,7 @@
       "doc": {}
     }
   ],
-  "stosb byte ptr W:es:[rdi], R:al": [
+  "stosb byte ptr RW:es:[rdi], R:al": [
     {
       "uops_info_url": "uops.info/html-instr/STOSB.html",
       "ref_url": "felixcloutier.com/x86/STOS:STOSB:STOSW:STOSD:STOSQ.html",
@@ -74934,7 +74968,7 @@
       "doc": {}
     }
   ],
-  "stosw word ptr W:es:[rdi], R:ax": [
+  "stosw word ptr RW:es:[rdi], R:ax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSW.html",
       "ref_url": "felixcloutier.com/x86/STOS:STOSB:STOSW:STOSD:STOSQ.html",
@@ -81977,7 +82011,7 @@
       }
     }
   ],
-  "tzcnt W:GPR:16, word ptr R:MEM(16)": [
+  "tzcnt RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/TZCNT_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/TZCNT.html",
@@ -82049,7 +82083,7 @@
       "doc": {}
     }
   ],
-  "tzcnt W:GPR:16, R:GPR:16": [
+  "tzcnt RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/TZCNT_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/TZCNT.html",
@@ -90478,7 +90512,7 @@
       "doc": {}
     }
   ],
-  "lodsq W:rax, qword ptr R:[rsi]": [
+  "lodsq RW:rax, qword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSQ.html",
       "ref_url": "felixcloutier.com/x86/LODS:LODSB:LODSW:LODSD:LODSQ.html",
@@ -90722,7 +90756,7 @@
       "doc": {}
     }
   ],
-  "rep lodsq W:rax, qword ptr R:[rsi]": [
+  "rep lodsq RW:rax, qword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSQ_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90752,7 +90786,7 @@
       "doc": {}
     }
   ],
-  "repne lodsq W:rax, qword ptr R:[rsi]": [
+  "repne lodsq RW:rax, qword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/LODSQ_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90782,7 +90816,7 @@
       "doc": {}
     }
   ],
-  "rep movsq qword ptr W:es:[rdi], qword ptr R:[rsi]": [
+  "rep movsq qword ptr RW:es:[rdi], qword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSQ_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90813,7 +90847,7 @@
       "doc": {}
     }
   ],
-  "repne movsq qword ptr W:es:[rdi], qword ptr R:[rsi]": [
+  "repne movsq qword ptr RW:es:[rdi], qword ptr R:[rsi]": [
     {
       "uops_info_url": "uops.info/html-instr/MOVSQ_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90844,7 +90878,7 @@
       "doc": {}
     }
   ],
-  "rep stosq qword ptr W:es:[rdi], R:rax": [
+  "rep stosq qword ptr RW:es:[rdi], R:rax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSQ_REPE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90875,7 +90909,7 @@
       "doc": {}
     }
   ],
-  "repne stosq qword ptr W:es:[rdi], R:rax": [
+  "repne stosq qword ptr RW:es:[rdi], R:rax": [
     {
       "uops_info_url": "uops.info/html-instr/STOSQ_REPNE.html",
       "ref_url": "felixcloutier.com/x86/REP:REPE:REPZ:REPNE:REPNZ.html",
@@ -90966,7 +91000,7 @@
       "doc": {}
     }
   ],
-  "lzcnt W:GPR:16, word ptr R:MEM(16)": [
+  "lzcnt RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/LZCNT_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/LZCNT.html",
@@ -91056,7 +91090,7 @@
       "doc": {}
     }
   ],
-  "lzcnt W:GPR:16, R:GPR:16": [
+  "lzcnt RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/LZCNT_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/LZCNT.html",
@@ -91884,7 +91918,7 @@
       "doc": {}
     }
   ],
-  "movbe W:GPR:16, word ptr R:MEM(16)": [
+  "movbe RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/MOVBE_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/MOVBE.html",
@@ -91968,7 +92002,7 @@
       }
     }
   ],
-  "movbe word ptr W:MEM(16), R:GPR:16": [
+  "movbe word ptr RW:MEM(16), R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/MOVBE_M16_R16.html",
       "ref_url": "felixcloutier.com/x86/MOVBE.html",
@@ -92297,7 +92331,7 @@
       "doc": {}
     }
   ],
-  "rdrand W:GPR:16": [
+  "rdrand RW:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/RDRAND_R16.html",
       "ref_url": "felixcloutier.com/x86/RDRAND.html",
@@ -92375,7 +92409,7 @@
       "doc": {}
     }
   ],
-  "rdseed W:GPR:16": [
+  "rdseed RW:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/RDSEED_R16.html",
       "ref_url": "felixcloutier.com/x86/RDSEED.html",
@@ -108005,7 +108039,7 @@
       "doc": {}
     }
   ],
-  "pextrb byte ptr W:MEM(8), R:XMM0..15, IMM(8)": [
+  "pextrb byte ptr RW:MEM(8), R:XMM0..15, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/PEXTRB_M8_XMM_I8.html",
       "ref_url": "felixcloutier.com/x86/PEXTRB:PEXTRD:PEXTRQ.html",
@@ -108199,7 +108233,7 @@
       "doc": {}
     }
   ],
-  "pextrw word ptr W:MEM(16), R:XMM0..15, IMM(8)": [
+  "pextrw word ptr RW:MEM(16), R:XMM0..15, IMM(8)": [
     {
       "uops_info_url": "uops.info/html-instr/PEXTRW_SSE4_M16_XMM_I8.html",
       "ref_url": "felixcloutier.com/x86/PEXTRW.html",
@@ -110056,7 +110090,7 @@
       }
     }
   ],
-  "popcnt W:GPR:16, word ptr R:MEM(16)": [
+  "popcnt RW:GPR:16, word ptr R:MEM(16)": [
     {
       "uops_info_url": "uops.info/html-instr/POPCNT_R16_M16.html",
       "ref_url": "felixcloutier.com/x86/POPCNT.html",
@@ -110149,7 +110183,7 @@
       }
     }
   ],
-  "popcnt W:GPR:16, R:GPR:16": [
+  "popcnt RW:GPR:16, R:GPR:16": [
     {
       "uops_info_url": "uops.info/html-instr/POPCNT_R16_R16.html",
       "ref_url": "felixcloutier.com/x86/POPCNT.html",

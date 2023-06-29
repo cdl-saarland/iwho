@@ -33719,7 +33719,7 @@
             "kind": "x86RegisterOperand",
             "name": "mxcsr"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -65118,7 +65118,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -65365,7 +65365,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -67538,7 +67538,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -67767,7 +67767,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -71283,7 +71283,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -72078,7 +72078,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -198529,7 +198529,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -198675,7 +198675,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -198821,7 +198821,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -198967,7 +198967,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -199178,7 +199178,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -199389,7 +199389,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -199600,7 +199600,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -199746,7 +199746,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -199892,7 +199892,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -200038,7 +200038,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -200249,7 +200249,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -200460,7 +200460,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -212649,7 +212649,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -212675,7 +212675,7 @@
             "kind": "x86RegisterOperand",
             "name": "edx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -212823,7 +212823,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -212924,7 +212924,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -213025,7 +213025,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -213126,7 +213126,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -213292,7 +213292,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -213458,7 +213458,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -213624,7 +213624,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -213734,7 +213734,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -213844,7 +213844,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -213954,7 +213954,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -214129,7 +214129,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -214304,7 +214304,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -214479,7 +214479,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -214589,7 +214589,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -214699,7 +214699,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -214809,7 +214809,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -214984,7 +214984,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -215159,7 +215159,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -215334,7 +215334,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -215453,7 +215453,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -215572,7 +215572,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -215691,7 +215691,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -215875,7 +215875,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -216059,7 +216059,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -216243,7 +216243,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -216344,7 +216344,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -216445,7 +216445,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -216546,7 +216546,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -216712,7 +216712,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -216878,7 +216878,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -217044,7 +217044,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -217154,7 +217154,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -217264,7 +217264,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -217374,7 +217374,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -217549,7 +217549,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -217724,7 +217724,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -217899,7 +217899,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -218009,7 +218009,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -218119,7 +218119,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -218229,7 +218229,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -218404,7 +218404,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -218579,7 +218579,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -218754,7 +218754,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -218873,7 +218873,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -218992,7 +218992,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -219111,7 +219111,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -219295,7 +219295,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -219479,7 +219479,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -219663,7 +219663,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -219764,7 +219764,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -219865,7 +219865,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -219966,7 +219966,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -220132,7 +220132,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -220298,7 +220298,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -220464,7 +220464,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -220565,7 +220565,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -220666,7 +220666,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -220767,7 +220767,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -220933,7 +220933,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -221099,7 +221099,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -221265,7 +221265,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -221366,7 +221366,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -221467,7 +221467,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -221568,7 +221568,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -221734,7 +221734,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -221900,7 +221900,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -222066,7 +222066,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -222167,7 +222167,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -222268,7 +222268,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -222369,7 +222369,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -222535,7 +222535,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -222701,7 +222701,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -222867,7 +222867,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -222968,7 +222968,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -223069,7 +223069,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -223170,7 +223170,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -223336,7 +223336,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -223502,7 +223502,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -223668,7 +223668,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -223769,7 +223769,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -223870,7 +223870,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -223971,7 +223971,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -224137,7 +224137,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -224303,7 +224303,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -224469,7 +224469,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -224570,7 +224570,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -224671,7 +224671,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -224772,7 +224772,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -224938,7 +224938,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -225104,7 +225104,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -225270,7 +225270,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -225371,7 +225371,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -225472,7 +225472,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -225573,7 +225573,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -225739,7 +225739,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -225905,7 +225905,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -235001,7 +235001,7 @@
             "kind": "x86RegisterOperand",
             "name": "ebx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -235019,7 +235019,7 @@
             "kind": "x86RegisterOperand",
             "name": "edx"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -235036,7 +235036,7 @@
             "kind": "x86RegisterOperand",
             "name": "dx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -235062,7 +235062,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -237292,7 +237292,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -238388,7 +238388,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -238543,7 +238543,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -238650,7 +238650,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -238740,7 +238740,7 @@
             "kind": "x86RegisterOperand",
             "name": "dx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -239075,7 +239075,7 @@
             "kind": "x86RegisterOperand",
             "name": "dx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -239520,7 +239520,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -239985,7 +239985,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -240645,7 +240645,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -240801,7 +240801,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -241578,7 +241578,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -241799,7 +241799,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -243907,7 +243907,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -243934,7 +243934,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -243960,7 +243960,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -243987,7 +243987,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -244066,7 +244066,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -244092,7 +244092,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -245252,7 +245252,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -245344,7 +245344,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -246481,7 +246481,7 @@
             "kind": "x86RegisterOperand",
             "name": "ah"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -246607,7 +246607,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "agen": {
@@ -246861,7 +246861,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -246905,7 +246905,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -246949,7 +246949,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -247116,7 +247116,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -247143,7 +247143,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -247260,7 +247260,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -247403,7 +247403,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -247511,7 +247511,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -247571,7 +247571,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -247631,7 +247631,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -247674,7 +247674,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -247765,7 +247765,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -247808,7 +247808,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -248146,7 +248146,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -248614,7 +248614,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -248657,7 +248657,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -248748,7 +248748,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -248956,10 +248956,126 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
+          "kind": "OperandScheme",
+          "operand_constraint": {
+            "kind": "x86RegisterConstraint",
+            "acceptable_operands": [
+              {
+                "kind": "x86RegisterOperand",
+                "name": "cs"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "ds"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "es"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "fs"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "gs"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "ss"
+              }
+            ]
+          },
+          "read": true,
+          "written": false
+        }
+      },
+      "implicit_operands": [],
+      "affects_control_flow": false
+    },
+    {
+      "kind": "InsnScheme",
+      "str_template": "mov ${reg0}, ${reg1}",
+      "explicit_operands": {
+        "reg0": {
+          "kind": "OperandScheme",
+          "operand_constraint": {
+            "kind": "x86RegisterConstraint",
+            "acceptable_operands": [
+              {
+                "kind": "x86RegisterOperand",
+                "name": "ax"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "bp"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "bx"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "cx"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "di"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "dx"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r10w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r11w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r12w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r13w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r14w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r15w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r8w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "r9w"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "si"
+              },
+              {
+                "kind": "x86RegisterOperand",
+                "name": "sp"
+              }
+            ]
+          },
+          "read": true,
+          "written": true
+        },
+        "reg1": {
           "kind": "OperandScheme",
           "operand_constraint": {
             "kind": "x86RegisterConstraint",
@@ -249260,7 +249376,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -249307,7 +249423,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -249398,7 +249514,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -249424,7 +249540,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -249502,7 +249618,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -249528,7 +249644,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -249671,7 +249787,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -249763,7 +249879,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -249806,7 +249922,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -249850,7 +249966,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -249941,7 +250057,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "imm0": {
@@ -250160,7 +250276,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -250270,7 +250386,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -250379,7 +250495,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -250652,7 +250768,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -250776,7 +250892,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -251766,7 +251882,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -252039,7 +252155,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -252163,7 +252279,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -253108,7 +253224,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -253263,7 +253379,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -253370,7 +253486,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -253460,7 +253576,7 @@
             "kind": "x86RegisterOperand",
             "name": "dx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -253795,7 +253911,7 @@
             "kind": "x86RegisterOperand",
             "name": "dx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -263959,7 +264075,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -264118,7 +264234,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -264277,7 +264393,7 @@
             "kind": "x86RegisterOperand",
             "name": "fs"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -264324,7 +264440,7 @@
             "kind": "x86RegisterOperand",
             "name": "gs"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -264502,7 +264618,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -264661,7 +264777,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -264820,7 +264936,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -264915,7 +265031,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -264962,7 +265078,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -265009,7 +265125,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -265056,7 +265172,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -265093,7 +265209,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271134,7 +271250,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271189,7 +271305,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271244,7 +271360,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271299,7 +271415,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271354,7 +271470,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271409,7 +271525,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -271452,7 +271568,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271505,7 +271621,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271558,7 +271674,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271611,7 +271727,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271664,7 +271780,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271717,7 +271833,7 @@
             "kind": "x86RegisterOperand",
             "name": "ax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -271781,7 +271897,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -271845,7 +271961,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -271909,7 +272025,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -271973,7 +272089,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -272037,7 +272153,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -272101,7 +272217,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -272477,7 +272593,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -272533,7 +272649,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -272589,7 +272705,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -272645,7 +272761,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -272701,7 +272817,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -272757,7 +272873,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -289602,7 +289718,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289694,7 +289810,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289738,7 +289854,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289765,7 +289881,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289866,7 +289982,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289919,7 +290035,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -289955,7 +290071,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290056,7 +290172,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290109,7 +290225,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290145,7 +290261,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290255,7 +290371,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290317,7 +290433,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290362,7 +290478,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290454,7 +290570,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290498,7 +290614,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290525,7 +290641,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290626,7 +290742,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290679,7 +290795,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290715,7 +290831,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290816,7 +290932,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290869,7 +290985,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -290905,7 +291021,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291015,7 +291131,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291077,7 +291193,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291122,7 +291238,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291214,7 +291330,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291258,7 +291374,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291285,7 +291401,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291377,7 +291493,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291421,7 +291537,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291448,7 +291564,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291540,7 +291656,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291584,7 +291700,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291611,7 +291727,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291703,7 +291819,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291747,7 +291863,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291774,7 +291890,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291866,7 +291982,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291910,7 +292026,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -291937,7 +292053,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292029,7 +292145,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292073,7 +292189,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292100,7 +292216,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292192,7 +292308,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292236,7 +292352,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292263,7 +292379,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292355,7 +292471,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -292399,7 +292515,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -304980,7 +305096,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -305074,7 +305190,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -320351,7 +320467,7 @@
             "kind": "x86RegisterOperand",
             "name": "al"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -331997,7 +332113,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -332435,7 +332551,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -410434,7 +410550,7 @@
             "kind": "x86RegisterOperand",
             "name": "rax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -410695,7 +410811,7 @@
             "kind": "x86RegisterOperand",
             "name": "rdx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -410829,7 +410945,7 @@
             "kind": "x86RegisterOperand",
             "name": "rax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -411415,7 +411531,7 @@
             "kind": "x86RegisterOperand",
             "name": "rax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -411468,7 +411584,7 @@
             "kind": "x86RegisterOperand",
             "name": "rax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -411532,7 +411648,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -411596,7 +411712,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem1": {
@@ -411660,7 +411776,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -411716,7 +411832,7 @@
             "scale": 1,
             "displacement": 0
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -411974,7 +412090,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -412412,7 +412528,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {
@@ -414703,7 +414819,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -414911,7 +415027,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -415457,7 +415573,7 @@
             "kind": "x86RegisterOperand",
             "name": "edx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -415466,7 +415582,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -416534,7 +416650,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -416945,7 +417061,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       },
@@ -417337,7 +417453,7 @@
             "kind": "x86RegisterOperand",
             "name": "eax"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -423674,7 +423790,7 @@
             "kind": "x86RegisterOperand",
             "name": "x87control"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -423701,7 +423817,7 @@
             "kind": "x86RegisterOperand",
             "name": "x87control"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -423782,7 +423898,7 @@
             "kind": "x86RegisterOperand",
             "name": "mxcsr"
           },
-          "read": false,
+          "read": true,
           "written": true
         }
       ],
@@ -469648,7 +469764,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -469895,7 +470011,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -470735,7 +470851,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -470964,7 +471080,7 @@
             "kind": "x86RegisterOperand",
             "name": "ecx"
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         {
@@ -471427,7 +471543,7 @@
             "kind": "x86MemConstraint",
             "width": 8
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -472222,7 +472338,7 @@
             "kind": "x86MemConstraint",
             "width": 16
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg0": {
@@ -478863,7 +478979,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "mem0": {
@@ -479301,7 +479417,7 @@
               }
             ]
           },
-          "read": false,
+          "read": true,
           "written": true
         },
         "reg1": {

@@ -635,6 +635,23 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
     read = operandNode.attrib.get('r', '0') == '1'
     written = operandNode.attrib.get('w', '0') == '1'
 
+    conditionalWrite = operandNode.attrib.get('conditionalWrite', '0') == '1'
+    if conditionalWrite:
+        assert written
+        # Arguably, for the register renaming engine, this reads the
+        # destination operand if the conditional write is not performed, so we
+        # treat it as read and written.
+        # This is consistent with what we measure for CMOV instructions.
+        read = True
+
+    width = int(operandNode.attrib.get('width', '0'))
+    if written and width < 32:
+        # As partial writes, these seem to cause a read dependency on the
+        # destination register as well.
+        # This is consistent with what we measure for 16-bit GPR-GPR mov
+        # instructions.
+        read = True
+
     op_type = operandNode.attrib['type']
     if op_type == 'reg':
         registers = operandNode.text.lower().split(',')
