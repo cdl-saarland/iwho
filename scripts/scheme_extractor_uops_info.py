@@ -155,12 +155,16 @@ def extract_features(xml_entry):
             resdict[reskey] = res
 
     measurements = dict()
+    doc = dict()
     for archnode in xml_entry.iter('architecture'):
         uarch_name = archnode.get('name', None)
         measurements_node = archnode.find('measurement')
-        if measurements_node is None:
-            continue
-        take_if_not_none(xmlnode=measurements_node, xmlkey='ports', resdict=measurements, reskey=uarch_name)
+        if measurements_node is not None:
+            take_if_not_none(xmlnode=measurements_node, xmlkey='ports', resdict=measurements, reskey=uarch_name)
+
+        doc_node = archnode.find('doc')
+        if doc_node is not None:
+            take_if_not_none(xmlnode=doc_node, xmlkey='ports', resdict=doc, reskey=uarch_name)
 
     take_if_not_none(xmlkey='url', reskey='uops_info_url')
     take_if_not_none(xmlkey='url-ref', reskey='ref_url')
@@ -170,6 +174,7 @@ def extract_features(xml_entry):
     take_if_not_none(xmlkey='category')
 
     results['measurements'] = measurements
+    results['doc'] = doc
 
     return results
 
