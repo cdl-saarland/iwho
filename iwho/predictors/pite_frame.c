@@ -192,7 +192,7 @@ PLACEHOLDER_BENCH_CODE
 #endif
         : "rax", "rbx", "rcx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13",
 #if (! INIT_ADDITIONAL_MEM_REGS)
-          "r14", "rsi", "rdi",
+          "rbp", "rsi", "rdi",
 #endif
           "ymm0", "ymm1", "ymm2", "ymm3", "ymm4", "ymm5", "ymm6", "ymm7",
           "ymm8", "ymm9", "ymm10", "ymm11", "ymm12", "ymm13", "ymm14", "ymm15", "cc", "memory"
