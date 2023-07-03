@@ -44,6 +44,7 @@ class PITEPredictor(Predictor):
             "aggregator", # aggregation method to use among the samples ("median" or "min")
             "compiler_cmd", # a compiler command, with arguments listed
             "use_perf_counters", # if enabled, count uops with performance counters. currently only AMD supported
+            "additional_mem_regs", # reserve additional registers like rdi and rsi for memory
             "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
             "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
         ]
@@ -103,8 +104,10 @@ class PITEPredictor(Predictor):
                     f.write(instantiated_frame)
 
                 # compile benchmark code
-                cmd = self.compiler_cmd + ('-DINIT_ADDITIONAL_MEM_REGS=1',
-                                           '-o', bin_path, src_path)
+                cmd = self.compiler_cmd + ('-o', bin_path, src_path)
+
+                if self.additional_mem_regs:
+                    cmd += ('-DINIT_ADDITIONAL_MEM_REGS=1',)
 
                 if self.use_perf_counters:
                     cmd += ('-DUSE_PERF_COUNTERS=1',)

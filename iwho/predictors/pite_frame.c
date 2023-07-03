@@ -99,11 +99,11 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
     clock_gettime(CLOCK_MONOTONIC,  &start);
 
     register num_t num_iterations_reg asm("r15") = num_iterations;
-    register void * mem_rbp asm("rbp") = scratch_mem + 1 * PAGE_SIZE;
+    register void * mem_r14 asm("r14") = scratch_mem + 1 * PAGE_SIZE;
 #if INIT_ADDITIONAL_MEM_REGS
     register void * mem_rsi asm("rsi") = scratch_mem + 2 * PAGE_SIZE;
     register void * mem_rdi asm("rdi") = scratch_mem + 3 * PAGE_SIZE;
-    register void * mem_r14 asm("r14") = scratch_mem + 4 * PAGE_SIZE;
+    register void * mem_rbp asm("rbp") = scratch_mem + 4 * PAGE_SIZE;
 #endif
     asm volatile (
         "   .intel_syntax noprefix\n"
@@ -153,7 +153,7 @@ double measure_usec(num_t *res_perf_counter, void *scratch_mem, size_t scratch_m
 
 #if (! INIT_ADDITIONAL_MEM_REGS)
         // additional ones that might make problems with memory instructions
-        "   MOV r14, 42\n" // (kernel)nanobench's preferred memory operand
+        "   MOV rbp, 42\n"
         "   MOV rsi, 42\n"
         "   MOV rdi, 42\n"
 #endif
@@ -186,9 +186,9 @@ PLACEHOLDER_BENCH_CODE
         "   .att_syntax\n"
         : "=r" (num_iterations_reg) // declare this as an output since it is an input that we want to clobber
         : "r" (num_iterations_reg), //[saved_counters_addr] "o" (saved_counters),
-          "r" (mem_rbp) // inputs for memory operands
+          "r" (mem_r14) // inputs for memory operands
 #if INIT_ADDITIONAL_MEM_REGS
-          , "r" (mem_rsi), "r" (mem_rdi), "r" (mem_r14)
+          , "r" (mem_rsi), "r" (mem_rdi), "r" (mem_rbp)
 #endif
         : "rax", "rbx", "rcx", "rdx", "r8", "r9", "r10", "r11", "r12", "r13",
 #if (! INIT_ADDITIONAL_MEM_REGS)
