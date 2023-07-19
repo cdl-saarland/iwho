@@ -267320,6 +267320,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267421,6 +267430,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267474,6 +267492,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267506,6 +267533,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -267546,6 +267582,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267578,6 +267623,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -267683,6 +267737,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267784,6 +267847,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -267881,6 +267953,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -269935,6 +270016,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270036,6 +270126,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270089,6 +270188,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270121,6 +270229,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -270161,6 +270278,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270193,6 +270319,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -270298,6 +270433,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270395,6 +270539,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -270500,6 +270653,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -270556,6 +270718,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -270628,6 +270844,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -270692,6 +270962,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -270740,6 +271064,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -270804,6 +271182,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -270852,6 +271284,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -270924,6 +271410,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -270980,6 +271520,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -271052,6 +271646,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -271100,6 +271748,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -271164,6 +271866,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -271212,6 +271968,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -275256,6 +276066,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275357,6 +276176,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275410,6 +276238,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275442,6 +276279,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -275482,6 +276328,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275514,6 +276369,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -275619,6 +276483,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275720,6 +276593,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -275817,6 +276699,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -277871,6 +278762,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -277972,6 +278872,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -278025,6 +278934,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -278057,6 +278975,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -278097,6 +279024,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -278129,6 +279065,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -278234,6 +279179,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -278335,6 +279289,15 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
           },
           "read": false,
@@ -278432,6 +279395,15 @@
         }
       },
       "implicit_operands": [
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
         {
           "kind": "OperandScheme",
           "fixed_operand": {
@@ -281357,7 +282329,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281467,7 +282475,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281529,7 +282573,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281574,7 +282654,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281619,7 +282735,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281664,7 +282816,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281774,7 +282962,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281884,7 +283108,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -281994,7 +283254,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295303,7 +296599,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295413,7 +296745,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295475,7 +296843,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295520,7 +296924,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295565,7 +297005,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295610,7 +297086,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295720,7 +297232,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295830,7 +297378,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -295940,7 +297524,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -297985,7 +299605,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -298104,7 +299760,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -298223,7 +299915,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -298407,7 +300135,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -298591,7 +300355,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -298775,7 +300575,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301554,7 +303390,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301664,7 +303536,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301726,7 +303634,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301771,7 +303715,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301816,7 +303796,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301861,7 +303877,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -301971,7 +304023,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -302081,7 +304169,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -302191,7 +304315,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -304236,7 +306396,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -304355,7 +306551,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -304474,7 +306706,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -304658,7 +306926,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -304842,7 +307146,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -305026,7 +307366,43 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": false,
           "written": true
@@ -411337,6 +413713,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -411385,6 +413815,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true
@@ -411457,6 +413941,60 @@
           "kind": "OperandScheme",
           "fixed_operand": {
             "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
             "name": "flag_df"
           },
           "read": true,
@@ -411505,6 +414043,60 @@
           "fixed_operand": {
             "kind": "x86RegisterOperand",
             "name": "rcx"
+          },
+          "read": true,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_af"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_cf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_of"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_pf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_sf"
+          },
+          "read": false,
+          "written": true
+        },
+        {
+          "kind": "OperandScheme",
+          "fixed_operand": {
+            "kind": "x86RegisterOperand",
+            "name": "flag_zf"
           },
           "read": true,
           "written": true

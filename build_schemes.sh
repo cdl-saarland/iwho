@@ -8,3 +8,5 @@ cd $SCRIPT_DIR
     -o ./iwho/inputfiles/schemes/x86_uops_info.json \
     --no-validate \
     ./inputs/uops_info/instructions.xml
+
+rm -rf ./iwho/inputfiles/schemes/x86_uops_info_cached.pickle

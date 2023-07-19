@@ -735,11 +735,11 @@ def handle_uops_info_operand(ctx, operandNode, instrNode, str_template=""):
             fval = operandNode.attrib.get(f, '')
             read = False
             written = False
-            if fval == "w":
+            if fval in ["w", "cw"]:
                 written = True
             elif fval == "r":
                 read = True
-            elif fval == "r/w":
+            elif fval in ["r/w", "r/cw"]:
                 read = True
                 written = True
             elif fval == "undef":
