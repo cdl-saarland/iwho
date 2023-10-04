@@ -131,6 +131,16 @@
         }
 },
 
+"facile.skl": {
+    "tool": "facile", "version": "master", "uarch": "SKL",
+    "unsupported_insns_path": "./filters/error_schemes_{KEY}.csv",
+    "config": {
+            "kind": "facile",
+            "script_path": "${BASE_DIR}/predictors/uica/repo/facile.py",
+            "run_opts": ["-arch", "SKL", "-mode", "unroll"],
+            "timeout": 1.0
+        }
+},
 
 "maqao.skl": {
     "tool": "maqao", "version": "master", "uarch": "SKL",
