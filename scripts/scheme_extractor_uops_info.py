@@ -169,6 +169,8 @@ def extract_features(xml_entry):
     take_if_not_none(xmlkey='url', reskey='uops_info_url')
     take_if_not_none(xmlkey='url-ref', reskey='ref_url')
 
+    take_if_not_none(xmlkey='iform')
+
     take_if_not_none(xmlkey='extension')
     take_if_not_none(xmlkey='isa-set')
     take_if_not_none(xmlkey='category')
