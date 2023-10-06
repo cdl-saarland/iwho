@@ -170,6 +170,7 @@ def extract_features(xml_entry):
     take_if_not_none(xmlkey='url-ref', reskey='ref_url')
 
     take_if_not_none(xmlkey='iform')
+    take_if_not_none(xmlkey='string', reskey='istr')
 
     take_if_not_none(xmlkey='extension')
     take_if_not_none(xmlkey='isa-set')
