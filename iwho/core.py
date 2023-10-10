@@ -1257,6 +1257,22 @@ class InsnInstance:
             res.append((self.get_operand(key), (key, op_scheme)))
         return res
 
+    def replace_operands(self, operand_mapping):
+        """ Create a new InsnInstance with the same Scheme, but where operands
+        whose keys (as retrieved from `get_operands()`) are given in the
+        `operand_mapping` dict are replaced by the corresponding dict value.
+        Raises an `InstantiationError` if the mapping is invalid.
+        """
+        explicit_operands = self._operands.copy()
+        for k, v in operand_mapping.items():
+            kind, ref = k
+            if kind == InsnScheme.OperandKind.IMPLICIT:
+                raise InstantiationError(f"cannot replace implicit operand {k}")
+            explicit_operands[ref] = v
+        return InsnInstance(self.scheme, explicit_operands)
+
+
+
     @cached_property
     def read_operands(self):
         """ Get all operands that are read when this `InsnInstance` is
