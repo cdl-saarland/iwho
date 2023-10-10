@@ -80,16 +80,23 @@ def sanitize_bb(iwho_ctx, context, hex_code):
                 replacement_cls = replacement_map.get(op.alias_class, None)
                 if replacement_cls is not None:
                     replacement_candidates = iwho_ctx.get_registers_where(alias_class=replacement_cls, width=op.width)
+                    if len(replacement_candidates) > 1:
+                        # prefer the non-high registers
+                        replacement_candidates = [ r for r in replacement_candidates if 'h' not in r.name ]
                     replacement = replacement_candidates[0]
             if replacement is not None:
-                new_operands[key] = iwho_ctx.adjust_operand(replacement, op_scheme)
+                adjusted = iwho_ctx.adjust_operand(replacement, op_scheme)
+                if adjusted is None:
+                    logger.warning("Failed to adjust operand {} to {} as a replacement for {} in basic block: {}".format(replacement, op_scheme, op, hex_code))
+                    return None
+                new_operands[key] = adjusted
         if len(new_operands) == 0:
             new_i = i
         else:
             try:
                 new_i = i.replace_operands(new_operands)
             except iwho.IWHOError:
-                logger.warning("Failed to replace operands in basic block: {}\n  new operands: {}".format(hex_code, new_operands))
+                logger.warning("Failed to replace operands in basic block: {}\n  new operands for instruction {}: {}".format(hex_code, i, new_operands))
                 return None
         res_insns.append(new_i)
 
