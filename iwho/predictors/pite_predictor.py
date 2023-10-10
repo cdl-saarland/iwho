@@ -4,6 +4,7 @@ Ultimately, this implementation is based on work by Kallistos Weis.
 """
 
 import json
+import math
 import os
 from pathlib import Path
 import re
