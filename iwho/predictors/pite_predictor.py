@@ -47,6 +47,7 @@ class PITEPredictor(Predictor):
             "additional_mem_regs", # reserve additional registers like rdi and rsi for memory
             "freq_threshold", # runs are rejected if their pre and post frequency differs by more than this value times their average
             "subconfigs", # a list of dictionaries with keys "target_usec" (the target time in microseconds that the code should be executed), "num_samples_internal" (how often this subconfig should be executed, taking the minimum result)
+            "unroll_insns", # unroll the benchmarking loop such that at least this many instructions are in the loop body. Set to 1 for no unrolling
         ]
 
     def requires_sudo(self):
@@ -80,6 +81,9 @@ class PITEPredictor(Predictor):
             bench_code_lines = []
             for line in basic_block.get_asm(unwrapped=True).split('\n'):
                 bench_code_lines.append('        "    {}\\n"'.format(line))
+
+            unroll_factor = math.ceil(self.unroll_insns / len(bench_code_lines))
+            bench_code_lines = bench_code_lines * unroll_factor
 
             bench_code = "\n".join(bench_code_lines)
 
@@ -291,8 +295,9 @@ class PITEPredictor(Predictor):
                 agg_perf_counter_per_iteration -= 2 # the SUB and JNZ instructions from the benchmarking loop
 
                 all_results.append({
-                    'TP': agg_cycles_per_iteration,
-                    'num_uops': agg_perf_counter_per_iteration,
+                    'TP': agg_cycles_per_iteration / unroll_factor,
+                    'num_uops': agg_perf_counter_per_iteration / unroll_factor,
+                    'unroll_factor': unroll_factor,
                     'run_details': res_data})
 
         chosen_results = all_results
