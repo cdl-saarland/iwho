@@ -357,7 +357,7 @@ class Context(ABC):
         `parse_asm()`."""
         return self.make_bb(self.parse_asm(asm_str))
 
-    def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
+    def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False, *, skips=None) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of `InsnInstance`s.
 
@@ -375,6 +375,8 @@ class Context(ABC):
             except InstantiationError:
                 if not skip_instantiation_errors:
                     raise
+                if skips is not None:
+                    skips.append(l)
                 insn_instance = None
 
             insns.append(insn_instance)
