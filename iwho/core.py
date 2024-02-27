@@ -110,7 +110,11 @@ class Filters:
             res = set()
             with open(scheme_strs, "r") as f:
                 for line in f:
-                    res.add(line.strip())
+                    cropped_line = line
+                    if "#" in cropped_line:
+                        cropped_line = cropped_line.split('#')[0]
+                    cropped_line = cropped_line.strip()
+                    res.add(cropped_line)
             scheme_strs = res
         else:
             scheme_strs = set(scheme_strs)
@@ -135,7 +139,11 @@ class Filters:
             res = set()
             with open(scheme_strs, "r") as f:
                 for line in f:
-                    res.add(line.strip())
+                    cropped_line = line
+                    if "#" in cropped_line:
+                        cropped_line = cropped_line.split('#')[0]
+                    cropped_line = cropped_line.strip()
+                    res.add(cropped_line)
             scheme_strs = res
         else:
             scheme_strs = set(scheme_strs)
@@ -349,7 +357,7 @@ class Context(ABC):
         `parse_asm()`."""
         return self.make_bb(self.parse_asm(asm_str))
 
-    def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False) -> Sequence["InsnInstance"]:
+    def decode_insns(self, hex_str: str, skip_instantiation_errors: bool = False, *, skips=None) -> Sequence["InsnInstance"]:
         """ Decode a byte stream represented as string of hex characters into a
         sequence of `InsnInstance`s.
 
@@ -367,6 +375,8 @@ class Context(ABC):
             except InstantiationError:
                 if not skip_instantiation_errors:
                     raise
+                if skips is not None:
+                    skips.append(l)
                 insn_instance = None
 
             insns.append(insn_instance)
@@ -741,7 +751,7 @@ class SetConstraint(OperandConstraint):
 
     def to_json_dict(self):
         return {"kind": self.json_kind_id,
-                "acceptable_operands": [ op.to_json_dict() for op in self.acceptable_operands ],
+                "acceptable_operands": [ op.to_json_dict() for op in sorted(self.acceptable_operands, key=str) ],
             }
 
 
@@ -870,10 +880,15 @@ class OperandScheme:
                 written = written)
 
     def __hash__(self):
-        raise NotImplementedError("No hash implemented on OperandSchemes")
+        return hash((self.operand_constraint, self.fixed_operand,
+                    self.is_read, self.is_written,))
 
     def __eq__(self, other):
-        raise NotImplementedError("No equality implemented on OperandSchemes")
+        return isinstance(other, OperandScheme) and (
+                self.operand_constraint == other.operand_constraint and
+                self.fixed_operand == other.fixed_operand and
+                self.is_read == other.is_read and
+                self.is_written == other.is_written)
 
 
 @export
@@ -1243,6 +1258,22 @@ class InsnInstance:
         for (key, op_scheme) in self.scheme.operand_keys:
             res.append((self.get_operand(key), (key, op_scheme)))
         return res
+
+    def replace_operands(self, operand_mapping):
+        """ Create a new InsnInstance with the same Scheme, but where operands
+        whose keys (as retrieved from `get_operands()`) are given in the
+        `operand_mapping` dict are replaced by the corresponding dict value.
+        Raises an `InstantiationError` if the mapping is invalid.
+        """
+        explicit_operands = self._operands.copy()
+        for k, v in operand_mapping.items():
+            kind, ref = k
+            if kind == InsnScheme.OperandKind.IMPLICIT:
+                raise InstantiationError(f"cannot replace implicit operand {k}")
+            explicit_operands[ref] = v
+        return InsnInstance(self.scheme, explicit_operands)
+
+
 
     @cached_property
     def read_operands(self):

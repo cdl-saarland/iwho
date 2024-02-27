@@ -20,7 +20,7 @@ class UICAPredictor(Predictor):
     Predictor options:
 
     * `uica_path`: the path to the uiCA executable
-    * `uica_opts`: a list of command line options to llvm-mca, e.g., `["-arch", "SKL"]`
+    * `uica_opts`: a list of command line options to uiCA, e.g., `["-arch", "SKL"]`
     * `timeout`: a timeout for subprocess calls in seconds
     """
 

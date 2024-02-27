@@ -52,7 +52,7 @@ class LLVMMCAPredictor(Predictor):
 
         return LLVMMCAPredictor(llvmmca_path, llvmmca_opts, timeout)
 
-    def evaluate(self, basic_block, disable_logging=False):
+    def evaluate(self, basic_block, disable_logging=False, **kwargs):
 
         asm_str = basic_block.get_asm()
         asm_str = ".intel_syntax noprefix\n" + asm_str
